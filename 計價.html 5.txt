@@ -1,0 +1,322 @@
+import React, { useState, useMemo } from 'react';
+import { 
+  Plus, 
+  Minus, 
+  Check, 
+  Eye, 
+  ChevronDown,
+  ChevronRight,
+  Gift,
+  Info,
+  Gem,
+  Scissors,
+  Sparkles
+} from 'lucide-react';
+
+const App = () => {
+  // 1. 服務項目數據
+  const [config] = useState({
+    baseServices: [
+      { name: "單色光療 (手)", price: 800, type: 'gel' },
+      { name: "單色光療 (足)", price: 900, type: 'gel' },
+      { name: "貓眼光療 (手)", price: 1000, type: 'gel' },
+      { name: "貓眼光療 (足)", price: 1100, type: 'gel' },
+      { name: "鏡面光療 (手)", price: 1100, type: 'gel' },
+      { name: "鏡面光療 (足)", price: 1200, type: 'gel' },
+      { name: "法式光療 (手)", price: 1300, type: 'gel' },
+      { name: "法式光療 (足)", price: 1400, type: 'gel' },
+      { name: "手部基礎保養", price: 400, type: 'care' },
+      { name: "足部基礎保養", price: 600, type: 'care' }
+    ]
+  });
+
+  // 2. 加購項目
+  const [addons, setAddons] = useState([
+    { name: "跳色", price: 50, qty: 0, category: 'design' },
+    { name: "暈染", price: 80, qty: 0, category: 'design' },
+    { name: "甲片延甲", price: 100, qty: 0, category: 'design' },
+    { name: "法式(單指)", price: 80, qty: 0, category: 'design' },
+    { name: "鏡面粉(單指)", price: 70, qty: 0, category: 'design' },
+    { name: "貓眼造型(單指)", price: 50, qty: 0, category: 'design' },
+    { name: "鑽(單顆)", price: 10, qty: 0, category: 'design' },
+    { name: "鑽飾/飾品", price: 50, qty: 0, category: 'design' },
+    { name: "手部深層保養", price: 600, qty: 0, category: 'care' },
+    { name: "足部深層保養", price: 1300, qty: 0, category: 'care' }
+  ]);
+
+  const [selectedBase, setSelectedBase] = useState(config.baseServices[0]);
+  const [removalBasePrice, setRemovalBasePrice] = useState(0); 
+  const [largeGemPrice, setLargeGemPrice] = useState(50); 
+  const [largeGemQty, setLargeGemQty] = useState(0);      
+  const [removalExtQty, setRemovalExtQty] = useState(0);  
+  const [adjustment, setAdjustment] = useState("");
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  // 3. 核心邏輯計算 (維持所有優惠設定)
+  const billing = useMemo(() => {
+    let subtotal = selectedBase.price;
+    addons.forEach(item => subtotal += (item.price * item.qty));
+    const removalTotal = removalBasePrice + (largeGemPrice * largeGemQty) + (removalExtQty * 100);
+    subtotal += removalTotal;
+
+    const hasCareService = selectedBase.type === 'care' || addons.some(a => a.category === 'care' && a.qty > 0);
+    const hasGelService = selectedBase.type === 'gel';
+    const isNoFollowUp = removalBasePrice === 400;
+
+    const gelCareDiscount = (hasCareService && hasGelService) ? 200 : 0;
+    const removalCareDiscount = (isNoFollowUp && hasCareService) ? 100 : 0;
+    
+    const totalDiscount = gelCareDiscount + removalCareDiscount;
+    const finalTotal = subtotal + (parseInt(adjustment) || 0) - totalDiscount;
+
+    return { subtotal, gelCareDiscount, removalCareDiscount, totalDiscount, finalTotal, removalTotal };
+  }, [selectedBase, addons, removalBasePrice, largeGemPrice, largeGemQty, removalExtQty, adjustment]);
+
+  const updateAddon = (index, field, value) => {
+    const newAddons = [...addons];
+    newAddons[index][field] = value;
+    setAddons(newAddons);
+  };
+
+  const copyToClipboard = () => {
+    let detail = `【香香村美妍製造所】\n\n`;
+    detail += `● 基礎服務: ${selectedBase.name} $${selectedBase.price}\n`;
+    addons.filter(a => a.qty > 0).forEach(a => {
+      detail += `○ ${a.name}: $${a.price} x${a.qty} (+$${a.price * a.qty})\n`;
+    });
+    if (removalBasePrice > 0) detail += `○ 卸甲基礎: ${removalBasePrice === 200 ? '續作' : '不續作'} +$${removalBasePrice}\n`;
+    if (largeGemQty > 0) detail += `○ 卸大鑽: $${largeGemPrice} x${largeGemQty} (+$${largeGemPrice * largeGemQty})\n`;
+    if (removalExtQty > 0) detail += `○ 卸延甲: $100 x${removalExtQty} (+$${removalExtQty * 100})\n`;
+    if (billing.gelCareDiscount > 0) detail += `🎁 保養光療優惠: -$${billing.gelCareDiscount}\n`;
+    if (billing.removalCareDiscount > 0) detail += `🎁 卸甲不續作優惠: -$${billing.removalCareDiscount}\n`;
+    if (parseInt(adjustment) !== 0 && adjustment !== "") detail += `● 其他調整: $${adjustment}\n`;
+    detail += `\n------------------\n💰 總計結帳：$${billing.finalTotal}`;
+
+    const el = document.createElement('textarea');
+    el.value = detail;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#FDFBF9] text-stone-700 pb-44 font-sans">
+      <div className="max-w-md mx-auto px-6 py-10">
+        
+        {/* Header - 極簡標誌 */}
+        <header className="text-center mb-10">
+          <h1 className="text-2xl tracking-[0.4em] font-light text-[#C5A358] mb-1">香香村</h1>
+          <p className="text-[9px] text-stone-300 tracking-[0.2em] font-bold uppercase italic">Billing & Care Atelier</p>
+        </header>
+
+        {/* 1. 服務項目 - 輕透卡片 */}
+        <section className="mb-8">
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <span className="w-1 h-3 bg-[#C5A358]/40 rounded-full" />
+            <label className="text-[11px] font-black text-stone-400 tracking-widest uppercase">選擇服務項目</label>
+          </div>
+          <div className="relative group">
+            <select 
+              className="w-full p-4 bg-white border border-stone-100 rounded-2xl shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-[#C5A358]/5 font-bold text-stone-600 pr-12 transition-all"
+              value={selectedBase.name}
+              onChange={(e) => setSelectedBase(config.baseServices.find(s => s.name === e.target.value))}
+            >
+              {config.baseServices.map(s => (
+                <option key={s.name} value={s.name}>{s.name} (${s.price})</option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-200 pointer-events-none group-hover:text-[#C5A358] transition-colors" size={18} />
+          </div>
+        </section>
+
+        {/* 2. 加購造型與保養 - 乾淨列表 */}
+        <section className="mb-8">
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <span className="w-1 h-3 bg-[#C5A358]/40 rounded-full" />
+            <label className="text-[11px] font-black text-stone-400 tracking-widest uppercase">造型與深層保養</label>
+          </div>
+          <div className="bg-white rounded-[2rem] border border-stone-50 shadow-sm overflow-hidden">
+            {addons.map((item, index) => (
+              <div 
+                key={item.name} 
+                className={`flex items-center p-4 border-b border-stone-50 last:border-0 transition-all ${item.qty > 0 ? 'bg-[#C5A358]/5' : ''}`}
+              >
+                <div className="flex-1">
+                  <span className={`text-sm font-bold ${item.qty > 0 ? 'text-[#C5A358]' : 'text-stone-500'}`}>{item.name}</span>
+                </div>
+                {/* 金額調整 */}
+                <div className="flex items-center bg-stone-50/50 rounded-xl px-2 mr-3 border border-stone-100/50">
+                  <span className="text-[10px] text-stone-300 font-bold">$</span>
+                  <input 
+                    type="number" 
+                    value={item.price}
+                    className="w-12 p-1.5 bg-transparent text-sm font-black text-[#C5A358]/70 text-center focus:outline-none"
+                    onChange={(e) => updateAddon(index, 'price', parseInt(e.target.value) || 0)}
+                  />
+                </div>
+                {/* 數量 */}
+                <div className="flex items-center bg-white rounded-xl border border-stone-100 shadow-sm">
+                  <button onClick={() => updateAddon(index, 'qty', Math.max(0, item.qty - 1))} className="p-2 text-stone-200 hover:text-stone-400"><Minus size={14}/></button>
+                  <span className="w-6 text-center text-xs font-black text-stone-600">{item.qty}</span>
+                  <button onClick={() => updateAddon(index, 'qty', item.qty + 1)} className="p-2 text-stone-200 hover:text-[#C5A358]"><Plus size={14}/></button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 3. 卸甲區 - 柔和色調 */}
+        <section className="mb-8">
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <span className="w-1 h-3 bg-stone-200 rounded-full" />
+            <label className="text-[11px] font-black text-stone-400 tracking-widest uppercase">卸甲細項</label>
+          </div>
+          <div className="bg-white rounded-[2rem] border border-stone-50 shadow-sm p-6 space-y-6">
+            <div className="flex gap-2 bg-stone-50 p-1 rounded-2xl">
+              {[ { l: '無', p: 0 }, { l: '續作', p: 200 }, { l: '不續作', p: 400 } ].map(t => (
+                <button 
+                  key={t.l} 
+                  onClick={() => setRemovalBasePrice(t.p)} 
+                  className={`flex-1 py-3 text-[10px] font-black rounded-xl transition-all ${removalBasePrice === t.p ? 'bg-white shadow-md text-[#C5A358]' : 'text-stone-300 hover:text-stone-400'}`}
+                >
+                  {t.l} {t.p > 0 && `$${t.p}`}
+                </button>
+              ))}
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-stone-50 rounded-xl text-stone-300"><Gem size={16} /></div>
+                  <div>
+                    <p className="text-xs font-bold text-stone-500">卸大型鑽飾</p>
+                    <div className="flex items-center text-[10px] font-bold text-stone-300">
+                      <span className="mr-1">$</span>
+                      <input type="number" value={largeGemPrice} className="w-10 bg-transparent border-none p-0 focus:ring-0 text-[#C5A358]" onChange={(e) => setLargeGemPrice(parseInt(e.target.value) || 0)} />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center bg-stone-50 rounded-xl border border-stone-100">
+                  <button onClick={() => setLargeGemQty(Math.max(0, largeGemQty - 1))} className="p-2.5 text-stone-200"><Minus size={14}/></button>
+                  <span className="w-6 text-center font-black text-xs text-stone-500">{largeGemQty}</span>
+                  <button onClick={() => setLargeGemQty(largeGemQty + 1)} className="p-2.5 text-stone-200 hover:text-[#C5A358]"><Plus size={14}/></button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-4 border-t border-stone-50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-stone-50 rounded-xl text-stone-300"><Scissors size={16} /></div>
+                  <div>
+                    <p className="text-xs font-bold text-stone-500">卸延甲</p>
+                    <p className="text-[10px] font-black text-stone-200 uppercase">+$100 / Finger</p>
+                  </div>
+                </div>
+                <div className="flex items-center bg-stone-50 rounded-xl border border-stone-100">
+                  <button onClick={() => setRemovalExtQty(Math.max(0, removalExtQty - 1))} className="p-2.5 text-stone-200"><Minus size={14}/></button>
+                  <span className="w-6 text-center font-black text-xs text-stone-500">{removalExtQty}</span>
+                  <button onClick={() => setRemovalExtQty(removalExtQty + 1)} className="p-2.5 text-stone-200 hover:text-[#C5A358]"><Plus size={14}/></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 自動優惠區 - 輕量化標籤 */}
+        {(billing.totalDiscount > 0) && (
+          <div className="mb-8 space-y-2">
+            {billing.gelCareDiscount > 0 && (
+              <div className="flex items-center gap-3 p-4 bg-emerald-50/50 border border-emerald-100/50 rounded-2xl">
+                <Gift size={16} className="text-emerald-400" />
+                <span className="text-[11px] font-bold text-emerald-600/80 tracking-wide">保養加購光療：已自動扣除 $200</span>
+              </div>
+            )}
+            {billing.removalCareDiscount > 0 && (
+              <div className="flex items-center gap-3 p-4 bg-[#C5A358]/5 border border-[#C5A358]/10 rounded-2xl">
+                <Info size={16} className="text-[#C5A358]/60" />
+                <span className="text-[11px] font-bold text-[#C5A358]/80 tracking-wide">不續作卸甲+保養：已自動扣除 $100</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 4. 特別調整 */}
+        <section className="mb-4 px-1">
+          <input 
+            type="number" 
+            placeholder="特別調整金額..." 
+            className="w-full p-5 bg-white border border-stone-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#C5A358]/5 font-bold text-center placeholder:text-stone-200" 
+            value={adjustment} 
+            onChange={(e) => setAdjustment(e.target.value)} 
+          />
+        </section>
+      </div>
+
+      {/* 底部導航 - 漂浮奶油色 */}
+      <footer className="fixed bottom-0 left-0 right-0 p-6 z-50">
+        <div className="max-w-md mx-auto bg-white/90 backdrop-blur-xl rounded-[2.5rem] p-5 flex items-center justify-between shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white">
+          <div className="pl-4">
+            <p className="text-[9px] font-black text-stone-300 tracking-[0.2em] mb-1 uppercase">Total</p>
+            <div className="flex items-baseline gap-2">
+              <p className="text-4xl font-light text-[#C5A358] leading-none">${billing.finalTotal.toLocaleString()}</p>
+              {billing.totalDiscount > 0 && <span className="text-[10px] text-stone-200 font-bold line-through">${(billing.finalTotal + billing.totalDiscount).toLocaleString()}</span>}
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => setIsSheetOpen(true)} className="p-4 bg-stone-50 text-stone-300 rounded-2xl active:scale-95 transition-all"><Eye size={22} /></button>
+            <button 
+              onClick={copyToClipboard} 
+              className={`flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-sm tracking-widest transition-all shadow-lg active:scale-95 ${copied ? 'bg-emerald-500 text-white shadow-emerald-100' : 'bg-[#C5A358] text-white shadow-[#C5A358]/20'}`}
+            >
+              {copied ? <Check size={18} /> : <ChevronRight size={18} />}
+              {copied ? '已複製' : '結帳'}
+            </button>
+          </div>
+        </div>
+      </footer>
+
+      {/* 明細清單 */}
+      {isSheetOpen && (
+        <>
+          <div className="fixed inset-0 bg-stone-100/60 backdrop-blur-sm z-[60]" onClick={() => setIsSheetOpen(false)} />
+          <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[3rem] p-10 z-[70] max-h-[85vh] overflow-y-auto shadow-2xl animate-in slide-in-from-bottom duration-300">
+            <div className="w-10 h-1 bg-stone-100 rounded-full mx-auto mb-10" />
+            <div className="space-y-5">
+              <div className="flex justify-between text-sm"><span className="font-bold text-stone-600 tracking-wide">{selectedBase.name}</span><span className="font-black text-stone-300">$ {selectedBase.price}</span></div>
+              
+              {addons.filter(a => a.qty > 0).map(a => (
+                <div key={a.name} className="flex justify-between text-xs text-stone-400 italic"><span>○ {a.name} (x{a.qty})</span><span className="font-bold text-[#C5A358]/60">+${a.price * a.qty}</span></div>
+              ))}
+
+              <div className="pt-5 border-t border-stone-50 space-y-3">
+                {removalBasePrice > 0 && <div className="flex justify-between text-xs text-stone-400"><span>○ 卸甲服務 ({removalBasePrice})</span><span className="font-bold">+${removalBasePrice}</span></div>}
+                {largeGemQty > 0 && <div className="flex justify-between text-xs text-stone-400 italic"><span>○ 卸大型鑽飾 ($${largeGemPrice} x {largeGemQty})</span><span className="font-bold">+${largeGemPrice * largeGemQty}</span></div>}
+                {removalExtQty > 0 && <div className="flex justify-between text-xs text-stone-400 italic"><span>○ 卸延甲 (x{removalExtQty})</span><span className="font-bold">+${removalExtQty * 100}</span></div>}
+              </div>
+
+              {(billing.totalDiscount > 0) && (
+                <div className="pt-5 border-t border-stone-50 space-y-2">
+                  {billing.gelCareDiscount > 0 && <div className="flex justify-between text-xs text-emerald-500/80 font-bold"><span>🎁 保養加購光療優惠</span><span>-$200</span></div>}
+                  {billing.removalCareDiscount > 0 && <div className="flex justify-between text-xs text-[#C5A358]/80 font-bold"><span>🎁 不續作卸甲+保養優惠</span><span>-$100</span></div>}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-12 pt-8 border-t-2 border-stone-50 flex justify-between items-end">
+              <span className="text-[10px] font-black text-stone-200 tracking-[0.4em] uppercase">Total Amount</span>
+              <span className="text-4xl font-light text-[#C5A358]">${billing.finalTotal.toLocaleString()}</span>
+            </div>
+            
+            <button onClick={() => setIsSheetOpen(false)} className="w-full mt-10 py-5 bg-stone-50 text-stone-400 rounded-2xl font-black tracking-widest text-xs active:scale-95">返回計價</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default App;
+

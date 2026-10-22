@@ -1,670 +1,207 @@
-
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0b0d10">
-<title>香香村｜男士美甲智慧估價與美甲師回報</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0b0e">
+<meta name="description" content="香香村男士美甲｜黑銀精品智慧估價、美甲師回報與營業管理。">
+<title>XIANG MEN'S NAIL LAB · 智慧估價 V7</title>
 <style>
-:root {
-  color-scheme: dark;
-  --bg: #090b0e;
-  --card: #141a20;
-  --line: #35404b;
-  --text: #f2f5f8;
-  --muted: #a6b4c2;
-  --silver: #d5e0eb;
-}
-* {box-sizing:border-box}
-body {
-  margin:0;
-  background:radial-gradient(circle at 90% 0,#26313b 0,transparent 330px),var(--bg);
-  color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;
-  font-size:14px;
-}
-button,input,select,textarea {font:inherit}
-button {cursor:pointer}
-button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible {
-  outline:2px solid #d5e0eb;outline-offset:2px;
-}
-.shell {max-width:1020px;margin:auto;padding:22px 18px 120px}
-.brand {font-family:Georgia,serif;font-size:27px;letter-spacing:2px}
-.overline {font-size:10px;color:var(--muted);letter-spacing:2px}
-.intro {margin:6px 0 20px;color:var(--muted)}
-nav {display:flex;gap:8px;margin:20px 0 22px}
-nav button {
-  flex:1;background:#1b2630;border:1px solid var(--line);
-  border-radius:11px;color:#dce5ee;padding:13px 8px;font-weight:700;
-}
-nav button.active {background:var(--silver);border-color:#fff;color:#111921}
-.panel {
-  background:var(--card);border:1px solid var(--line);
-  padding:20px;border-radius:16px;margin:0 0 14px;
-}
-.panel h2 {font-size:16px;margin:0 0 8px}
-.hint {font-size:11px;line-height:1.7;color:var(--muted);margin:4px 0 12px}
-.grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-.styles {grid-template-columns:repeat(4,minmax(0,1fr))}
-.option {
-  min-height:66px;text-align:left;padding:12px;background:#1c2630;
-  border:1px solid #465463;border-radius:11px;color:var(--text);
-}
-.option.active {
-  background:linear-gradient(120deg,#354552,#1e2832);
-  border-color:#e1e9f1;box-shadow:inset 0 0 0 1px #c8d5e355;
-}
-.option strong {display:block;font-size:13px}
-.option small {display:block;margin-top:8px;color:#adbccc;font-size:11px}
-details {
-  border:1px solid #384651;background:#11181f;
-  border-radius:11px;margin:9px 0;overflow:hidden;
-}
-summary {padding:15px;cursor:pointer;font-weight:700}
-summary::marker {color:#a8b8c7}
-.item {
-  display:flex;align-items:center;justify-content:space-between;
-  gap:10px;padding:11px 14px;border-top:1px solid #303c48;
-}
-.item-name {font-weight:600}
-.price {font-size:11px;color:var(--muted);margin-top:4px}
-.step {
-  display:flex;align-items:center;border:1px solid #556575;
-  border-radius:9px;overflow:hidden;flex-shrink:0;
-}
-.step button {
-  border:0;background:#273442;color:#fff;
-  width:34px;height:34px;font-size:20px;
-}
-.step button:disabled {opacity:.35}
-.step span {min-width:26px;text-align:center;font-weight:700}
-.recommend {display:flex;flex-wrap:wrap;gap:7px}
-.recommend button {
-  background:#253342;border:1px solid #536677;
-  color:#edf5fc;padding:9px;border-radius:9px;font-size:11px;
-}
-.row {display:flex;justify-content:space-between;align-items:center;gap:12px}
-.actions {display:flex;flex-wrap:wrap;gap:8px}
-.primary,.secondary,.danger {
-  border-radius:10px;padding:12px 15px;font-weight:700;
-}
-.primary {background:#dbe5ef;color:#14202b;border:0}
-.secondary {
-  background:#273543;color:#e9f1f8;border:1px solid #637589;
-}
-.danger {color:#ffcccc;border:1px solid #8b5555;background:#332527}
-.field {
-  display:block;width:100%;min-width:0;margin-top:7px;padding:12px;
-  background:#0d141b;color:var(--text);
-  border:1px solid #526272;border-radius:9px;
-}
-label {font-size:12px;color:#b8c6d3;display:block;margin-bottom:12px}
-.form-grid {display:grid;grid-template-columns:1fr 1fr;gap:0 13px}
-.full {grid-column:1/-1}
-.total {font-size:29px;font-weight:750}
-.small {font-size:11px;color:var(--muted)}
-.bottom {
-  position:sticky;bottom:0;background:#1b2833;
-  border:1px solid #526372;border-radius:13px;
-  padding:14px 18px;z-index:3;box-shadow:0 -12px 35px #0009;
-}
-.stats {display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.stat {
-  border:1px solid #435363;background:#192630;
-  border-radius:10px;padding:12px;min-width:0;
-}
-.stat strong {display:block;font-size:18px;margin-top:8px;overflow-wrap:anywhere}
-.record {padding:14px 0;border-top:1px solid #394957}
-.record p {margin:6px 0;overflow-wrap:anywhere}
-.hidden {display:none!important}
-.modal {
-  position:fixed;inset:0;background:#000c;display:grid;
-  place-items:center;padding:13px;z-index:20;
-}
-.dialog {
-  background:#141b22;color:#fff;border:1px solid #6c7b8b;
-  border-radius:16px;padding:22px;width:min(550px,100%);
-  max-height:88vh;overflow:auto;
-}
-.line {
-  display:flex;justify-content:space-between;gap:15px;
-  border-bottom:1px solid #3b4651;padding:11px 0;
-}
-.fingers {
-  display:grid;grid-template-columns:repeat(5,1fr);
-  gap:6px;margin:8px 0 17px;
-}
-.fingers button {
-  border:1px solid #596c7d;border-radius:8px;
-  background:#263543;color:#e1eaf3;
-  padding:12px 3px;font-size:11px;
-}
-.fingers button.active {background:#dce5ef;color:#0c1822}
-.notice {color:#dbcaa9;font-size:11px;line-height:1.7}
-@media(max-width:740px) {
-  .styles {grid-template-columns:repeat(2,minmax(0,1fr))}
-  .shell {padding:16px 12px 90px}
-  .panel {padding:15px}
-  .stat {padding:9px}
-  .stat strong {font-size:15px}
-  .brand {font-size:22px}
-}
-@media(max-width:370px) {
-  .form-grid {grid-template-columns:1fr}
-  .step button {width:29px}
-  .item {padding:11px 8px}
-  .stats {gap:4px}
-}
-@media print {
-  body {background:white;color:black}
-  .shell,.modal {display:none!important}
-  #printArea {
-    display:block!important;padding:25px;
-    color:#111;font:15px sans-serif;
-  }
-  #printArea .line {border-color:#aaa}
-}
+:root{color-scheme:dark;--bg:#090a0c;--panel:#15181d;--panel2:#1b2027;--hover:#29313b;--line:#333b47;--silver:#dfe4eb;--white:#f7f8fa;--muted:#919ba9;--soft:#c0c9d4;--blue:#a8c1d8;--ink:#141922;--gold:#cbbfa9;--good:#a7d1bb;--warn:#ebc7a3;--danger:#ddabae;--radius:19px;--shadow:0 23px 70px rgba(0,0,0,.29)}
+*,*:before,*:after{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:radial-gradient(ellipse 850px 450px at 92% -170px,#333d48 0,transparent 65%),linear-gradient(#0b0d10,#090a0c 60%);color:var(--white);font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC",sans-serif;-webkit-font-smoothing:antialiased;font-size:14px}button,input,textarea,select{font:inherit}button{cursor:pointer;-webkit-tap-highlight-color:transparent}button:disabled{cursor:not-allowed;opacity:.35}a{color:inherit}select,input,textarea{appearance:none}input[type=date],input[type=month]{min-height:46px;color-scheme:dark}input[type=number]{appearance:textfield}input::-webkit-inner-spin-button{appearance:none}::-webkit-scrollbar{width:7px}::-webkit-scrollbar-thumb{background:#3e4856;border-radius:10px}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--silver);outline-offset:3px}.hidden{display:none!important}
+.shell{max-width:1110px;margin:auto;padding:0 22px 130px}.header{padding:32px 0 24px;display:flex;gap:20px;align-items:flex-start;justify-content:space-between}.brandmark{display:flex;align-items:center;gap:11px;margin-bottom:18px}.emblem{width:38px;height:38px;border:1px solid #8d99a6;border-radius:12px;display:grid;place-items:center;font:21px Georgia,serif;color:#e2e7ef;background:linear-gradient(145deg,#252c35,#101317)}.brandmini{font-size:10px;letter-spacing:2.9px;text-transform:uppercase;color:#aeb7c3}.tiny{font-size:11px;color:var(--muted);line-height:1.7}.hero-title{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:clamp(31px,4.1vw,49px);line-height:1.06;letter-spacing:2px;margin:4px 0 12px}.hero-title .light{color:#b5bfc9;font-style:italic}.hero-sub{font-size:13px;color:#aeb9c5;line-height:1.9;letter-spacing:.3px;margin:0}.topcontrols{display:flex;gap:8px;align-items:center;flex-shrink:0;margin-top:4px}.pill{border:1px solid #54606b;background:#1b2026;border-radius:100px;padding:8px 13px;font-size:11px;color:#c7d1dc}.mode-btn{border:1px solid #707d89;background:linear-gradient(115deg,#292f37,#15191e);color:#eef2f7;border-radius:12px;padding:11px 15px;font-size:12px;font-weight:650;display:flex;align-items:center;gap:8px;min-height:43px}.mode-btn:hover{background:#323c48}.mode-dot{width:7px;height:7px;background:#b9cce0;border-radius:50%;box-shadow:0 0 0 4px #b9cce01c}.topbar{border-bottom:1px solid #30353d;border-top:1px solid #262d34;display:flex;justify-content:space-between;gap:12px;align-items:center;padding:13px 0;margin-bottom:20px}.tabs{display:flex;gap:5px;background:#12161b;border:1px solid #313944;border-radius:14px;padding:5px;width:fit-content}.tab{border:0;background:transparent;color:#9daab9;padding:11px 17px;border-radius:10px;font-size:12px;font-weight:650;transition:background .18s,color .18s}.tab.active{background:linear-gradient(135deg,#d9e1e9,#aeb8c4);color:#19212a;box-shadow:0 4px 18px #dfe4eb18}.version{letter-spacing:1.8px;color:#727f8c;font-size:9px}.page{animation:rise .24s ease-out}@keyframes rise{from{opacity:.75;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.two-col{display:grid;grid-template-columns:minmax(0,1fr) 304px;align-items:start;gap:22px}.card{background:linear-gradient(148deg,#191d23 0,#121519 65%);border:1px solid #353c46;border-radius:var(--radius);box-shadow:0 8px 22px #00000016;margin-bottom:16px;overflow:hidden}.card-inner{padding:22px}.card-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:17px}.step-num{font:17px Georgia,serif;color:#8f9ba9;min-width:30px}.section-head{font-size:16px;font-weight:650;letter-spacing:.3px;margin:0;flex:1}.eyebrow{color:var(--muted);font-size:10px;letter-spacing:2px}.descr{color:#9ba8b7;font-size:11px;line-height:1.7;margin:-6px 0 15px}.tag{display:inline-block;border:1px solid #4e5b67;color:#a9b8c8;border-radius:50px;padding:5px 9px;font-size:10px;white-space:nowrap}.style-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.style{border:1px solid #46505c;border-radius:13px;background:linear-gradient(140deg,#232a32,#191d23);color:var(--white);text-align:left;min-height:128px;padding:15px;position:relative;overflow:hidden;transition:border-color .18s,transform .18s,background .18s}.style:hover{border-color:#919daa;transform:translateY(-1px)}.style.active{background:linear-gradient(130deg,#4a5663,#252d37 66%,#1d232a);border-color:#d9e4ed;box-shadow:inset 0 0 0 1px #ffffff25,0 10px 24px #0005}.style.active:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 25%,#ffffff12 43%,transparent 57%);pointer-events:none}.style .no{display:flex;justify-content:space-between;align-items:center;color:#97a5b5;font:12px Georgia,serif;margin-bottom:23px}.style.active .no{color:#f3f6f8}.style-name{display:block;font-size:15px;font-weight:700;position:relative}.style-en{display:block;font:italic 10px Georgia,serif;color:#aab9c8;letter-spacing:1px;margin-top:7px;position:relative}.style-check{font:15px Georgia,serif;opacity:.55}.style.active .style-check{opacity:1}.service-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.service{border:1px solid #404b57;background:#20262d;color:var(--white);text-align:left;border-radius:12px;min-height:87px;padding:12px;display:flex;justify-content:space-between;flex-direction:column;gap:8px;transition:.18s}.service.active{border-color:#d8e2ed;background:linear-gradient(135deg,#3e4956,#242c36);box-shadow:inset 0 0 0 1px #ffffff29}.service .title{font-weight:650;font-size:12px}.service .value{font-size:13px;color:#cbd6e2;font-variant-numeric:tabular-nums}.service .value small{font-size:10px;color:#a9b8c8}.service.selected{border-color:#d8e2ed}.service-note{margin:12px 0 0;color:#c9bba6;font-size:11px;line-height:1.65}.smart-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 10px}.smart-dot{width:6px;height:6px;background:#b5c9dc;border-radius:50%;box-shadow:0 0 10px #87a6cc}.recommend{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}.rec{border:1px solid #566576;background:#26323e;color:#e3eaf2;font-size:11px;padding:10px 12px;border-radius:100px}.rec:hover{background:#344353}.preset{border:1px solid #8190a0;color:#dce6f0;background:#161d24;padding:9px 12px;border-radius:10px;font-size:11px}.accordion{margin-top:9px;background:#12171d;border:1px solid #353f4b;border-radius:12px;overflow:hidden}.accordion summary{list-style:none;display:flex;gap:12px;justify-content:space-between;padding:17px 17px;align-items:center;cursor:pointer;font-weight:650}.accordion summary::-webkit-details-marker{display:none}.accordion summary .meta{font-size:10px;color:#94a5b6;font-weight:400}.accordion summary:after{content:'＋';font-weight:300;color:#94a8ba;font-size:18px}.accordion[open] summary:after{content:'−'}.accordion[open] summary{border-bottom:1px solid #35404c}.line-item{display:flex;gap:9px;align-items:center;justify-content:space-between;padding:13px 15px;border-bottom:1px solid #2d3640}.line-item:last-child{border-bottom:0}.line-item .info{min-width:0;flex:1}.line-item .iname{font-size:12px;font-weight:630;color:#ebf0f5}.line-item .price-row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:6px}.unit{color:#9baab9;font-size:11px;font-variant-numeric:tabular-nums}.editprice{border:0;background:transparent;color:#c4d5e5;font-size:10px;padding:3px 1px;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}.finger-btn{display:block;background:none;border:0;padding:6px 0 0;color:#b5c9dc;font-size:10px;text-decoration:underline;text-underline-offset:3px}.qty{display:flex;flex-shrink:0;align-items:center;background:#0d1116;border:1px solid #596574;border-radius:10px;overflow:hidden}.qty button{width:33px;height:37px;background:#26303b;border:0;color:#e8f1f8;font-size:19px}.qty button:hover{background:#3e4b58}.qty span{text-align:center;min-width:30px;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}.base-edit{margin-top:7px;display:block;border:0;color:#9eb7ce;background:transparent;font-size:10px;text-align:left;padding:3px 0}.option-set{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.select-option{background:#1d252e;border:1px solid #465361;color:#e5edf5;border-radius:12px;min-height:68px;padding:11px;text-align:left}.select-option.active{border-color:#dfebf2;background:#3a4653}.select-option .label{font-size:12px;font-weight:650}.select-option .sub{font-size:11px;color:#9daebe;margin-top:8px}.field{width:100%;min-width:0;background:#11171d;border:1px solid #46525f;border-radius:11px;color:#eef4f9;padding:12px 13px;min-height:45px;outline:0}.field:focus{border-color:#c8d5e3;box-shadow:0 0 0 3px #d7e4f21a}.field::placeholder{color:#6e7d8c}label.flabel{display:block;color:#b2beca;font-size:11px;line-height:1.7;margin-bottom:14px}label.flabel .field{display:block;margin-top:7px}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 15px}.full{grid-column:1/-1}.btn{border:1px solid #617080;color:#e2ebf4;background:linear-gradient(135deg,#263240,#1b242d);min-height:43px;border-radius:11px;padding:11px 15px;font-size:12px;font-weight:680;transition:transform .15s,filter .15s}.btn:hover{filter:brightness(1.14)}.btn:active{transform:scale(.99)}.btn.primary{background:linear-gradient(115deg,#f0f3f6,#b8c4d0);color:#16212c;border-color:#e3ebf2;box-shadow:0 7px 24px #c5d9ee17}.btn.ghost{background:transparent;border-color:#495562;color:#b7c6d5}.btn.danger{border-color:#734f54;color:#efbdc1;background:#322025}.btn.mini{min-height:33px;padding:7px 10px;font-size:10px}.btn-row{display:flex;gap:9px;flex-wrap:wrap}.owner-note{color:#9eacb9;font-size:10px;line-height:1.7;margin:9px 0 0}.sum-card{position:sticky;top:18px;background:linear-gradient(149deg,#262d36 0%,#14191f 49%,#0f1317);border:1px solid #5b6672;border-radius:20px;padding:23px;box-shadow:var(--shadow);overflow:hidden}.sum-card:before{content:"";position:absolute;top:-90px;right:-60px;width:205px;height:205px;border-radius:50%;background:radial-gradient(circle,#bdcdda17,transparent 70%);pointer-events:none}.sum-card .ribbon{display:flex;justify-content:space-between;align-items:center;color:#a9b6c5;font-size:10px;letter-spacing:2px}.sum-card .amount{font-family:Georgia,serif;font-variant-numeric:tabular-nums;letter-spacing:.4px;font-size:46px;margin:21px 0 4px}.sum-card .amount .currency{font:12px -apple-system,BlinkMacSystemFont,"PingFang TC",sans-serif;letter-spacing:1px;color:#a4b1bd;margin-right:5px}.sum-divider{border-top:1px solid #414b56;margin:18px 0}.sum-list{display:flex;flex-direction:column;gap:11px}.sum-row{display:flex;justify-content:space-between;gap:13px;align-items:start;color:#b4c0ce;font-size:11px;line-height:1.5}.sum-row strong{color:#e6ebf1;font-size:11px;font-weight:550;font-variant-numeric:tabular-nums;white-space:nowrap}.sum-actions{display:grid;gap:9px;margin-top:20px}.sum-actions .btn{width:100%}.quiet{text-align:center;font-size:10px;color:#8393a4;margin-top:11px;line-height:1.6}.mobile-total{display:none}.dash-top{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:17px}.metric{padding:18px;background:linear-gradient(130deg,#202933,#13181e);border:1px solid #394550;border-radius:14px}.metric-name{font-size:10px;color:#9ba9b8;letter-spacing:1px}.metric-value{font:28px Georgia,serif;margin:9px 0 3px;color:#edf3f9;font-variant-numeric:tabular-nums}.metric-foot{font-size:10px;color:#8494a5}.report-hero{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:15px}.report-hero h2{font:27px Georgia,serif;letter-spacing:1px;font-weight:400;margin:0 0 6px}.record-card{padding:16px 2px;border-bottom:1px solid #36414c}.record-card:last-child{border:0}.record-title{display:flex;justify-content:space-between;align-items:start;gap:12px;font-weight:700}.record-desc{margin:7px 0;color:#c8d3df;font-size:11px;line-height:1.65;overflow-wrap:anywhere}.record-meta{color:#8e9fac;font-size:10px;margin:5px 0 12px}.chip{font-size:10px;padding:4px 8px;border:1px solid #627380;border-radius:100px;color:#c1cdd9;display:inline-block}.chip.paid{border-color:#536c60;color:#b6dbc4}.chip.due{border-color:#886955;color:#dfc29e}.record-actions{display:flex;gap:6px}.chart{display:flex;gap:6px;height:100px;align-items:end;border-bottom:1px solid #444d57;padding:2px 1px;margin-top:20px}.bar-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;min-width:0;height:100%}.bar{background:linear-gradient(0deg,#566a7c,#b0c0cf);border-radius:5px 5px 0 0;width:72%;min-height:3px;opacity:.8}.bar-label{font-size:9px;color:#91a0ae;white-space:nowrap}.listmeta{display:flex;justify-content:space-between;align-items:center;gap:9px;margin:17px 0 9px}.empty{padding:28px 10px;text-align:center;color:#9cacbb;font-size:12px;line-height:2}.side-info{color:#96a5b4;font-size:11px;line-height:1.8}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#dce6ef;color:#18222d;border:1px solid #fff;padding:11px 19px;border-radius:100px;box-shadow:0 10px 40px #0008;font-size:12px;font-weight:700;z-index:102;max-width:90%;white-space:normal;text-align:center}.overlay{position:fixed;inset:0;background:#020407dc;display:grid;place-items:center;padding:14px;z-index:100;backdrop-filter:blur(9px)}.dialog{position:relative;background:linear-gradient(145deg,#20262e,#13171c);border:1px solid #67727e;border-radius:22px;width:min(530px,100%);max-height:90dvh;overflow-y:auto;padding:24px;box-shadow:0 32px 100px #000d}.modal-top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:18px}.modal-top h2{font:24px Georgia,serif;margin:0;font-weight:400}.close{border:1px solid #4d5a65;background:#222a33;color:#dee7ef;border-radius:10px;padding:8px 12px}.modal-line{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid #3b4550;font-size:12px}.modal-line div:first-child{flex:1}.modal-line strong{white-space:nowrap;font-variant-numeric:tabular-nums}.finger-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin:7px 0 16px}.finger-grid button{border:1px solid #556677;background:#26323e;color:#e1ebf4;min-height:43px;padding:7px 2px;border-radius:9px;font-size:11px}.finger-grid button.active{background:#d9e4ee;color:#182530;border-color:#fff}.note{font-size:11px;line-height:1.7;color:#cdbda4;margin:10px 0}.hide-owner .owner-only{display:none!important}
+@media(max-width:900px){.two-col{grid-template-columns:1fr}.sum-card{display:none}.mobile-total{display:block;position:fixed;bottom:0;left:0;right:0;z-index:20;background:#182029f7;border-top:1px solid #768493;backdrop-filter:blur(20px);padding:11px max(15px,env(safe-area-inset-left)) calc(11px + env(safe-area-inset-bottom)) max(15px,env(safe-area-inset-right));box-shadow:0 -12px 35px #0007}.mobile-total .amount{font:29px Georgia,serif;color:#f3f7fa}.mobile-total .amount small{font:10px -apple-system,sans-serif;color:#a2b1c0;margin-right:4px}.mobile-total .btn{flex-shrink:0;min-height:45px}.shell{padding-bottom:145px}.header{padding-top:22px}}
+@media(max-width:600px){.shell{padding-left:14px;padding-right:14px}.header{display:block}.topcontrols{justify-content:space-between;margin-top:20px}.hero-title{font-size:36px}.topbar{padding:10px 0}.tabs{width:100%}.tab{flex:1;padding:11px 5px;font-size:11px;white-space:nowrap}.version{display:none}.card-inner{padding:17px}.service-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.style{min-height:120px}.style .no{margin-bottom:20px}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}.dash-top{gap:7px}.metric{padding:12px}.metric-value{font-size:20px}.metric-name{font-size:9px}.section-head{font-size:15px}}
+@media(max-width:350px){.qty button{width:29px}.qty span{min-width:24px}.line-item{padding:11px 9px}.style{padding:11px}.mobile-total .amount{font-size:25px}.mobile-total .btn{padding:11px 9px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+@media print{body{background:white;color:#111}.shell,.overlay,.mobile-total,.toast{display:none!important}#printArea{display:block!important;background:white;color:#111;padding:26px;font:13px Arial,"Noto Sans TC",sans-serif}#printArea .modal-line{border-color:#ccc}#printArea h1{font:26px Georgia,serif}}
 </style>
 </head>
 <body>
-<div class="shell">
-  <div class="overline">XIANG BEAUTY STUDIO</div>
-  <div class="brand">MEN'S NAIL LAB</div>
-  <div class="intro">男士美甲智慧估價 × 美甲師施作回報</div>
-
-  <nav>
-    <button type="button" class="active" data-tab="quote">01 智慧估價</button>
-    <button type="button" data-tab="report">02 美甲師回報</button>
-    <button type="button" data-tab="records">03 營收紀錄</button>
-  </nav>
-
-  <section id="quotePage">
-    <section class="panel">
-      <h2>01　選擇風格</h2>
-      <p class="hint">風格先選，系統自動推薦造型。內部定價不會拆分顯示在客人明細。</p>
-      <div id="styles" class="grid styles"></div>
-    </section>
-
-    <section class="panel">
-      <h2>02　基礎服務</h2>
-      <div id="bases" class="grid"></div>
-      <p class="notice" id="baseNotice"></p>
-    </section>
-
-    <section class="panel">
-      <h2>03　造型自由加購</h2>
-      <p class="hint">想做一指、兩指或十指，直接點 ＋。同一手指可疊加不同造型。</p>
-      <div class="recommend" id="recommend"></div>
-      <div id="addonGroups"></div>
-    </section>
-
-    <section class="panel">
-      <h2>04　卸甲與保養</h2>
-      <div id="removals" class="grid"></div>
-      <div id="extras"></div>
-    </section>
-
-    <section class="panel">
-      <h2>05　施作備註</h2>
-      <label>
-        客戶稱呼
-        <input id="customer" class="field" placeholder="選填">
-      </label>
-      <label>
-        設計／應援備註
-        <textarea id="quoteNote" class="field" rows="2" placeholder="例：左拇指 Logo、右食指金屬圖騰"></textarea>
-      </label>
-      <div class="actions">
-        <button class="secondary" id="reset" type="button">重新估價</button>
-      </div>
-    </section>
-
-    <div class="bottom">
-      <div class="row">
-        <div>
-          <div class="small">即時預估總金額 NT$</div>
-          <div id="total" class="total">800</div>
-        </div>
-        <div class="actions">
-          <button id="showQuote" class="secondary" type="button">查看明細</button>
-          <button id="toReport" class="primary" type="button">帶入回報 →</button>
-        </div>
-      </div>
+<div class="shell" id="app">
+  <header class="header">
+    <div>
+      <div class="brandmark"><div class="emblem">X</div><div><div class="brandmini">香香村美妍製造所</div><div class="tiny">XIANG BEAUTY STUDIO</div></div></div>
+      <h1 class="hero-title">MEN'S <span class="light">NAIL LAB.</span></h1>
+      <p class="hero-sub">Design your signature.　指尖風格，精準訂製。</p>
     </div>
-  </section>
-
-  <section id="reportPage" class="hidden">
-    <section class="panel">
-      <h2>美甲師施作回報</h2>
-      <p class="hint">
-        可從估價自動帶入，請依實際施作與收款修改。
-        所有回報暫存於此裝置瀏覽器。
-      </p>
-      <button id="importQuote" class="secondary" type="button">↙ 從估價帶入</button>
-
-      <form id="reportForm" style="margin-top:17px">
-        <div class="form-grid">
-          <label>日期 *<input type="date" class="field" id="date" required></label>
-          <label>美甲師 *<input class="field" id="artist" placeholder="例：Mona" required maxlength="60"></label>
-          <label>客戶 *<input class="field" id="client" required maxlength="80"></label>
-          <label>
-            付款方式
-            <select id="payment" class="field">
-              <option>現金</option><option>轉帳</option>
-              <option>信用卡</option><option>LINE Pay</option><option>其他</option>
-            </select>
-          </label>
-          <label class="full">
-            服務項目 *
-            <input id="service" class="field" required maxlength="500">
-          </label>
-          <label class="full">
-            實際施作內容 *
-            <textarea id="design" class="field" rows="3" required maxlength="1500"></textarea>
-          </label>
-          <label>
-            實際金額 NT$ *
-            <input type="number" min="0" max="9999999" step="1" inputmode="numeric" id="amount" class="field" required>
-          </label>
-          <label>
-            收款狀態
-            <select id="status" class="field">
-              <option>已結帳</option><option>待結帳</option>
-            </select>
-          </label>
-          <label class="full">
-            備註
-            <textarea id="reportNote" class="field" rows="2" maxlength="1000"></textarea>
-          </label>
-        </div>
-        <div class="actions">
-          <button type="submit" id="saveReport" class="primary">儲存回報</button>
-          <button type="button" id="clearReport" class="secondary">清空</button>
-        </div>
-        <p id="saveNotice" class="notice"></p>
-      </form>
-    </section>
-  </section>
-
-  <section id="recordsPage" class="hidden">
-    <section class="panel">
-      <h2>美甲師營收紀錄</h2>
-      <div class="form-grid">
-        <label>查看月份<input type="month" id="month" class="field"></label>
-        <label>單日查看（可留空）<input type="date" id="day" class="field"></label>
+    <div class="topcontrols"><span class="pill">✦ PREMIUM EDITION · V7</span><button type="button" id="ownerToggle" class="mode-btn" aria-pressed="true"><span class="mode-dot"></span><span id="modeLabel">店主模式</span> ↗</button></div>
+  </header>
+  <div class="topbar"><nav class="tabs" aria-label="系統分頁">
+    <button type="button" class="tab active" data-tab="quote">✧ 智慧估價</button>
+    <button type="button" class="tab owner-only" data-tab="report">◈ 美甲師回報</button>
+    <button type="button" class="tab owner-only" data-tab="dashboard">▦ 營收管理</button>
+  </nav><span class="version">SYSTEM / V7.0</span></div>
+  <main id="quotePage" class="page">
+    <div class="two-col">
+      <div>
+        <section class="card"><div class="card-inner"><div class="card-top"><span class="step-num">01</span><h2 class="section-head">選擇你的風格</h2><span class="tag">IDENTITY</span></div>
+          <p class="descr">從日常質感到客製應援，先定義這次的指尖態度。</p><div id="styles" class="style-grid"></div></div></section>
+        <section class="card"><div class="card-inner"><div class="card-top"><span class="step-num">02</span><h2 class="section-head">基礎施作服務</h2><span class="tag">FOUNDATION</span></div>
+          <div id="bases" class="service-grid"></div><p id="baseNotice" class="service-note"></p></div></section>
+        <section class="card"><div class="card-inner"><div class="card-top"><span class="step-num">03</span><h2 class="section-head">造型自由加購</h2><span class="tag">PERSONALIZE</span></div>
+          <div class="smart-head"><div style="display:flex;gap:8px;align-items:center"><span class="smart-dot"></span><span class="eyebrow">SMART SELECTION · 專屬推薦</span></div><button id="applyPreset" class="preset" type="button">✧ 套用推薦組合</button></div>
+          <div id="recommend" class="recommend"></div><div id="addonGroups"></div>
+          <p class="owner-note owner-only">每項單價旁的「✎」可以修改這筆價格或儲存為本機預設價。</p></div></section>
+        <section class="card"><div class="card-inner"><div class="card-top"><span class="step-num">04</span><h2 class="section-head">卸甲與細節修整</h2><span class="tag">EXTRAS</span></div>
+          <div id="removals" class="option-set"></div><div id="extras" style="margin-top:15px"></div></div></section>
+        <section class="card"><div class="card-inner"><div class="card-top"><span class="step-num">05</span><h2 class="section-head">完成你的設計</h2><span class="tag">FINAL TOUCH</span></div>
+          <div class="form-grid"><label class="flabel">客戶稱呼<input id="customer" class="field" maxlength="80" placeholder="選填"></label>
+          <label class="flabel">施作備註<textarea class="field" id="quoteNote" maxlength="1000" rows="2" placeholder="例如：左拇指 Logo、黑銀元素"></textarea></label></div>
+          <div class="btn-row"><button type="button" class="btn ghost" id="resetQuote">↺ 重新估價</button><button type="button" class="btn owner-only" id="priceManager">⚙ 店主價目管理</button></div>
+        </div></section>
       </div>
-      <div class="stats">
-        <div class="stat"><span class="small">回報筆數</span><strong id="count">0</strong></div>
-        <div class="stat"><span class="small">已收款</span><strong id="paid">$0</strong></div>
-        <div class="stat"><span class="small">待收款</span><strong id="due">$0</strong></div>
-      </div>
-      <div class="actions" style="margin-top:15px">
-        <button id="exportCsv" class="primary" type="button">匯出 CSV</button>
-        <button id="copySummary" class="secondary" type="button">複製日／月結</button>
-      </div>
-      <p class="hint">紀錄保存在目前瀏覽器；若不同美甲師用各自手機填寫，資料不會自動同步。</p>
-      <div id="records"></div>
-    </section>
-  </section>
-</div>
-
-<div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-label="詳細內容">
-  <div class="dialog">
-    <div class="row">
-      <h2 id="modalTitle">明細</h2>
-      <button class="secondary" id="closeModal" type="button">關閉 ✕</button>
+      <aside class="sum-card" id="desktopSummary"><div class="ribbon"><span>LIVE ESTIMATE</span><span>✦</span></div><div class="amount"><span class="currency">NT$</span><span id="desktopTotal">800</span></div><div class="tiny" id="selectionInfo">目前已選 1 項施作服務</div><div class="sum-divider"></div><div class="eyebrow">YOUR SELECTION</div><div class="sum-list" id="summaryLines" style="margin-top:17px"></div><div class="sum-actions"><button type="button" class="btn primary" id="showQuote">查看客人估價單　↗</button><button type="button" class="btn owner-only" id="toReport">帶入美甲師回報　→</button></div><p class="quiet">施作與加購自動加總 · 以現場確認為準</p></aside>
     </div>
-    <div id="modalBody"></div>
-  </div>
+  </main>
+  <main class="page hidden" id="reportPage">
+    <div class="report-hero"><div><div class="eyebrow">TECHNICIAN / DAILY LOG</div><h2>美甲師營業回報</h2><p class="descr" style="margin:0">從估價一鍵帶入，實際金額與施作項目可再調整。</p></div><button class="btn" type="button" id="importQuote">↙ 帶入目前估價</button></div>
+    <div class="two-col"><div><section class="card"><div class="card-inner"><form id="reportForm">
+      <div class="form-grid"><label class="flabel">施作日期 *<input id="date" class="field" type="date" required></label><label class="flabel">美甲師 *<input id="artist" class="field" maxlength="60" required placeholder="例如：Mona"></label>
+        <label class="flabel">客戶名稱 *<input id="client" class="field" maxlength="80" required></label><label class="flabel">付款方式<select id="payment" class="field"><option>現金</option><option>轉帳</option><option>信用卡</option><option>LINE Pay</option><option>其他</option></select></label>
+        <label class="flabel full">服務項目 *<input id="service" class="field" maxlength="500" required placeholder="例如：單色凝膠、Logo"></label>
+        <label class="flabel full">實際施作內容 *<textarea id="design" class="field" maxlength="1500" rows="3" required placeholder="本次實際做了哪些指甲與造型"></textarea></label>
+        <label class="flabel">實收金額 NT$ *<input id="amount" class="field" type="number" inputmode="numeric" step="1" min="0" max="9999999" required></label>
+        <label class="flabel">收款狀態<select id="status" class="field"><option>已結帳</option><option>待結帳</option></select></label>
+        <label class="flabel full">備註<textarea id="reportNote" class="field" maxlength="1000" rows="2" placeholder="折扣、補做、特殊備註…"></textarea></label></div>
+      <div class="btn-row"><button type="submit" class="btn primary" id="saveReport">✓ 儲存美甲師回報</button><button type="button" class="btn ghost" id="clearReport">清空表單</button></div><p id="saveNotice" class="note" aria-live="polite"></p>
+    </form></div></section></div>
+    <aside class="card"><div class="card-inner"><div class="eyebrow">TODAY / AT A GLANCE</div><div class="metric-value" id="reportTodayPaid" style="margin:13px 0 5px">$0</div><div class="tiny">今日已收營業額</div><div class="sum-divider"></div><div class="sum-list"><div class="sum-row"><span>今日回報</span><strong id="reportTodayCount">0 筆</strong></div><div class="sum-row"><span>待收款</span><strong id="reportTodayDue">$0</strong></div></div><p class="owner-note" style="margin-top:17px">記錄只會儲存在目前裝置的瀏覽器，尚未具備員工登入與跨手機同步。</p></div></aside></div>
+  </main>
+  <main class="page hidden" id="dashboardPage">
+    <div class="report-hero"><div><div class="eyebrow">SALON INTELLIGENCE / LOCAL</div><h2>營收管理中心</h2><p class="descr" style="margin:0">按日期、付款狀態與美甲師彙整你本機的回報紀錄。</p></div></div>
+    <div class="dash-top"><div class="metric"><div class="metric-name">回報筆數</div><div class="metric-value" id="recordCount">0</div><div class="metric-foot">依目前篩選條件</div></div><div class="metric"><div class="metric-name">已收款</div><div class="metric-value" id="paidTotal">$0</div><div class="metric-foot">不含待結帳</div></div><div class="metric"><div class="metric-name">待收款</div><div class="metric-value" id="dueTotal">$0</div><div class="metric-foot">需要確認收款</div></div></div>
+    <div class="two-col"><div>
+      <section class="card"><div class="card-inner"><div class="card-top"><h2 class="section-head">回報紀錄</h2><span class="tag">ARCHIVE</span></div><div class="form-grid"><label class="flabel">月份篩選<input type="month" class="field" id="month"></label><label class="flabel">單日（可留空）<input type="date" class="field" id="day"></label><label class="flabel full">搜尋美甲師／客戶／服務<input id="searchRecord" class="field" placeholder="輸入關鍵字篩選"></label></div><div class="btn-row"><button type="button" class="btn primary" id="exportCsv">↓ 匯出 CSV</button><button type="button" class="btn" id="copySummary">複製營收摘要</button><button type="button" class="btn ghost" id="backupJson">備份 JSON</button><button type="button" class="btn ghost" id="restoreJson">匯入備份</button><input type="file" id="backupFile" accept=".json,application/json" class="hidden"></div><p class="owner-note">備份包含本機回報資料與已儲存價目；匯入會合併紀錄，同 ID 以備份資料為準。</p><div id="records"></div></div></section>
+    </div><aside>
+      <section class="card"><div class="card-inner"><div class="eyebrow">PAYMENT HEALTH</div><div id="smartInsight" class="side-info" style="margin:12px 0">尚無待收款。</div><div class="sum-divider"></div><div class="eyebrow">最近 7 日實收趨勢</div><div class="chart" id="sevenChart"></div></div></section>
+      <section class="card"><div class="card-inner"><div class="eyebrow">BY TECHNICIAN</div><div id="artistSummary" class="sum-list" style="margin-top:16px"></div></div></section>
+    </aside></div>
+  </main>
 </div>
+<div id="mobileTotal" class="mobile-total"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div class="tiny">即時預估 NT$</div><div class="amount"><small>$</small><span id="mobileAmount">800</span></div></div><button class="btn primary" id="mobileQuote" type="button">查看施作明細　↗</button></div></div>
+<div class="overlay hidden" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="dialog"><div class="modal-top"><h2 id="modalTitle">明細</h2><button type="button" class="close" id="closeModal">關閉 ✕</button></div><div id="modalBody"></div></div></div>
+<div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
 <div id="printArea" class="hidden"></div>
-
 <script>
-(()=>{
-'use strict';
-const $=id=>document.getElementById(id), $$=sel=>[...document.querySelectorAll(sel)];
-const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fmt=n=>'$'+Math.round(n).toLocaleString('zh-TW');
-const today=()=>{let d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-
-const styles=[
- ['clean','極簡日常',0,['line','matte','geometry']],
- ['graphic','潮流圖騰',0,['graphic','fire','cross']],
- ['metal','暗黑金屬',100,['chrome','cat1','mirror1']],
- ['fan','應援甲',200,['logo','letters','sticker']]
-];
-const bases=[
- ['partial','局部造型',0],
- ['solid','單色凝膠',800],
- ['cat','貓眼凝膠',1000],
- ['mirror','鏡面凝膠',1200],
- ['french','法式凝膠',1300],
- ['care','手部基礎保養',400]
-];
-const groups=[
- ['色彩與效果',[
-  ['jump','跳色',50],['matte','霧面處理',50],['blend','暈染',80]
- ]],
- ['極簡與圖騰',[
-  ['line','極簡線條',80],['geometry','幾何拼色',100],
-  ['graphic','街頭塗鴉',120],['fire','火焰／閃電',120],
-  ['cross','十字架圖騰',100]
- ]],
- ['金屬與光感',[
-  ['cat1','局部貓眼',50],['mirror1','局部鏡面粉',70],
-  ['chrome','液態金屬線條',150]
- ]],
- ['客製應援',[
-  ['letters','字母／數字',100],['sticker','客製貼紙',80],
-  ['logo','應援 Logo',250],['custom','精細圖案',350]
- ]],
- ['立體與配件',[
-  ['gem','鑽飾',10,'顆'],['stud','金屬飾品',50,'件'],
-  ['sculpt','3D 浮雕',200]
- ]]
-];
-const adds=groups.flatMap(g=>g[1].map(x=>({
- id:x[0],name:x[1],price:x[2],unit:x[3]||'指'
-})));
-const extra=[
- {id:'extend',name:'甲片延甲',price:100,unit:'指'},
- {id:'repair',name:'單指補甲',price:100,unit:'指'},
- {id:'deep',name:'手部深層保養',price:600,unit:'次'},
- {id:'removeGem',name:'卸大鑽',price:50,unit:'顆'},
- {id:'removeExtend',name:'卸延甲',price:100,unit:'指'}
-];
-const fingerNames=['拇指','食指','中指','無名指','小指'];
-const fresh=()=>({style:'clean',base:'solid',qty:{},extraQty:{},removal:'none',fingers:{}});
-let state=fresh(), records=[], editing=null, activeFinger=null;
-const storeKey='xiang-mens-nails-reports-v5';
-try {
- const v=JSON.parse(localStorage.getItem(storeKey)||'[]');
- if(Array.isArray(v)) records=v;
-} catch(e){records=[]}
-function persist(){
- try {
-  localStorage.setItem(storeKey,JSON.stringify(records));
-  return true;
- } catch(e){
-  alert('此瀏覽器無法儲存，請先將營業紀錄匯出 CSV。');
-  return false;
- }
-}
-function style(){return styles.find(x=>x[0]===state.style)}
-function base(){return bases.find(x=>x[0]===state.base)}
-function baseCost(){return base()[2]+(state.base==='care'?0:style()[2])}
-function allowed(a){
- return state.base!=='care' &&
- !(a.id==='cat1'&&state.base==='cat') &&
- !(a.id==='mirror1'&&state.base==='mirror');
-}
-function qty(a){return state.qty[a]||0}
-function formatFingers(id){
- let values=(state.fingers[id]||[]).slice(0,qty(id));
- return values.length?'（'+values.map(v=>(v[0]==='L'?'左':'右')+fingerNames[Number(v[1])]).join('、')+'）':'';
-}
-function billLines(){
- const rows=[{name:base()[1],value:baseCost()}];
- if(state.base!=='care') adds.forEach(a=>{
-  let n=qty(a.id);
-  if(n&&allowed(a)) rows.push({
-   name:a.name+' × '+n+' '+a.unit+formatFingers(a.id),
-   value:a.price*n
-  });
- });
- if(state.removal!=='none') rows.push({
-  name:state.removal==='continue'?'卸甲續作':'卸甲不續作',
-  value:state.removal==='continue'?200:400
- });
- extra.forEach(a=>{
-  let n=state.extraQty[a.id]||0;
-  if(n&&(!a.id.startsWith('remove')||state.removal!=='none'))
-   rows.push({name:a.name+' × '+n+' '+a.unit,value:a.price*n});
- });
- if(state.extraQty.deep&&state.base!=='care'&&state.base!=='partial')
-  rows.push({name:'凝膠＋保養組合優惠',value:-200});
- if(state.extraQty.deep&&state.removal==='stop')
-  rows.push({name:'卸甲＋保養組合優惠',value:-100});
+(()=>{'use strict';
+const $=id=>document.getElementById(id), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>'$'+Math.round(Number(n)||0).toLocaleString('zh-TW');
+const shortDate=()=>{let d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const STYLE=[{id:'clean',name:'極簡日常',eng:'CLEAN / MINIMAL',fee:0,recs:['line','matte','geometry'],preset:[['line',2],['matte',2]]},{id:'graphic',name:'潮流圖騰',eng:'STREET / GRAPHIC',fee:0,recs:['graphic','fire','cross'],preset:[['graphic',2],['fire',2]]},{id:'metal',name:'暗黑金屬',eng:'DARK / CHROME',fee:100,recs:['chrome','cat1','mirror1'],preset:[['chrome',2],['mirror1',2]]},{id:'fan',name:'應援甲',eng:'FANDOM / CUSTOM',fee:200,recs:['logo','letters','sticker'],preset:[['logo',2],['letters',2]]}];
+const BASE=[{id:'partial',name:'局部造型',price:0},{id:'solid',name:'單色凝膠',price:800},{id:'cat',name:'貓眼凝膠',price:1000},{id:'mirror',name:'鏡面凝膠',price:1200},{id:'french',name:'法式凝膠',price:1300},{id:'care',name:'手部基礎保養',price:400},{id:'removeOnly',name:'僅卸甲',price:0}];
+const GROUPS=[['色彩與質感',[['jump','跳色',50],['matte','霧面處理',50],['blend','漸層暈染',80]]],['極簡與圖騰',[['line','極簡線條',80],['geometry','幾何拼色',100],['graphic','街頭塗鴉',120],['fire','火焰／閃電',120],['cross','十字架圖騰',100]]],['金屬與光感',[['cat1','局部貓眼',50],['mirror1','局部鏡面粉',70],['chrome','液態金屬線條',150]]],['客製應援',[['letters','字母／數字',100],['sticker','客製超薄貼紙',80],['logo','應援 Logo',250],['custom','精細主題圖案',350]]],['立體與飾品',[['gem','鑽飾',10,'顆'],['stud','金屬飾品',50,'件'],['sculpt','3D 浮雕',200]]]];
+const ADDS=GROUPS.flatMap(g=>g[1].map(x=>({id:x[0],name:x[1],price:x[2],unit:x[3]||'指'})));
+const EXTRAS=[{id:'extend',name:'甲片延長',price:100,unit:'指'},{id:'repair',name:'單指補甲',price:100,unit:'指'},{id:'deep',name:'手部深層保養',price:600,unit:'次'},{id:'removeGem',name:'卸大鑽',price:50,unit:'顆'},{id:'removeExtend',name:'卸延長甲',price:100,unit:'指'}];
+const REMOVALS=[{id:'none',name:'不卸甲',price:0},{id:'continue',name:'卸甲續作',price:200},{id:'stop',name:'卸甲不續作',price:400}];
+const FINGERS=['拇指','食指','中指','無名指','小指'];
+const STORE_PRICES='xiang-mens-nail-unit-prices-v1',STORE_RECORDS='xiang-mens-nails-reports-v5';
+const getLocal=(k,def)=>{try{let data=JSON.parse(localStorage.getItem(k)||'null');return data===null?def:data}catch(_){return def}};
+const persist=(k,value)=>{try{localStorage.setItem(k,JSON.stringify(value));return true}catch(_){toast('儲存失敗：請確認瀏覽器空間，並匯出備份');return false}};
+const priceKey=(type,id)=>type+':'+id;
+let savedPrices=getLocal(STORE_PRICES,{});if(!savedPrices||typeof savedPrices!=='object'||Array.isArray(savedPrices))savedPrices={};
+let oncePrices={},records=getLocal(STORE_RECORDS,[]);if(!Array.isArray(records))records=[];
+let ownerMode=true,activeTab='quote',editingRecord=null,priceTarget=null,openedCategory='0';
+let quote={style:'clean',base:'solid',removal:'none',counts:{},extras:{},fingers:{}};
+let modalCleanup=null;
+let notifyHandle;
+function toast(s){let t=$('toast');t.textContent=s;t.classList.remove('hidden');clearTimeout(notifyHandle);notifyHandle=setTimeout(()=>t.classList.add('hidden'),2700)}
+const sty=()=>STYLE.find(s=>s.id===quote.style)||STYLE[0];
+const bas=()=>BASE.find(x=>x.id===quote.base)||BASE[1];
+const getDef=(type,id)=>({base:BASE,add:ADDS,extra:EXTRAS,removal:REMOVALS}[type]||[]).find(a=>a.id===id);
+function getPrice(type,id){let d=getDef(type,id);if(!d)return 0;let k=priceKey(type,id);let v=Object.prototype.hasOwnProperty.call(oncePrices,k)?oncePrices[k]:Object.prototype.hasOwnProperty.call(savedPrices,k)?savedPrices[k]:d.price;return Number.isInteger(v)&&v>=0&&v<=9999999?v:d.price}
+const baseAmount=()=>getPrice('base',quote.base)+(['care','removeOnly'].includes(quote.base)?0:sty().fee);
+function isAllowed(a){return !['care','removeOnly'].includes(quote.base)&&!(quote.base==='cat'&&a.id==='cat1')&&!(quote.base==='mirror'&&a.id==='mirror1')}
+function quantity(id){return quote.counts[id]||0}
+function namedFingers(id){let f=(quote.fingers[id]||[]).slice(0,quantity(id));return f.length?'（'+f.map(p=>(p[0]==='L'?'左':'右')+FINGERS[Number(p[1])]).join('、')+'）':''}
+function lines(){let rows=[];
+ const bp=baseAmount();if(quote.base!=='removeOnly')rows.push({name:bas().name,value:bp});
+ ADDS.forEach(a=>{let q=quantity(a.id);if(q&&isAllowed(a))rows.push({name:a.name+' × '+q+' '+a.unit+namedFingers(a.id),value:q*getPrice('add',a.id)})});
+ if(quote.removal!=='none')rows.push({name:getDef('removal',quote.removal).name,value:getPrice('removal',quote.removal)});
+ EXTRAS.forEach(a=>{let q=quote.extras[a.id]||0;if(q&&(!a.id.startsWith('remove')||quote.removal!=='none'))rows.push({name:a.name+' × '+q+' '+a.unit,value:q*getPrice('extra',a.id)})});
+ if(quote.extras.deep&&['solid','cat','mirror','french'].includes(quote.base))rows.push({name:'凝膠＋保養組合優惠',value:-200});
+ if(quote.extras.deep&&quote.removal==='stop')rows.push({name:'卸甲＋保養組合優惠',value:-100});
  return rows;
 }
-function total(){return Math.max(0,billLines().reduce((s,x)=>s+x.value,0))}
-function itemHTML(a,n,isExtra){
- return `<div class="item"><div><div class="item-name">${a.name}</div>
- <div class="price">${fmt(a.price)}／${a.unit}</div>
- ${!isExtra&&n&&a.unit==='指'?`<button type="button" class="secondary" style="padding:5px;margin-top:7px;font-size:10px" data-finger="${a.id}">指定指位</button>`:''}
- </div><div class="step">
- <button data-count="${a.id}" data-kind="${isExtra?'extra':'add'}" data-delta="-1" ${!n?'disabled':''}>−</button>
- <span>${n}</span>
- <button data-count="${a.id}" data-kind="${isExtra?'extra':'add'}" data-delta="1" ${n>=(a.unit==='指'?10:30)?'disabled':''}>＋</button>
- </div></div>`;
-}
+const total=()=>Math.max(0,lines().reduce((s,x)=>s+x.value,0));
+function validQuote(){return quote.base!=='partial'||ADDS.some(a=>quantity(a.id)&&isAllowed(a))}
+function safePrice(id,type){return `<button type="button" class="editprice owner-only" data-price="${type}:${id}" aria-label="修改${esc(getDef(type,id)?.name)}單價">✎ 改價</button>`}
+function countLine(a,kind){let n=kind==='add'?quantity(a.id):(quote.extras[a.id]||0),max=a.id==='deep'?1:a.unit==='指'?10:30;return `<div class="line-item"><div class="info"><div class="iname">${esc(a.name)}</div><div class="price-row"><span class="unit">${fmt(getPrice(kind,a.id))}／${esc(a.unit)}</span>${safePrice(a.id,kind)}</div>${n&&kind==='add'&&a.unit==='指'?`<button class="finger-btn" type="button" data-finger="${a.id}">◎ 指定施作指位${(quote.fingers[a.id]||[]).length?' · 已設定':''}</button>`:''}</div><div class="qty"><button type="button" aria-label="減少${esc(a.name)}" data-counter="${kind}:${a.id}" data-delta="-1" ${n===0?'disabled':''}>−</button><span>${n}</span><button type="button" aria-label="增加${esc(a.name)}" data-counter="${kind}:${a.id}" data-delta="1" ${n>=max?'disabled':''}>＋</button></div></div>`}
 function render(){
- $('styles').innerHTML=styles.map(s=>`<button class="option ${s[0]===state.style?'active':''}" data-style="${s[0]}"><strong>${s[1]}</strong><small>${s[0]==='fan'?'專屬應援':s[0]==='metal'?'黑銀酷感':s[0]==='graphic'?'圖騰街頭':'乾淨簡約'}</small></button>`).join('');
- $('bases').innerHTML=bases.map(b=>`<button class="option ${b[0]===state.base?'active':''}" data-base="${b[0]}"><strong>${b[1]}</strong><small>${b[0]==='partial'&&baseCost()===0?'依造型計算':fmt(b[2]+(b[0]==='care'?0:style()[2]))}</small></button>`).join('');
- $('baseNotice').textContent=state.base==='partial'?'局部造型暫未設定最低施工費；請確認正式收費規則。':'';
- $('recommend').innerHTML=style()[3].map(id=>{
-  let a=adds.find(x=>x.id===id);
-  return `<button type="button" data-quick="${id}">＋ ${a.name} ${fmt(a.price)}</button>`;
- }).join('');
- const openGroups=new Set($$('details[open][data-group]').map(d=>d.dataset.group));
- $('addonGroups').innerHTML=groups.map((g,i)=>`<details data-group="${i}" ${openGroups.has(String(i))||(!$('addonGroups').children.length&&i===0)?'open':''}><summary>${g[0]}</summary>${g[1].map(item=>{
-  let a=adds.find(x=>x.id===item[0]);
-  return allowed(a)?itemHTML(a,qty(a.id),false):`<div class="item small">${a.name}：目前底款已包含，或不適用</div>`;
- }).join('')}</details>`).join('');
- $('removals').innerHTML=[['none','不卸甲',0],['continue','卸甲續作',200],['stop','卸甲不續作',400]].map(r=>`<button type="button" class="option ${state.removal===r[0]?'active':''}" data-removal="${r[0]}"><strong>${r[1]}</strong><small>${fmt(r[2])}</small></button>`).join('');
- $('extras').innerHTML=extra.filter(a=>!a.id.startsWith('remove')||state.removal!=='none').map(a=>itemHTML(a,state.extraQty[a.id]||0,true)).join('');
- $('total').textContent=total().toLocaleString('zh-TW');
+ $('styles').innerHTML=STYLE.map((s,i)=>`<button class="style ${s.id===quote.style?'active':''}" data-style="${s.id}" type="button" aria-pressed="${s.id===quote.style}"><span class="no">0${i+1}<span class="style-check">${s.id===quote.style?'◆':'◇'}</span></span><span class="style-name">${s.name}</span><span class="style-en">${s.eng}</span></button>`).join('');
+ $('bases').innerHTML=BASE.map(b=>`<div><button class="service ${b.id===quote.base?'active':''}" data-base="${b.id}" type="button" style="width:100%" aria-pressed="${b.id===quote.base}"><span class="title">${b.name}</span><span class="value">${b.id==='partial'&&baseAmount()===0?'依造型加購':fmt(getPrice('base',b.id)+(['care','removeOnly'].includes(b.id)?0:sty().fee))}</span></button><button class="base-edit owner-only" data-price="base:${b.id}" type="button">✎ 修改基礎價</button></div>`).join('');
+ $('baseNotice').textContent=quote.base==='partial'?'局部造型依選擇的加購數量計算；最低施工費尚未設定。':quote.base==='removeOnly'?'僅卸甲不計入風格費用；可再選擇卸甲及保養服務。':'';
+ $('recommend').innerHTML=sty().recs.map(id=>{let a=ADDS.find(a=>a.id===id);return a&&isAllowed(a)?`<button class="rec" data-quick="${id}" type="button">＋ ${a.name} <span style="color:#9aaec1">${fmt(getPrice('add',id))}</span></button>`:''}).join('')||'<span class="tiny">純保養或僅卸甲時，不需要加購造型。</span>';
+ $('applyPreset').disabled=['care','removeOnly'].includes(quote.base);
+ $('addonGroups').innerHTML=GROUPS.map((g,i)=>`<details class="accordion" data-category="${i}" ${String(i)===openedCategory?'open':''}><summary><span>${g[0]}</span><span class="meta">${g[1].length} 款</span></summary>${g[1].map(x=>{let a=ADDS.find(a=>a.id===x[0]);return isAllowed(a)?countLine(a,'add'):`<div class="line-item"><span class="tiny">${a.name}・目前底款已包含或不適用</span></div>`}).join('')}</details>`).join('');
+ $('removals').innerHTML=REMOVALS.map(a=>`<div><button type="button" class="select-option ${a.id===quote.removal?'active':''}" data-removal="${a.id}" style="width:100%"><div class="label">${a.name}</div><div class="sub">${fmt(getPrice('removal',a.id))}</div></button>${a.id==='none'?'':`<button type="button" class="base-edit owner-only" data-price="removal:${a.id}">✎ 修改卸甲價</button>`}</div>`).join('');
+ $('extras').innerHTML=EXTRAS.filter(a=>!a.id.startsWith('remove')||quote.removal!=='none').map(a=>countLine(a,'extra')).join('');
+ $('desktopTotal').textContent=total().toLocaleString('zh-TW');$('mobileAmount').textContent=total().toLocaleString('zh-TW');
+ const rows=lines().filter(r=>r.value!==0);$('summaryLines').innerHTML=rows.length?rows.map(x=>`<div class="sum-row"><span>${esc(x.name)}</span><strong>${x.value<0?'−':''}${fmt(Math.abs(x.value))}</strong></div>`).join(''):'<div class="tiny">尚未選擇施作項目</div>';
+ $('selectionInfo').textContent=`目前 ${rows.filter(r=>r.value>0).length} 項施作 · ${ADDS.reduce((s,a)=>s+quantity(a.id),0)} 個造型加購`;
+ const issue=quote.base==='partial'&&!validQuote();$('showQuote').disabled=issue;$('mobileQuote').disabled=issue;$('toReport').disabled=issue;
+ applyMode();
 }
-function adjustCount(id,delta,kind){
- const isExtra=kind==='extra',a=(isExtra?extra:adds).find(x=>x.id===id);
- if(!a||(!isExtra&&!allowed(a)))return;
- const target=isExtra?state.extraQty:state.qty;
- const max=a.unit==='指'?10:a.id==='deep'?1:30;
- target[id]=Math.max(0,Math.min(max,(target[id]||0)+delta));
- if(!isExtra)state.fingers[id]=(state.fingers[id]||[]).slice(0,target[id]);
- render();
-}
-function quoteText(){
- return ['【香香村美妍製造所】','男士美甲施作估價單',
- $('customer').value.trim()?'客戶：'+$('customer').value.trim():'',
- '',...billLines().map(x=>`${x.name}　${x.value<0?'-':''}${fmt(Math.abs(x.value))}`),
- '','預估總金額：NT'+fmt(total()),
- $('quoteNote').value.trim()?'施作備註：'+$('quoteNote').value.trim():'',
- 'LINE：@lry8774x','※ 正式價格以現場確認為準'].filter(Boolean).join('\n');
-}
-function showModal(title,html){
- $('modalTitle').textContent=title;
- $('modalBody').innerHTML=html;
- $('modal').classList.remove('hidden');
-}
-function closeModal(){
- $('modal').classList.add('hidden');activeFinger=null;
-}
-function showQuote(){
- const lines=billLines();
- const markup=`<div class="overline">XIANG BEAUTY STUDIO</div>
- ${$('customer').value.trim()?`<p>客戶：${safe($('customer').value.trim())}</p>`:''}
- ${lines.map(x=>`<div class="line"><span>${safe(x.name)}</span><strong>${x.value<0?'-':''}${fmt(Math.abs(x.value))}</strong></div>`).join('')}
- <div class="row" style="margin:18px 0"><strong>預估總金額</strong><strong class="total">NT${fmt(total())}</strong></div>
- ${$('quoteNote').value.trim()?`<p class="hint">施作備註：${safe($('quoteNote').value)}</p>`:''}
- <div class="actions"><button class="primary" id="copyQuote">複製給客人</button><button class="secondary" id="printQuote">列印／PDF</button></div>
- <p class="hint" id="copyResult">正式價格以現場確認為準。</p>`;
- showModal('客人施作明細',markup);
-}
-async function copy(text){
- try{await navigator.clipboard.writeText(text);return true}
- catch(e){
-  let a=document.createElement('textarea');a.value=text;
-  document.body.appendChild(a);a.select();let ok=false;
-  try{ok=document.execCommand('copy')}catch(_){}
-  a.remove();return ok;
- }
-}
-function fingerModal(id){
- activeFinger=id;
- let max=qty(id),selected=new Set((state.fingers[id]||[]).slice(0,max));
- function body(){
-  return `<p class="hint">最多選擇 ${max} 指。不指定也可以直接完成。</p>
-  ${['L','R'].map(side=>`<p class="hint">${side==='L'?'左手':'右手'}</p>
-  <div class="fingers">${fingerNames.map((n,i)=>`<button type="button" class="${selected.has(side+i)?'active':''}" data-pos="${side+i}">${n}</button>`).join('')}</div>`).join('')}
-  <button type="button" id="saveFingers" class="primary" style="width:100%">完成指位設定</button>`;
- }
- showModal('指定施作指位',body());
- $('modalBody').onclick=e=>{
-  let btn=e.target.closest('[data-pos]');
-  if(btn){
-   let p=btn.dataset.pos;
-   if(selected.has(p))selected.delete(p);
-   else if(selected.size<max)selected.add(p);
-   $('modalBody').innerHTML=body();
-  }else if(e.target.closest('#saveFingers')){
-   state.fingers[id]=[...selected];closeModal();render();
-  }
- };
-}
-function tab(page){
- for(let p of ['quote','report','records'])
-  $(p+'Page').classList.toggle('hidden',p!==page);
- $$('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===page));
- if(page==='records')renderRecords();
-}
-function transfer(){
- const lines=billLines();
- $('client').value=$('customer').value.trim();
- $('service').value=base()[1]+(state.removal==='none'?'':', '+(state.removal==='continue'?'卸甲續作':'卸甲不續作'));
- $('design').value=lines.filter(x=>x.value>0).map(x=>x.name).join('；')+($('quoteNote').value.trim()?'；'+$('quoteNote').value.trim():'');
- $('amount').value=total();
- $('saveNotice').textContent='已帶入估價，請核對實際施作、實收金額與客戶資料。';
-}
-function resetForm(){
- editing=null;$('reportForm').reset();$('date').value=today();
- $('saveReport').textContent='儲存回報';
-}
-function getFiltered(){
- return records.filter(x=>(!$('month').value||x.date.startsWith($('month').value))&&(!$('day').value||x.date===$('day').value));
-}
-function renderRecords(){
- const r=getFiltered();
- $('count').textContent=r.length;
- $('paid').textContent=fmt(r.filter(x=>x.status==='已結帳').reduce((n,x)=>n+Number(x.amount),0));
- $('due').textContent=fmt(r.filter(x=>x.status==='待結帳').reduce((n,x)=>n+Number(x.amount),0));
- $('records').innerHTML=r.length?r.map(x=>`<div class="record">
- <div class="row"><strong>${safe(x.date)} · ${safe(x.artist)}</strong><strong>${fmt(x.amount)}</strong></div>
- <p class="small">${safe(x.client)}　｜　${safe(x.payment)}　｜　${safe(x.status)}</p>
- <p>${safe(x.service)}</p><p class="small">${safe(x.design)}</p>
- ${x.note?`<p class="small">備註：${safe(x.note)}</p>`:''}
- <div class="actions"><button type="button" class="secondary" data-edit="${safe(x.id)}">編輯</button><button type="button" class="danger" data-delete="${safe(x.id)}">刪除</button></div></div>`).join(''):'<p class="hint">目前沒有符合條件的回報紀錄。</p>';
-}
-function exportCSV(){
- let r=getFiltered(),data=[
- ['日期','美甲師','客戶','服務項目','設計款式','實收金額','付款方式','收款狀態','備註'],
- ...r.map(x=>[x.date,x.artist,x.client,x.service,x.design,x.amount,x.payment,x.status,x.note])
- ];
- let csv='\ufeff'+data.map(row=>row.map(v=>{
-  let s=String(v??'');if(/^[=+@\-]/.test(s))s="'"+s;
-  return '"'+s.replace(/"/g,'""')+'"';
- }).join(',')).join('\r\n');
- const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
- let a=document.createElement('a');
- a.href=url;a.download='香香村_美甲師回報_'+($('month').value||'all')+'.csv';
- document.body.appendChild(a);a.click();a.remove();
- setTimeout(()=>URL.revokeObjectURL(url),1000);
-}
-function summary(){
- let r=getFiltered();
- let paid=r.filter(x=>x.status==='已結帳').reduce((n,x)=>n+Number(x.amount),0);
- let due=r.filter(x=>x.status==='待結帳').reduce((n,x)=>n+Number(x.amount),0);
- return '香香村美甲師營收回報\n紀錄：'+r.length+' 筆\n已收：'+fmt(paid)+'\n待收：'+fmt(due)+'\n'+r.map(x=>`${x.date}｜${x.artist}｜${x.client}｜${x.service}｜${fmt(x.amount)}｜${x.status}`).join('\n');
-}
-document.addEventListener('click',async e=>{
- let b=e.target.closest('button');if(!b)return;
- if(b.dataset.tab)tab(b.dataset.tab);
- else if(b.dataset.style){state.style=b.dataset.style;render()}
- else if(b.dataset.base){
-  state.base=b.dataset.base;
-  if(state.base==='care')state.qty={};
-  if(state.base==='cat')state.qty.cat1=0;
-  if(state.base==='mirror')state.qty.mirror1=0;
-  render();
- }
- else if(b.dataset.quick)adjustCount(b.dataset.quick,1,'add');
- else if(b.dataset.count)adjustCount(b.dataset.count,Number(b.dataset.delta),b.dataset.kind);
- else if(b.dataset.finger)fingerModal(b.dataset.finger);
- else if(b.dataset.removal){
-  state.removal=b.dataset.removal;
-  if(state.removal==='stop'){state.base='care';state.qty={}}
-  render();
- }
- else if(b.id==='showQuote')showQuote();
- else if(b.id==='closeModal')closeModal();
- else if(b.id==='copyQuote')
-  $('copyResult').textContent=await copy(quoteText())?'已複製，可貼到 LINE。':'複製失敗，請改用列印／PDF。';
- else if(b.id==='printQuote'){
-  $('printArea').innerHTML=`<h1>香香村美妍製造所</h1><h2>男士美甲估價單</h2>${billLines().map(x=>`<div class="line"><span>${safe(x.name)}</span><b>${x.value<0?'-':''}${fmt(Math.abs(x.value))}</b></div>`).join('')}<h2>總價 NT${fmt(total())}</h2><p>${safe($('quoteNote').value)}</p><small>正式價格以現場確認為準。</small>`;
-  window.print();
- }
- else if(b.id==='toReport'){transfer();tab('report')}
- else if(b.id==='importQuote'){transfer()}
- else if(b.id==='reset'){
-  state=fresh();$('customer').value='';$('quoteNote').value='';render();
- }
- else if(b.id==='clearReport'){
-  resetForm();$('saveNotice').textContent='已清空表單。';
- }
- else if(b.dataset.edit){
-  let r=records.find(x=>x.id===b.dataset.edit);if(!r)return;
-  editing=r.id;
-  for(let [key,id] of Object.entries({
-   date:'date',artist:'artist',client:'client',service:'service',
-   design:'design',amount:'amount',payment:'payment',
-   status:'status',note:'reportNote'
-  }))$(id).value=r[key]||'';
-  $('saveReport').textContent='更新這筆回報';tab('report');
- }
- else if(b.dataset.delete){
-  if(!confirm('確定刪除這筆美甲師回報？'))return;
-  records=records.filter(x=>x.id!==b.dataset.delete);
-  persist();renderRecords();
- }
- else if(b.id==='exportCsv')exportCSV();
- else if(b.id==='copySummary')
-  alert(await copy(summary())?'日／月結摘要已複製':'複製失敗，請使用 CSV 匯出。');
+function applyMode(){document.body.classList.toggle('hide-owner',!ownerMode);$('modeLabel').textContent=ownerMode?'店主模式':'客人預覽';$('ownerToggle').setAttribute('aria-pressed',String(ownerMode));if(!ownerMode&&activeTab!=='quote')setTab('quote')}
+function setTab(tab){if(!ownerMode&&tab!=='quote')return;activeTab=tab;['quote','report','dashboard'].forEach(n=>$(n+'Page').classList.toggle('hidden',n!==tab));$$('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));$('mobileTotal').classList.toggle('hidden',tab!=='quote');if(tab==='dashboard')renderDashboard();if(tab==='report')renderToday();window.scrollTo({top:0,behavior:'smooth'})}
+function adjust(kind,id,delta){let a=getDef(kind,id);if(!a)return;if(kind==='add'&&!isAllowed(a))return;let target=kind==='add'?quote.counts:quote.extras;let max=a.id==='deep'?1:a.unit==='指'?10:30;target[id]=Math.max(0,Math.min(max,(target[id]||0)+delta));if(kind==='add')quote.fingers[id]=(quote.fingers[id]||[]).slice(0,target[id]);render()}
+function modal(title,html){if(modalCleanup){modalCleanup();modalCleanup=null}$('modalTitle').textContent=title;$('modalBody').innerHTML=html;$('modal').classList.remove('hidden');document.body.style.overflow='hidden'}
+function closeModal(){if(modalCleanup){modalCleanup();modalCleanup=null}$('modal').classList.add('hidden');$('modalBody').innerHTML='';document.body.style.overflow=''}
+function priceEditor(type,id){if(!ownerMode)return;let a=getDef(type,id);if(!a||type==='removal'&&id==='none')return;priceTarget={type,id};modal('修改商品單價',`<div class="eyebrow">OWNER / PRICE EDITOR</div><p style="font-size:17px;margin:12px 0 18px">${esc(a.name)}</p><label class="flabel">目前設定金額 NT$<input class="field" id="priceInput" type="number" min="0" max="9999999" step="1" inputmode="numeric" value="${getPrice(type,id)}"></label><p class="tiny">原始單價 ${fmt(a.price)}。可只套用本次估價，或存成這台裝置的預設價。</p><div class="btn-row" style="margin-top:20px"><button type="button" class="btn" id="setPriceOnce">只改本次</button><button type="button" class="btn primary" id="setPriceSaved">存為預設單價</button></div><button type="button" class="btn ghost" id="resetOnePrice" style="margin-top:10px;width:100%">恢復此項原始單價</button>`)}
+function savePrice(mode){if(!priceTarget)return;let {type,id}=priceTarget,key=priceKey(type,id);if(mode==='reset'){delete oncePrices[key];delete savedPrices[key];persist(STORE_PRICES,savedPrices)}else{let raw=$('priceInput')?.value||'',value=Number(raw);if(raw.trim()===''||!Number.isInteger(value)||value<0||value>9999999){toast('請輸入 0～9,999,999 的整數金額');return}if(mode==='once')oncePrices[key]=value;else{savedPrices[key]=value;delete oncePrices[key];persist(STORE_PRICES,savedPrices)}}closeModal();priceTarget=null;render();toast('單價已更新')}
+function priceManager(){let items=[['基本服務',BASE,'base'],['造型加購',ADDS,'add'],['卸甲',REMOVALS.filter(x=>x.id!=='none'),'removal'],['其他服務',EXTRAS,'extra']];modal('店主價目管理',`<div class="eyebrow">MENU / PRICE CONTROL</div><p class="tiny">點任一項即可編輯價格。所有修改保留於此瀏覽器，不會同步到其他手機。</p>${items.map(([name,arr,type])=>`<div style="margin:17px 0"><strong>${name}</strong>${arr.map(a=>`<button type="button" class="modal-line" data-price="${type}:${a.id}" style="width:100%;background:transparent;color:white;border:0;border-bottom:1px solid #38434e;text-align:left;cursor:pointer"><span>${esc(a.name)}</span><strong>${fmt(getPrice(type,a.id))} ✎</strong></button>`).join('')}</div>`).join('')}<button type="button" class="btn ghost" id="resetAllPrices">還原所有單價</button>`)}
+function quoteText(){return ['香香村美妍製造所｜男士美甲施作估價', $('customer').value.trim()?'客戶：'+$('customer').value.trim():'','',...lines().map(r=>r.name+'　'+(r.value<0?'−':'')+fmt(Math.abs(r.value))),'','預估總金額：NT'+fmt(total()),$('quoteNote').value.trim()?'備註：'+$('quoteNote').value.trim():'','LINE：@lry8774x','※ 實際價格以現場確認為準'].filter(Boolean).join('\n')}
+function quoteHTML(){return `<div class="eyebrow">XIANG BEAUTY STUDIO / ESTIMATE</div><p class="tiny" style="margin:12px 0 17px">香香村美妍製造所 ${$('customer').value.trim()?'· '+esc($('customer').value.trim()):''}</p>${lines().map(r=>`<div class="modal-line"><div>${esc(r.name)}</div><strong>${r.value<0?'−':''}${fmt(Math.abs(r.value))}</strong></div>`).join('')}<div class="modal-line" style="border:0;margin:13px 0 6px"><strong>預估總金額</strong><strong style="font:29px Georgia,serif">NT${fmt(total())}</strong></div>${$('quoteNote').value.trim()?`<p class="tiny">備註：${esc($('quoteNote').value.trim())}</p>`:''}<div class="btn-row" style="margin-top:20px"><button type="button" class="btn primary" id="copyQuote">複製給客人</button><button type="button" class="btn" id="printQuote">列印／儲存 PDF</button></div><p class="tiny" style="margin-top:13px">正式施作費用以現場確認為準。</p>`}
+function showQuote(){if(!validQuote()){toast('局部造型請至少選擇一項加購');return}modal('客人施作明細',quoteHTML())}
+function doPrint(){$('printArea').innerHTML=`<h1>XIANG BEAUTY STUDIO</h1><h2>香香村美妍製造所｜男士美甲估價</h2>${lines().map(r=>`<div class="modal-line"><div>${esc(r.name)}</div><strong>${r.value<0?'−':''}${fmt(Math.abs(r.value))}</strong></div>`).join('')}<h2 style="margin-top:24px">預估總金額 NT${fmt(total())}</h2>${$('quoteNote').value.trim()?`<p>備註：${esc($('quoteNote').value.trim())}</p>`:''}<p>LINE：@lry8774x　｜　價格以現場確認為準。</p>`;window.print()}
+async function copy(text){try{await navigator.clipboard.writeText(text);return true}catch(_){let ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(_2){}ta.remove();return ok}}
+function openFinger(id){let selected=new Set((quote.fingers[id]||[]).slice(0,quantity(id)));let max=quantity(id);function body(){return `<p class="tiny">最多可以選 ${max} 指；留空也能照常報價。</p>${['L','R'].map(side=>`<div class="eyebrow" style="margin:15px 0 9px">${side==='L'?'左手':'右手'}</div><div class="finger-grid">${FINGERS.map((n,i)=>`<button type="button" data-position="${side+i}" class="${selected.has(side+i)?'active':''}">${n}</button>`).join('')}</div>`).join('')}<button type="button" class="btn primary" style="width:100%" id="saveFingers">完成設定</button>`}modal('指定施作指位',body());const handler=e=>{let pos=e.target.closest('[data-position]');if(pos){let v=pos.dataset.position;if(selected.has(v))selected.delete(v);else if(selected.size<max)selected.add(v);$('modalBody').innerHTML=body();return}if(e.target.closest('#saveFingers')){quote.fingers[id]=[...selected];closeModal();render()}};$('modalBody').addEventListener('click',handler);modalCleanup=()=>$('modalBody').removeEventListener('click',handler)}
+function transfer(){if(!validQuote()){toast('局部造型請先選擇加購');return}let r=lines();$('client').value=$('customer').value.trim();$('service').value=r.filter(x=>x.value>=0).map(x=>x.name.split(' × ')[0]).join('、').slice(0,500);$('design').value=(r.filter(x=>x.value>=0).map(x=>x.name).join('；')+($('quoteNote').value.trim()?'；'+$('quoteNote').value.trim():'')).slice(0,1500);$('amount').value=total();$('saveNotice').textContent='已帶入估價。請核對實際項目、實收金額後儲存。';setTab('report')}
+function resetReport(){editingRecord=null;$('reportForm').reset();$('date').value=shortDate();$('saveReport').textContent='✓ 儲存美甲師回報';$('saveNotice').textContent=''}
+function recordForm(){let val=Number($('amount').value);return {date:$('date').value,artist:$('artist').value.trim(),client:$('client').value.trim(),service:$('service').value.trim(),design:$('design').value.trim(),amount:val,payment:$('payment').value,status:$('status').value,note:$('reportNote').value.trim()}}
+function renderToday(){let data=records.filter(x=>x.date===shortDate());$('reportTodayCount').textContent=data.length+' 筆';$('reportTodayPaid').textContent=fmt(data.filter(x=>x.status==='已結帳').reduce((s,x)=>s+Number(x.amount),0));$('reportTodayDue').textContent=fmt(data.filter(x=>x.status==='待結帳').reduce((s,x)=>s+Number(x.amount),0))}
+function filteredRecords(){let month=$('month').value,day=$('day').value,q=$('searchRecord').value.trim().toLowerCase();return records.filter(x=>(!month||String(x.date).startsWith(month))&&(!day||x.date===day)&&(!q||[x.artist,x.client,x.service,x.design,x.payment].some(y=>String(y||'').toLowerCase().includes(q))))}
+function moneyOf(arr,status){return arr.filter(x=>x.status===status).reduce((s,x)=>s+Number(x.amount||0),0)}
+function renderDashboard(){let r=filteredRecords();$('recordCount').textContent=r.length;$('paidTotal').textContent=fmt(moneyOf(r,'已結帳'));$('dueTotal').textContent=fmt(moneyOf(r,'待結帳'));
+ $('records').innerHTML=r.length?r.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).map(x=>`<div class="record-card"><div class="record-title"><span>${esc(x.date)}　${esc(x.artist)}</span><span style="white-space:nowrap">${fmt(x.amount)}</span></div><p class="record-desc">${esc(x.client)}　·　${esc(x.service)}</p><p class="record-meta">${esc(x.payment)}　<span class="chip ${x.status==='已結帳'?'paid':'due'}">${esc(x.status)}</span></p><p class="record-desc">${esc(x.design)}</p>${x.note?`<p class="record-meta">備註：${esc(x.note)}</p>`:''}<div class="record-actions"><button type="button" class="btn mini" data-edit-record="${esc(x.id)}">編輯</button><button type="button" class="btn mini danger" data-delete-record="${esc(x.id)}">刪除</button></div></div>`).join(''):'<div class="empty">目前沒有符合條件的回報資料。<br>先到「美甲師回報」新增第一筆吧。</div>';
+ let due=r.filter(x=>x.status==='待結帳');$('smartInsight').textContent=due.length?`目前有 ${due.length} 筆待收款，合計 ${fmt(moneyOf(r,'待結帳'))}，建議核對付款紀錄。`:'目前篩選範圍沒有待收款紀錄。';
+ let people={};r.forEach(x=>{let n=x.artist||'未指定';if(!people[n])people[n]={count:0,paid:0};people[n].count++;if(x.status==='已結帳')people[n].paid+=Number(x.amount)||0});$('artistSummary').innerHTML=Object.entries(people).sort((a,b)=>b[1].paid-a[1].paid).map(([name,s])=>`<div class="sum-row"><span>${esc(name)} <small>(${s.count} 筆)</small></span><strong>${fmt(s.paid)}</strong></div>`).join('')||'<div class="tiny">尚無紀錄</div>';
+ let days=Array.from({length:7},(_,i)=>{let d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-(6-i));let stamp=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');return {stamp,day:String(d.getDate()),total:moneyOf(records.filter(x=>x.date===stamp),'已結帳')}});let high=Math.max(1,...days.map(x=>x.total));$('sevenChart').innerHTML=days.map(x=>`<div class="bar-wrap" title="${x.stamp}: ${fmt(x.total)}"><div class="bar" style="height:${Math.max(3,Math.round(x.total/high*74))}px"></div><span class="bar-label">${x.day}</span></div>`).join('')}
+function csvValue(v){let s=String(v??'');if(/^[\s]*[=+@\-\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"'}
+function download(name,content,mime){let blob=new Blob([content],{type:mime}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500)}
+function exportCSV(){let arr=[['日期','美甲師','客戶','服務項目','施作內容','實收金額','付款方式','收款狀態','備註'],...filteredRecords().map(x=>[x.date,x.artist,x.client,x.service,x.design,x.amount,x.payment,x.status,x.note])];download('香香村美甲師回報_'+($('month').value||'全部')+'.csv','\ufeff'+arr.map(row=>row.map(csvValue).join(',')).join('\r\n'),'text/csv;charset=utf-8');toast('CSV 已建立')}
+function summaryText(){let r=filteredRecords();return ['香香村美甲師營收摘要',`紀錄 ${r.length} 筆`,`已收 ${fmt(moneyOf(r,'已結帳'))}`,`待收 ${fmt(moneyOf(r,'待結帳'))}`,...r.map(x=>[x.date,x.artist,x.client,x.service,fmt(x.amount),x.status].join('｜'))].join('\n')}
+function backup(){download('香香村本機資料備份_'+shortDate()+'.json',JSON.stringify({app:'xiang-nail',version:7,createdAt:new Date().toISOString(),records,prices:savedPrices},null,2),'application/json;charset=utf-8');toast('已匯出完整備份')}
+async function importBackup(e){let f=e.target.files?.[0];if(!f)return;try{if(f.size>5e6)throw Error('檔案過大');let data=JSON.parse(await f.text());if(data.app!=='xiang-nail'||!Array.isArray(data.records)||typeof data.prices!=='object'||!data.prices)throw Error('格式不符');if(data.records.length>10000)throw Error('紀錄過多');let valid=data.records.filter(x=>x&&typeof x.id==='string'&&typeof x.date==='string'&&typeof x.artist==='string'&&typeof x.client==='string'&&typeof x.service==='string'&&typeof x.design==='string'&&Number.isInteger(Number(x.amount))&&Number(x.amount)>=0&&Number(x.amount)<=9999999).map(x=>({...x,amount:Number(x.amount)}));if(!confirm(`將匯入 ${valid.length} 筆有效紀錄，與原資料合併。確定繼續？`))return;let map=new Map(records.map(x=>[x.id,x]));valid.forEach(x=>map.set(x.id,x));let nextRecords=[...map.values()],nextPrices={...savedPrices};Object.entries(data.prices).forEach(([k,v])=>{if(Number.isInteger(v)&&v>=0&&v<=9999999)nextPrices[k]=v});if(!persist(STORE_RECORDS,nextRecords)||!persist(STORE_PRICES,nextPrices)){toast('匯入儲存失敗');return}records=nextRecords;savedPrices=nextPrices;renderDashboard();render();toast('備份匯入完成')}catch(err){toast('無法匯入：'+err.message)}finally{e.target.value=''}}
+function setRecordFields(x){const m={date:'date',artist:'artist',client:'client',service:'service',design:'design',amount:'amount',payment:'payment',status:'status',note:'reportNote'};Object.entries(m).forEach(([k,id])=>$(id).value=x[k]??'')}
+document.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.tab){setTab(b.dataset.tab);return}
+ if(b.id==='ownerToggle'){ownerMode=!ownerMode;applyMode();toast(ownerMode?'已切換店主操作介面':'已切換客人預覽（非安全登入）');return}
+ if(b.dataset.style){quote.style=b.dataset.style;openedCategory=({clean:'1',graphic:'1',metal:'2',fan:'3'})[quote.style];render();return}
+ if(b.dataset.base){quote.base=b.dataset.base;if(['care','removeOnly'].includes(quote.base))quote.counts={};if(quote.base==='cat')quote.counts.cat1=0;if(quote.base==='mirror')quote.counts.mirror1=0;if(quote.base==='removeOnly'){quote.removal='stop'}else if(quote.removal==='stop')quote.removal='continue';render();return}
+ if(b.dataset.counter){let [kind,id]=b.dataset.counter.split(':');adjust(kind,id,Number(b.dataset.delta));return}
+ if(b.dataset.quick){adjust('add',b.dataset.quick,1);openedCategory=String(GROUPS.findIndex(g=>g[1].some(x=>x[0]===b.dataset.quick)));render();return}
+ if(b.id==='applyPreset'){sty().preset.forEach(([id,n])=>{let a=getDef('add',id);if(a&&isAllowed(a))quote.counts[id]=Math.min(10,Math.max(quantity(id),n))});render();toast('已套用建議的兩指重點設計');return}
+ if(b.dataset.removal){quote.removal=b.dataset.removal;if(quote.removal==='stop'){quote.base='removeOnly';quote.counts={}}else if(quote.base==='removeOnly')quote.base='solid';render();return}
+ if(b.dataset.finger){openFinger(b.dataset.finger);return}
+ if(b.dataset.price){let [type,id]=b.dataset.price.split(':');priceEditor(type,id);return}
+ if(b.id==='setPriceOnce'){savePrice('once');return}if(b.id==='setPriceSaved'){savePrice('saved');return}if(b.id==='resetOnePrice'){savePrice('reset');return}
+ if(b.id==='priceManager'){priceManager();return}
+ if(b.id==='resetAllPrices'){if(confirm('確定要恢復全部原始單價嗎？本機儲存的改價將清除。')){savedPrices={};oncePrices={};persist(STORE_PRICES,savedPrices);closeModal();render();toast('價目已還原')}return}
+ if(b.id==='resetQuote'){if(confirm('清除目前選擇的風格、服務與加購項目？')){quote={style:'clean',base:'solid',removal:'none',counts:{},extras:{},fingers:{}};oncePrices={};$('customer').value='';$('quoteNote').value='';openedCategory='1';render()}return}
+ if(b.id==='showQuote'||b.id==='mobileQuote'){showQuote();return}if(b.id==='copyQuote'){toast(await copy(quoteText())?'估價單已複製':'複製失敗，請用列印／PDF');return}if(b.id==='printQuote'){doPrint();return}
+ if(b.id==='toReport'||b.id==='importQuote'){transfer();return}if(b.id==='clearReport'){resetReport();return}
+ if(b.id==='closeModal'){closeModal();return}
+ if(b.dataset.editRecord){let x=records.find(x=>x.id===b.dataset.editRecord);if(!x)return;editingRecord=x.id;setRecordFields(x);$('saveReport').textContent='✓ 更新此筆回報';setTab('report');return}
+ if(b.dataset.deleteRecord){if(!confirm('確定刪除這筆回報紀錄？此動作無法復原。'))return;let next=records.filter(x=>x.id!==b.dataset.deleteRecord);if(persist(STORE_RECORDS,next)){records=next;renderDashboard();toast('已刪除回報')}return}
+ if(b.id==='exportCsv'){exportCSV();return}if(b.id==='copySummary'){toast(await copy(summaryText())?'摘要已複製':'複製失敗');return}if(b.id==='backupJson'){backup();return}if(b.id==='restoreJson'){$('backupFile').click();return}
 });
-$('modal').addEventListener('click',e=>{
- if(e.target===$('modal'))closeModal();
-});
-$('reportForm').addEventListener('submit',e=>{
- e.preventDefault();
- if(!$('reportForm').reportValidity())return;
- let r={
-  date:$('date').value,artist:$('artist').value.trim(),
-  client:$('client').value.trim(),service:$('service').value.trim(),
-  design:$('design').value.trim(),amount:Number($('amount').value),
-  payment:$('payment').value,status:$('status').value,
-  note:$('reportNote').value.trim()
- };
- if(!r.artist||!r.client||!r.service||!r.design||
-    !Number.isInteger(r.amount)||r.amount<0)
-  return alert('請確認回報資料與金額。');
- if(editing){
-  let i=records.findIndex(x=>x.id===editing);
-  if(i>=0)records[i]={...r,id:editing};
- }else{
-  records.unshift({
-   ...r,id:'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,8)
-  });
- }
- if(persist()){
-  $('saveNotice').textContent='已儲存此回報。';
-  resetForm();tab('records');
- }
-});
-$('month').addEventListener('change',renderRecords);
-$('day').addEventListener('change',renderRecords);
-$('date').value=today();
-$('month').value=today().slice(0,7);
-render();
+$('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('modal').classList.contains('hidden'))closeModal()});
+$('reportForm').addEventListener('submit',e=>{e.preventDefault();if(!$('reportForm').reportValidity())return;let x=recordForm();if(!x.artist||!x.client||!x.service||!x.design||!Number.isInteger(x.amount)||x.amount<0||x.amount>9999999){toast('請檢查必填資料與實收金額');return}if(editingRecord){x.id=editingRecord}else{x.id='r'+Date.now().toString(36)+Math.random().toString(36).slice(2,9)}let next=editingRecord?records.map(r=>r.id===editingRecord?x:r):[x,...records];if(!persist(STORE_RECORDS,next))return;records=next;resetReport();renderToday();setTab('dashboard');toast('美甲師回報已儲存')});
+$('month').addEventListener('change',renderDashboard);$('day').addEventListener('change',renderDashboard);$('searchRecord').addEventListener('input',renderDashboard);$('backupFile').addEventListener('change',importBackup);$('addonGroups').addEventListener('click',e=>{let s=e.target.closest('summary');if(s){let d=s.closest('details');if(d)openedCategory=d.dataset.category}});
+$('date').value=shortDate();$('month').value=shortDate().slice(0,7);render();setTab('quote');
 })();
 </script>
 </body>

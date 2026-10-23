@@ -1,0 +1,296 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XIANG BEAUTY｜探索美甲</title>
+<style>
+:root{
+  --bg:#f8f6f2;
+  --card:#fff;
+  --ink:#292725;
+  --muted:#888078;
+  --gold:#a58c6a;
+  --line:#e9e4dc;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:Arial,"Microsoft JhengHei",sans-serif;
+}
+main{max-width:760px;margin:auto;padding:24px 16px 90px}
+header{text-align:center;padding:24px 0}
+.brand{font-size:12px;letter-spacing:3px;color:var(--gold)}
+h1{font-size:30px;letter-spacing:2px;margin:12px 0}
+h2{font-size:19px}
+p{color:var(--muted);line-height:1.7}
+.panel{
+  background:var(--card);
+  padding:20px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  margin-bottom:18px;
+}
+button,input,select,textarea{font:inherit}
+button{
+  cursor:pointer;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px;
+  background:white;
+  color:var(--ink);
+}
+button.active,.primary{
+  background:var(--ink);
+  color:white;
+}
+.primary{width:100%;margin-top:12px}
+input,select,textarea{
+  width:100%;
+  padding:13px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:white;
+  margin:8px 0;
+}
+.tabs,.filters{display:flex;gap:8px;flex-wrap:wrap}
+.tabs button,.filters button{flex:1;min-width:90px}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin-top:16px;
+}
+.work{
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:hidden;
+  background:white;
+}
+.art{
+  height:135px;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(135deg,#e9e2d9,#bbb0a4);
+  font-size:40px;
+}
+.workInfo{padding:12px}
+.workInfo strong{display:block}
+.small{font-size:12px;color:var(--muted)}
+.heart{width:100%;margin-top:10px}
+.hidden{display:none}
+#preview{width:100%;max-height:330px;object-fit:contain;border-radius:12px}
+.notice{font-size:13px;color:#8a634a}
+footer{text-align:center;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="brand">XIANG BEAUTY STUDIO</div>
+<h1>NAIL DISCOVERY</h1>
+<p>找到喜歡的樣子，再慢慢決定就好。</p>
+</header>
+
+<section class="panel">
+<div class="tabs">
+<button class="active" data-tab="gallery">探索作品</button>
+<button data-tab="upload">參考圖</button>
+<button data-tab="favorites">我的收藏</button>
+</div>
+</section>
+
+<section id="gallery" class="panel">
+<h2>探索你的美甲風格</h2>
+<input id="search" placeholder="搜尋：銀色、鏡面、應援、線條...">
+<div class="filters" id="filters"></div>
+<div class="grid" id="works"></div>
+</section>
+
+<section id="upload" class="panel hidden">
+<h2>上傳喜歡的美甲照片</h2>
+<p>其他店家、社群或網路參考圖都可以。</p>
+<input id="photo" type="file" accept="image/*">
+<img id="preview" class="hidden" alt="參考圖片預覽">
+<p class="notice">
+目前為圖片預覽版本，尚未啟用 AI 辨識。
+複雜款式可以透過 LINE 由美甲師人工確認。
+</p>
+<textarea id="description" rows="3"
+placeholder="例如：喜歡銀色鏡面，但想要更低調"></textarea>
+<button class="primary" id="photoLine">整理需求並詢問</button>
+</section>
+
+<section id="favorites" class="panel hidden">
+<h2>我喜歡的款式</h2>
+<p>收藏喜歡的作品，方便一起詢問。</p>
+<div class="grid" id="savedWorks"></div>
+<button class="primary" id="favoriteLine">整理收藏需求</button>
+</section>
+
+<section class="panel">
+<h2>只是想先了解價格？</h2>
+<p>
+完全沒問題！你可以自由瀏覽與收藏，
+不需要立即預約，也不用先提供個人資料。
+</p>
+<button class="primary" id="quoteLink">開啟原有美甲估價系統</button>
+</section>
+
+<footer>香香村美妍製造所 · LINE @lry8774x</footer>
+</main>
+
+<script>
+const works=[
+{id:1,name:"極簡線條",style:"極簡日常",tags:["線條","裸色"],icon:"✦"},
+{id:2,name:"街頭圖騰",style:"潮流圖騰",tags:["黑色","圖騰"],icon:"◆"},
+{id:3,name:"暗黑銀鏡",style:"暗黑金屬",tags:["銀色","鏡面"],icon:"✧"},
+{id:4,name:"應援文字",style:"應援甲",tags:["文字","客製"],icon:"★"}
+];
+
+const styles=["全部","極簡日常","潮流圖騰","暗黑金屬","應援甲"];
+let filter="全部";
+let favorites=[];
+
+try{
+  const saved=JSON.parse(localStorage.getItem("xiang-favorites")||"[]");
+  if(Array.isArray(saved)){
+    favorites=saved.filter(id=>works.some(w=>w.id===id));
+  }
+}catch{}
+
+const $=id=>document.getElementById(id);
+
+function saveFavorites(){
+  try{
+    localStorage.setItem("xiang-favorites",JSON.stringify(favorites));
+  }catch{}
+}
+
+function card(w){
+  const selected=favorites.includes(w.id);
+  const el=document.createElement("article");
+  el.className="work";
+
+  const art=document.createElement("div");
+  art.className="art";
+  art.textContent=w.icon;
+
+  const info=document.createElement("div");
+  info.className="workInfo";
+
+  const name=document.createElement("strong");
+  name.textContent=w.name;
+
+  const detail=document.createElement("div");
+  detail.className="small";
+  detail.textContent=w.style+" · "+w.tags.join("、");
+
+  const btn=document.createElement("button");
+  btn.className="heart";
+  btn.textContent=selected?"♥ 已收藏":"♡ 收藏款式";
+  btn.addEventListener("click",()=>{
+    favorites=selected
+      ?favorites.filter(id=>id!==w.id)
+      :[...favorites,w.id];
+    saveFavorites();
+    render();
+  });
+
+  info.append(name,detail,btn);
+  el.append(art,info);
+  return el;
+}
+
+function render(){
+  $("filters").replaceChildren();
+  styles.forEach(s=>{
+    const btn=document.createElement("button");
+    btn.textContent=s;
+    btn.className=filter===s?"active":"";
+    btn.addEventListener("click",()=>{
+      filter=s;
+      render();
+    });
+    $("filters").append(btn);
+  });
+
+  const keyword=$("search").value.trim().toLowerCase();
+  const matches=works.filter(w=>
+    (filter==="全部"||w.style===filter)&&
+    [w.name,w.style,...w.tags]
+      .join(" ").toLowerCase().includes(keyword)
+  );
+
+  $("works").replaceChildren(...matches.map(card));
+  $("savedWorks").replaceChildren(
+    ...works.filter(w=>favorites.includes(w.id)).map(card)
+  );
+}
+
+document.querySelectorAll("[data-tab]").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll("[data-tab]").forEach(b=>
+      b.classList.toggle("active",b===btn)
+    );
+    ["gallery","upload","favorites"].forEach(id=>
+      $(id).classList.toggle("hidden",id!==btn.dataset.tab)
+    );
+  });
+});
+
+$("search").addEventListener("input",render);
+
+$("photo").addEventListener("change",e=>{
+  const file=e.target.files[0];
+  if(!file)return;
+  if(!file.type.startsWith("image/")){
+    alert("請選擇圖片檔案");
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>{
+    $("preview").src=reader.result;
+    $("preview").classList.remove("hidden");
+  };
+  reader.readAsDataURL(file);
+});
+
+function prepareLine(text){
+  navigator.clipboard.writeText(text).then(()=>{
+    alert("需求已複製！請到 LINE 貼上訊息。");
+    window.open("https://line.me/R/ti/p/@lry8774x","_blank");
+  }).catch(()=>{
+    window.prompt("請複製以下需求，再貼到 LINE：",text);
+  });
+}
+
+$("photoLine").addEventListener("click",()=>{
+  prepareLine(
+    "【香香村參考圖詢價】\n"+
+    "需求："+($("description").value.trim()||"請協助確認款式與價格")+
+    "\n我會另外附上參考照片。"
+  );
+});
+
+$("favoriteLine").addEventListener("click",()=>{
+  const names=works.filter(w=>favorites.includes(w.id))
+    .map(w=>w.name);
+  if(!names.length){
+    alert("請先收藏喜歡的作品");
+    return;
+  }
+  prepareLine("【香香村收藏款式詢問】\n喜歡的款式："+names.join("、"));
+});
+
+$("quoteLink").addEventListener("click",()=>{
+  window.location.href="./index.html";
+});
+
+render();
+</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 
 const OWNER_UID = "T9nwxBSXqKYWVsS6dmEN62tpt232";
-const MODEL = "gemini-2.5-flash";
+const MODEL = "gemini-3.5-flash";
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const CLOUD_NAME = "mby1sz4i";
 

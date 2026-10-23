@@ -1,21 +1,251 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0a0d11"><meta name="description" content="香香村美妍製造所 V10｜男女美甲、手足合併、智慧估價、雲端美甲師業績回報"><title>XIANG BEAUTY｜美甲雲端管理 V10</title><link rel="stylesheet" href="./styles.css"></head>
+
+<!-- XIANG BEAUTY V10 deployment update -->
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0d11">
+<meta name="description" content="香香村美妍製造所 V10｜男女美甲、手足合併、智慧估價、雲端美甲師業績回報">
+<title>XIANG BEAUTY｜美甲雲端管理 V10</title>
+<link rel="stylesheet" href="./styles.css">
+</head>
 <body data-theme="men">
-<header class="sitehead"><div class="container headbar"><div class="brand"><div class="brand-top">香香村美妍製造所 · XIANG BEAUTY STUDIO</div><div class="brand-title">NAIL <i>ATELIER</i> <span class="edition">V10</span></div><div class="brand-desc">SMART QUOTE · CLOUD REPORT · SALON INTELLIGENCE</div></div><div class="headright"><div id="syncTag" class="cloudbadge">● 檢查連線</div><button id="accountBtn" class="button ghost tiny" type="button">登入</button></div></div></header>
+
+<header class="sitehead">
+<div class="container headbar">
+<div class="brand">
+<div class="brand-top">香香村美妍製造所 · XIANG BEAUTY STUDIO</div>
+<div class="brand-title">NAIL <i>ATELIER</i> <span class="edition">V10</span></div>
+<div class="brand-desc">SMART QUOTE · CLOUD REPORT · SALON INTELLIGENCE</div>
+</div>
+<div class="headright">
+<div id="syncTag" class="cloudbadge">● 檢查連線</div>
+<button id="accountBtn" class="button ghost tiny" type="button">登入</button>
+</div>
+</div>
+</header>
+
 <div class="container app">
 <div id="notice" class="notice hidden" role="status"></div>
-<nav class="nav" id="nav" aria-label="主要功能"><button class="navbtn active" data-page="quote" type="button">✦ 智慧估價</button><button class="navbtn" data-page="report" type="button">▤ 美甲師回報</button><button class="navbtn" data-page="dashboard" type="button">◈ 業績看板</button><button class="navbtn ownerOnly" data-page="staff" type="button">⚙ 店主後台</button></nav>
-<section id="loginPanel" class="card loginpanel hidden"><div class="card-header"><div><span class="eyebrow">STAFF ACCESS</span><h2>雲端人員登入</h2></div><span class="pill">授權限定</span></div><p class="hint">美甲師帳號由店主在 Firebase Authentication 建立，再由店主開通系統權限。</p><form id="loginForm" class="fields"><label>電子郵件<input id="loginEmail" type="email" placeholder="name@example.com" autocomplete="username" required></label><label>密碼<input id="loginPassword" type="password" autocomplete="current-password" required></label><button class="button primary" type="submit">登入雲端系統</button></form></section>
-<section id="quotePage" class="page">
-<div class="gendergrid" id="genderBtns"><button data-gender="men" class="gendercard active" type="button"><span class="genderName">MEN'S NAIL LAB</span><strong>男士美甲</strong><small>MATTE BLACK / SILVER</small></button><button data-gender="women" class="gendercard" type="button"><span class="genderName">WOMEN'S NAIL ATELIER</span><strong>女士美甲</strong><small>SOFT IVORY / MILK WHITE</small></button></div>
-<div class="card"><div class="card-header"><div><span class="eyebrow">01 / COMBINE</span><h2>本次施作區域</h2></div><span class="pill">ONE BILL</span></div><p class="hint">手足各自挑選底款與造型，同一位客人合併一張報價單。</p><div class="togglegrid" id="areaMode"></div><div id="styleArea"></div><div id="serviceArea"></div></div>
-<div class="card"><div class="card-header"><div><span class="eyebrow">02 / CUSTOMIZE</span><h2>造型自由加購</h2></div><span class="pill">1–10 FINGERS</span></div><p class="hint">點選 + / − 調整，手足分別計價。可指定單指、雙指、十指或多種造型疊加。</p><div id="addonArea"></div></div>
-<div class="card"><div class="card-header"><div><span class="eyebrow">03 / CARE</span><h2>卸甲・延長・保養</h2></div></div><div id="extraArea"></div></div>
-<div class="card"><div class="card-header"><div><span class="eyebrow">04 / CHECKOUT</span><h2>結帳與施作摘要</h2></div></div><div class="fields"><label>客戶稱呼（選填）<input id="quoteCustomer" placeholder="例如：林先生"></label><label>設計／施工備註（選填）<textarea id="quoteNote" rows="2" placeholder="例如：左手拇指 Logo；足部深灰單色"></textarea></label><div class="editOnly splitgrid"><label>手動折讓 $<input id="discount" type="number" inputmode="numeric" min="0" placeholder="0"></label><label>其他加收 $<input id="charge" type="number" inputmode="numeric" min="0" placeholder="0"></label><label>直接指定成交總價（可留空）<input id="fixedTotal" type="number" inputmode="numeric" min="0" placeholder="未指定"></label></div></div><div class="summary" id="quoteSummary"></div><div class="actionrow"><button class="button primary" id="previewBill" type="button">預覽客人估價單</button><button class="button outline" id="toReport" type="button">帶入美甲師回報 →</button><button class="button text" id="resetQuote" type="button">清除本次估價</button></div></div></section>
-<section id="reportPage" class="page hidden"><div class="card"><div class="card-header"><div><span class="eyebrow">STAFF / REAL-TIME</span><h2>美甲師營業回報</h2></div><span class="pill">CLOUD SYNC</span></div><p class="hint">可從估價直接帶入，同位客人手足施作只記一筆，並同步至雲端。</p><div class="actionrow"><button class="button outline" type="button" id="fillQuote">↙ 從目前估價帶入</button><button class="button text" type="button" id="clearReport">新增空白回報</button></div><form id="reportForm" class="fields" style="margin-top:20px"><div class="splitgrid"><label>施作日期 *<input id="reportDate" type="date" required></label><label>美甲師<input id="reportArtist" readonly></label><label>客戶稱呼<input id="reportClient" maxlength="100" placeholder="選填"></label><label>類別<select id="reportGender"><option value="men">男士</option><option value="women">女士</option></select></label><label>施作區域<select id="reportAreas"><option value="hand">手部</option><option value="foot">足部</option><option value="both">手＋足</option></select></label><label>付款方式<select id="reportPayment"><option>現金</option><option>轉帳</option><option>信用卡</option><option>LINE Pay</option><option>其他</option></select></label></div><label>服務項目 *<input id="reportService" required maxlength="300" placeholder="例如：手部單色、足部保養"></label><label>造型／施作明細<textarea id="reportDesign" rows="3" maxlength="3000" placeholder="實際完成的施作項目"></textarea></label><div class="splitgrid"><label>原價 $<input id="reportOriginal" min="0" type="number" required></label><label>折讓 $<input id="reportDiscount" min="0" type="number" required></label><label>實收／成交金額 $ *<input id="reportAmount" min="0" type="number" required></label><label>收款狀態<select id="reportStatus"><option>已結帳</option><option>待結帳</option></select></label></div><label>備註<textarea id="reportNote" rows="2" maxlength="2000" placeholder="其他情況"></textarea></label><button class="button primary wide" id="saveReport" type="submit">儲存至雲端</button><div id="reportHelp" class="hint"></div></form></div></section>
-<section id="dashboardPage" class="page hidden"><div class="card"><div class="card-header"><div><span class="eyebrow">LIVE / PERFORMANCE</span><h2>營業紀錄與業績</h2></div><span class="pill">REAL-TIME</span></div><div class="filters"><label>月份<input id="filterMonth" type="month"></label><label>指定日期<input id="filterDay" type="date"></label><label>美甲師<select id="filterArtist"><option value="all">全店</option></select></label><label>收款狀態<select id="filterStatus"><option value="all">全部</option><option>已結帳</option><option>待結帳</option></select></label></div><div class="metrics" id="metrics"></div><div class="softtitle">美甲師業績</div><div id="artistStats" class="miniStats"></div><div class="actionrow"><button class="button outline" id="exportCsv" type="button">匯出 CSV</button><button class="button outline" id="exportJson" type="button">備份 JSON</button><button class="button text" id="copyDaily" type="button">複製日結摘要</button></div><div class="tableScroll"><table class="recordTable"><thead><tr><th>日期</th><th>美甲師／客人</th><th>項目</th><th>實收</th><th>狀態</th><th>操作</th></tr></thead><tbody id="recordRows"></tbody></table></div><div class="hint" id="recordCaption"></div></div></section>
-<section id="staffPage" class="page hidden"><div class="card"><div class="card-header"><div><span class="eyebrow">OWNER ONLY</span><h2>店主後台</h2></div><span class="pill">ACCESS CONTROL</span></div><p class="hint">新增員工：先在 Firebase Authentication 建立 Email/Password 帳號，複製該帳號 UID，再於此開通權限。員工無法自行取得店主權限。</p><div class="fields"><label>員工 UID *<input id="staffUid" placeholder="Firebase Auth UID"></label><div class="splitgrid"><label>顯示名稱<input id="staffName" placeholder="例如：Mona"></label><label>角色<select id="staffRole"><option value="staff">美甲師</option><option value="owner">店主</option></select></label></div><label class="checkline"><input id="staffActive" type="checkbox" checked> 啟用該帳號</label><button id="saveStaff" class="button primary" type="button">新增／更新員工權限</button></div><div class="softtitle">已授權帳號</div><div id="staffList" class="staffList"></div></div><div class="card"><div class="card-header"><div><span class="eyebrow">PRICE MANAGEMENT</span><h2>基礎價格設定</h2></div></div><p class="hint">店主調整後會寫入雲端；客人報價單依然不會顯示內部風格溢價。</p><div id="priceAdmin"></div><div class="actionrow"><button id="savePrices" class="button primary" type="button">儲存雲端價格</button><button id="resetPrices" class="button text" type="button">恢復 V9 預設價格</button></div></div><div class="card"><div class="card-header"><div><span class="eyebrow">MIGRATION</span><h2>舊紀錄匯入</h2></div></div><p class="hint">支援匯入 V9 匯出的 JSON 備份，將紀錄轉成雲端資料。上傳前建議先備份目前資料；同一筆 ID 會略過以防重複。請勿上傳來源不明的備份。</p><input id="legacyFile" type="file" accept=".json,application/json"><div id="legacyStatus" class="hint" style="margin-top:12px"></div><button id="importLegacy" class="button outline" type="button">匯入舊版 JSON（限店主）</button></div></section>
+
+<nav class="nav" id="nav" aria-label="主要功能">
+<button class="navbtn active" data-page="quote" type="button">✦ 智慧估價</button>
+<button class="navbtn" data-page="report" type="button">▤ 美甲師回報</button>
+<button class="navbtn" data-page="dashboard" type="button">◈ 業績看板</button>
+<button class="navbtn ownerOnly" data-page="staff" type="button">⚙ 店主後台</button>
+</nav>
+
+<section id="loginPanel" class="card loginpanel hidden">
+<div class="card-header">
+<div>
+<span class="eyebrow">STAFF ACCESS</span>
+<h2>雲端人員登入</h2>
 </div>
-<div id="bottomBar" class="bottombar"><div class="bottombar-inner"><div class="totalmini"><span>本次預估總價</span><strong id="stickyTotal">NT$ 800</strong></div><button id="stickyPreview" class="button primary" type="button">查看明細 ↗</button></div></div>
-<div class="overlay hidden" id="modal" aria-hidden="true"><div class="dialog" role="dialog" aria-modal="true"><div class="dialoghead"><strong id="modalTitle">估價預覽</strong><button id="modalClose" class="button text tiny" type="button">關閉 ✕</button></div><div id="modalBody"></div></div></div>
-<script src="./firebase-config.js"></script><script type="module" src="./app.js"></script>
-</body></html>
+<span class="pill">授權限定</span>
+</div>
+<p class="hint">美甲師帳號由店主在 Firebase Authentication 建立，再由店主開通系統權限。</p>
+<form id="loginForm" class="fields">
+<label>電子郵件<input id="loginEmail" type="email" placeholder="name@example.com" autocomplete="username" required></label>
+<label>密碼<input id="loginPassword" type="password" autocomplete="current-password" required></label>
+<button class="button primary" type="submit">登入雲端系統</button>
+</form>
+</section>
+
+<section id="quotePage" class="page">
+<div class="gendergrid" id="genderBtns">
+<button data-gender="men" class="gendercard active" type="button">
+<span class="genderName">MEN'S NAIL LAB</span>
+<strong>男士美甲</strong>
+<small>MATTE BLACK / SILVER</small>
+</button>
+<button data-gender="women" class="gendercard" type="button">
+<span class="genderName">WOMEN'S NAIL ATELIER</span>
+<strong>女士美甲</strong>
+<small>SOFT IVORY / MILK WHITE</small>
+</button>
+</div>
+
+<div class="card">
+<div class="card-header">
+<div><span class="eyebrow">01 / COMBINE</span><h2>本次施作區域</h2></div>
+<span class="pill">ONE BILL</span>
+</div>
+<p class="hint">手足各自挑選底款與造型，同一位客人合併一張報價單。</p>
+<div class="togglegrid" id="areaMode"></div>
+<div id="styleArea"></div>
+<div id="serviceArea"></div>
+</div>
+
+<div class="card">
+<div class="card-header">
+<div><span class="eyebrow">02 / CUSTOMIZE</span><h2>造型自由加購</h2></div>
+<span class="pill">1–10 FINGERS</span>
+</div>
+<p class="hint">點選 + / − 調整，手足分別計價。可指定單指、雙指、十指或多種造型疊加。</p>
+<div id="addonArea"></div>
+</div>
+
+<div class="card">
+<div class="card-header">
+<div><span class="eyebrow">03 / CARE</span><h2>卸甲・延長・保養</h2></div>
+</div>
+<div id="extraArea"></div>
+</div>
+
+<div class="card">
+<div class="card-header">
+<div><span class="eyebrow">04 / CHECKOUT</span><h2>結帳與施作摘要</h2></div>
+</div>
+<div class="fields">
+<label>客戶稱呼（選填）<input id="quoteCustomer" placeholder="例如：林先生"></label>
+<label>設計／施工備註（選填）<textarea id="quoteNote" rows="2" placeholder="例如：左手拇指 Logo；足部深灰單色"></textarea></label>
+<div class="editOnly splitgrid">
+<label>手動折讓 $<input id="discount" type="number" inputmode="numeric" min="0" placeholder="0"></label>
+<label>其他加收 $<input id="charge" type="number" inputmode="numeric" min="0" placeholder="0"></label>
+<label>直接指定成交總價（可留空）<input id="fixedTotal" type="number" inputmode="numeric" min="0" placeholder="未指定"></label>
+</div>
+</div>
+<div class="summary" id="quoteSummary"></div>
+<div class="actionrow">
+<button class="button primary" id="previewBill" type="button">預覽客人估價單</button>
+<button class="button outline" id="toReport" type="button">帶入美甲師回報 →</button>
+<button class="button text" id="resetQuote" type="button">清除本次估價</button>
+</div>
+</div>
+</section>
+
+<section id="reportPage" class="page hidden">
+<div class="card">
+<div class="card-header">
+<div><span class="eyebrow">STAFF / REAL-TIME</span><h2>美甲師營業回報</h2></div>
+<span class="pill">CLOUD SYNC</span>
+</div>
+<p class="hint">可從估價直接帶入，同位客人手足施作只記一筆，並同步至雲端。</p>
+<div class="actionrow">
+<button class="button outline" type="button" id="fillQuote">↙ 從目前估價帶入</button>
+<button class="button text" type="button" id="clearReport">新增空白回報</button>
+</div>
+<form id="reportForm" class="fields" style="margin-top:20px">
+<div class="splitgrid">
+<label>施作日期 *<input id="reportDate" type="date" required></label>
+<label>美甲師<input id="reportArtist" readonly></label>
+<label>客戶稱呼<input id="reportClient" maxlength="100" placeholder="選填"></label>
+<label>類別<select id="reportGender"><option value="men">男士</option><option value="women">女士</option></select></label>
+<label>施作區域<select id="reportAreas"><option value="hand">手部</option><option value="foot">足部</option><option value="both">手＋足</option></select></label>
+<label>付款方式<select id="reportPayment"><option>現金</option><option>轉帳</option><option>信用卡</option><option>LINE Pay</option><option>其他</option></select></label>
+</div>
+<label>服務項目 *<input id="reportService" required maxlength="300" placeholder="例如：手部單色、足部保養"></label>
+<label>造型／施作明細<textarea id="reportDesign" rows="3" maxlength="3000" placeholder="實際完成的施作項目"></textarea></label>
+<div class="splitgrid">
+<label>原價 $<input id="reportOriginal" min="0" type="number" required></label>
+<label>折讓 $<input id="reportDiscount" min="0" type="number" required></label>
+<label>實收／成交金額 $ *<input id="reportAmount" min="0" type="number" required></label>
+<label>收款狀態<select id="reportStatus"><option>已結帳</option><option>待結帳</option></select></label>
+</div>
+<label>備註<textarea id="reportNote" rows="2" maxlength="2000" placeholder="其他情況"></textarea></label>
+<button class="button primary wide" id="saveReport" type="submit">儲存至雲端</button>
+<div id="reportHelp" class="hint"></div>
+</form>
+</div>
+</section>
+
+<section id="dashboardPage" class="page hidden">
+<div class="card">
+<div class="card-header">
+<div><span class="eyebrow">LIVE / PERFORMANCE</span><h2>營業紀錄與業績</h2></div>
+<span class="pill">REAL-TIME</span>
+</div>
+<div class="filters">
+<label>月份<input id="filterMonth" type="month"></label>
+<label>指定日期<input id="filterDay" type="date"></label>
+<label>美甲師<select id="filterArtist"><option value="all">全店</option></select></label>
+<label>收款狀態<select id="filterStatus"><option value="all">全部</option><option>已結帳</option><option>待結帳</option></select></label>
+</div>
+<div class="metrics" id="metrics"></div>
+<div class="softtitle">美甲師業績</div>
+<div id="artistStats" class="miniStats"></div>
+<div class="actionrow">
+<button class="button outline" id="exportCsv" type="button">匯出 CSV</button>
+<button class="button outline" id="exportJson" type="button">備份 JSON</button>
+<button class="button text" id="copyDaily" type="button">複製日結摘要</button>
+</div>
+<div class="tableScroll">
+<table class="recordTable">
+<thead><tr><th>日期</th><th>美甲師／客人</th><th>項目</th><th>實收</th><th>狀態</th><th>操作</th></tr></thead>
+<tbody id="recordRows"></tbody>
+</table>
+</div>
+<div class="hint" id="recordCaption"></div>
+</div>
+</section>
+
+<section id="staffPage" class="page hidden">
+<div class="card">
+<div class="card-header">
+<div><span class="eyebrow">OWNER ONLY</span><h2>店主後台</h2></div>
+<span class="pill">ACCESS CONTROL</span>
+</div>
+<p class="hint">新增員工：先在 Firebase Authentication 建立 Email/Password 帳號，複製該帳號 UID，再於此開通權限。員工無法自行取得店主權限。</p>
+<div class="fields">
+<label>員工 UID *<input id="staffUid" placeholder="Firebase Auth UID"></label>
+<div class="splitgrid">
+<label>顯示名稱<input id="staffName" placeholder="例如：Mona"></label>
+<label>角色<select id="staffRole"><option value="staff">美甲師</option><option value="owner">店主</option></select></label>
+</div>
+<label class="checkline"><input id="staffActive" type="checkbox" checked> 啟用該帳號</label>
+<button id="saveStaff" class="button primary" type="button">新增／更新員工權限</button>
+</div>
+<div class="softtitle">已授權帳號</div>
+<div id="staffList" class="staffList"></div>
+</div>
+
+<div class="card">
+<div class="card-header">
+<div><span class="eyebrow">PRICE MANAGEMENT</span><h2>基礎價格設定</h2></div>
+</div>
+<p class="hint">店主調整後會寫入雲端；客人報價單依然不會顯示內部風格溢價。</p>
+<div id="priceAdmin"></div>
+<div class="actionrow">
+<button id="savePrices" class="button primary" type="button">儲存雲端價格</button>
+<button id="resetPrices" class="button text" type="button">恢復 V9 預設價格</button>
+</div>
+</div>
+
+<div class="card">
+<div class="card-header">
+<div><span class="eyebrow">MIGRATION</span><h2>舊紀錄匯入</h2>
+</div>
+</div>
+<p class="hint">支援匯入 V9 匯出的 JSON 備份，將紀錄轉成雲端資料。上傳前建議先備份目前資料；同一筆 ID 會略過以防重複。請勿上傳來源不明的備份。</p>
+<input id="legacyFile" type="file" accept=".json,application/json">
+<div id="legacyStatus" class="hint" style="margin-top:12px"></div>
+<button id="importLegacy" class="button outline" type="button">匯入舊版 JSON（限店主）</button>
+</div>
+</section>
+</div>
+
+<div id="bottomBar" class="bottombar">
+<div class="bottombar-inner">
+<div class="totalmini">
+<span>本次預估總價</span>
+<strong id="stickyTotal">NT$ 800</strong>
+</div>
+<button id="stickyPreview" class="button primary" type="button">查看明細 ↗</button>
+</div>
+</div>
+
+<div class="overlay hidden" id="modal" aria-hidden="true">
+<div class="dialog" role="dialog" aria-modal="true">
+<div class="dialoghead">
+<strong id="modalTitle">估價預覽</strong>
+<button id="modalClose" class="button text tiny" type="button">關閉 ✕</button>
+</div>
+<div id="modalBody"></div>
+</div>
+</div>
+
+<script src="./firebase-config.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

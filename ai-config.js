@@ -99,3 +99,4 @@ window.XIANG_AI_CONFIG = {
 };
 
 Object.freeze(window.XIANG_AI_CONFIG);
+

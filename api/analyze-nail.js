@@ -333,7 +333,7 @@ export default async function handler(req, res) {
             responseMimeType: "application/json",
             responseSchema: RESPONSE_SCHEMA,
             temperature: 0.1,
-            maxOutputTokens: 1500
+            maxOutputTokens: 4096
           }
         }),
         signal: AbortSignal.timeout(35000)

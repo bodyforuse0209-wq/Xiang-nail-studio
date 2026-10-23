@@ -1,371 +1,49 @@
-
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>香香村｜作品管理後台</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>香香村｜雲端作品管理</title>
 <style>
-:root{
-  --bg:#f7f5f1;
-  --paper:#fff;
-  --ink:#292725;
-  --muted:#817c75;
-  --line:#e8e1d8;
-  --gold:#a58c6a;
-}
-*{box-sizing:border-box}
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--ink);
-  font-family:Arial,"Microsoft JhengHei",sans-serif;
-}
-main{max-width:850px;margin:auto;padding:24px 16px 80px}
-header{text-align:center;margin:24px 0 30px}
-.brand{color:var(--gold);font-size:12px;letter-spacing:3px}
-h1{font-size:27px;margin:12px 0}
-h2{font-size:19px}
-p,.hint{color:var(--muted);line-height:1.7}
-.panel{
-  background:var(--paper);
-  border:1px solid var(--line);
-  border-radius:18px;
-  padding:22px;
-  margin-bottom:18px;
-}
-label{display:block;margin:14px 0 5px;font-size:14px}
-input,select,textarea{
-  display:block;
-  width:100%;
-  padding:12px;
-  border:1px solid var(--line);
-  border-radius:10px;
-  font:inherit;
-  background:white;
-}
-textarea{resize:vertical}
-button{
-  font:inherit;
-  padding:11px 15px;
-  border-radius:10px;
-  border:1px solid var(--line);
-  background:white;
-  cursor:pointer;
-}
-.primary{background:var(--ink);color:white}
-.row{display:flex;gap:10px;flex-wrap:wrap}
-.row>*{flex:1}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.item{
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:15px;
-  background:white;
-}
-.item strong{display:block;margin-bottom:8px}
-.meta{font-size:12px;color:var(--muted);line-height:1.8}
-.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
-.actions button{font-size:13px}
-.badge{
-  display:inline-block;
-  border-radius:30px;
-  background:#f1ede6;
-  padding:5px 10px;
-  font-size:12px;
-  margin-bottom:10px;
-}
-.hidden{display:none}
-@media(max-width:560px){
-  .grid{grid-template-columns:1fr}
-  .row{display:block}
-}
+:root{--bg:#f7f5f1;--paper:#fff;--ink:#292725;--muted:#817c75;--line:#e8e1d8;--gold:#a58c6a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Microsoft JhengHei",sans-serif}main{max-width:850px;margin:auto;padding:24px 16px 80px}header{text-align:center;margin:24px 0 30px}.brand{color:var(--gold);font-size:12px;letter-spacing:3px}h1{font-size:27px;margin:12px 0}h2{font-size:19px}p,.hint{color:var(--muted);line-height:1.7}.panel{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:22px;margin-bottom:18px}label{display:block;margin:14px 0 5px;font-size:14px}input,select,textarea{display:block;width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:white}textarea{resize:vertical}button{font:inherit;padding:11px 15px;border-radius:10px;border:1px solid var(--line);background:white;cursor:pointer}button:disabled{opacity:.55;cursor:wait}.primary{background:var(--ink);color:white}.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.item{border:1px solid var(--line);border-radius:14px;padding:15px;background:white}.item strong{display:block;margin-bottom:8px}.meta{font-size:12px;color:var(--muted);line-height:1.8}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.actions button{font-size:13px}.badge{display:inline-block;border-radius:30px;background:#f1ede6;padding:5px 10px;font-size:12px;margin-bottom:10px}.hidden{display:none!important}.status{padding:12px;border-radius:10px;background:#f1ede6;margin-bottom:18px;white-space:pre-wrap}.error{background:#fbe9e7;color:#8d2c20}.success{background:#eaf4eb;color:#205b2b}#loginEmail,#loginPassword{margin:8px 0}a{color:var(--gold)}@media(max-width:560px){.grid{grid-template-columns:1fr}.row{display:block}.row>*{margin-bottom:8px}}
 </style>
+<script src="./firebase-config.js"></script>
 </head>
-<body>
-<main>
-<header>
-<div class="brand">XIANG BEAUTY STUDIO</div>
-<h1>作品管理後台</h1>
-<p>ARTWORK MANAGEMENT · 村長工作室</p>
-</header>
-
-<section class="panel">
-<h2 id="formTitle">新增美甲作品</h2>
-<p class="hint">
-目前是本機測試版，尚未連接登入權限與雲端資料庫。
-請勿輸入客戶個資或未公開的作品資料。
-</p>
-<form id="artForm">
-<label for="name">作品名稱</label>
-<input id="name" required maxlength="80"
-placeholder="例如：銀色液態金屬">
-
-<div class="row">
-<div>
-<label for="gender">作品類別</label>
-<select id="gender">
-<option value="men">男士美甲</option>
-<option value="women">女士美甲</option>
-<option value="unisex">中性／不限性別</option>
-</select>
-</div>
-<div>
-<label for="style">風格分類</label>
-<select id="style">
-<option value="clean">極簡日常</option>
-<option value="graphic">潮流圖騰</option>
-<option value="metal">暗黑金屬</option>
-<option value="fandom">應援甲</option>
-</select>
-</div>
-</div>
-
-<label for="tags">搜尋標籤（逗號分隔）</label>
-<input id="tags" placeholder="銀色, 鏡面, 金屬">
-
-<label for="notes">作品備註</label>
-<textarea id="notes" rows="3"
-placeholder="施工特色、設計細節、適合的甲型等"></textarea>
-
-<label for="status">上架狀態</label>
-<select id="status">
-<option value="draft">草稿</option>
-<option value="published">公開上架</option>
-<option value="archived">封存</option>
-</select>
-
-<div class="row" style="margin-top:20px">
-<button class="primary" type="submit" id="saveBtn">儲存作品</button>
-<button type="button" id="resetBtn">清空表單</button>
-</div>
-</form>
-</section>
-
-<section class="panel">
-<h2>作品清單</h2>
-<div class="row">
-<input id="search" placeholder="搜尋作品名稱或標籤">
-<select id="filterStatus">
-<option value="all">全部狀態</option>
-<option value="draft">草稿</option>
-<option value="published">公開上架</option>
-<option value="archived">封存</option>
-</select>
-</div>
-<p class="hint" id="count"></p>
-<div class="grid" id="artList"></div>
-</section>
+<body><main>
+<header><div class="brand">XIANG BEAUTY STUDIO</div><h1>作品管理後台</h1><p>ARTWORK MANAGEMENT · 村長雲端工作室</p></header>
+<div id="message" class="status" role="status">正在連線 Firebase…</div>
+<section id="loginPanel" class="panel hidden"><h2>村長登入</h2><p>使用原本 V10 的 Firebase 店主帳號。僅授權店主可管理作品。</p><form id="loginForm"><label for="loginEmail">電子郵件</label><input id="loginEmail" type="email" autocomplete="username" required><label for="loginPassword">密碼</label><input id="loginPassword" type="password" autocomplete="current-password" required><button class="primary" id="loginBtn" type="submit" style="margin-top:16px">登入</button></form></section>
+<section id="adminPanel" class="hidden"><div class="panel"><div class="row"><p id="ownerName" style="margin:0">已登入</p><button id="logoutBtn" type="button">登出</button></div></div>
+<section class="panel"><h2 id="formTitle">新增美甲作品</h2><p class="hint">現在先建立文字資料。照片上傳功能將在 Firebase Storage 權限設定完成後加入。請勿輸入客戶個資。</p>
+<form id="artForm"><label for="name">作品名稱</label><input id="name" required maxlength="80" placeholder="例如：銀色液態金屬">
+<div class="row"><div><label for="gender">作品類別</label><select id="gender"><option value="men">男士美甲</option><option value="women">女士美甲</option><option value="unisex">中性／不限性別</option></select></div><div><label for="style">風格分類</label><select id="style"><option value="clean">極簡日常</option><option value="graphic">潮流圖騰</option><option value="metal">暗黑金屬</option><option value="fandom">應援甲</option></select></div></div>
+<label for="tags">搜尋標籤（逗號分隔，最多 20 個）</label><input id="tags" placeholder="銀色, 鏡面, 金屬"><label for="notes">作品備註</label><textarea id="notes" rows="3" maxlength="2000" placeholder="施工特色、設計細節、適合的甲型等"></textarea><label for="status">上架狀態</label><select id="status"><option value="draft">草稿</option><option value="published">公開上架</option><option value="archived">封存</option></select>
+<div class="row" style="margin-top:20px"><button class="primary" type="submit" id="saveBtn">儲存至 Firebase</button><button type="button" id="resetBtn">清空表單</button></div></form></section>
+<section class="panel"><h2>雲端作品清單</h2><div class="row"><input id="search" placeholder="搜尋作品名稱或標籤"><select id="filterStatus"><option value="all">全部狀態</option><option value="draft">草稿</option><option value="published">公開上架</option><option value="archived">封存</option></select></div><p class="hint" id="count"></p><div class="grid" id="artList"></div></section></section>
+<footer style="text-align:center;color:var(--muted);font-size:12px">香香村美妍製造所 · 僅供授權店主管理</footer>
 </main>
-
-<script>
-const KEY="xiang-artworks-admin-demo-v1";
-const styleNames={
-  clean:"極簡日常",
-  graphic:"潮流圖騰",
-  metal:"暗黑金屬",
-  fandom:"應援甲"
-};
-const genderNames={
-  men:"男士美甲",
-  women:"女士美甲",
-  unisex:"中性／不限性別"
-};
-const statusNames={
-  draft:"草稿",
-  published:"公開上架",
-  archived:"封存"
-};
-
+<script type="module">
+import {initializeApp,getApps,getApp} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js';
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js';
+import {getFirestore,collection,doc,getDoc,onSnapshot,addDoc,updateDoc,deleteDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js';
 const $=id=>document.getElementById(id);
-let artworks=[];
-let editingId=null;
-
-try{
-  const data=JSON.parse(localStorage.getItem(KEY)||"[]");
-  if(Array.isArray(data))artworks=data;
-}catch{}
-
-function persist(){
-  try{
-    localStorage.setItem(KEY,JSON.stringify(artworks));
-    return true;
-  }catch{
-    alert("瀏覽器無法儲存資料，請檢查儲存空間或隱私模式。");
-    return false;
-  }
-}
-
-function resetForm(){
-  editingId=null;
-  $("artForm").reset();
-  $("formTitle").textContent="新增美甲作品";
-  $("saveBtn").textContent="儲存作品";
-}
-
-$("artForm").addEventListener("submit",e=>{
-  e.preventDefault();
-
-  const now=new Date().toISOString();
-  const item={
-    id:editingId||crypto.randomUUID(),
-    name:$("name").value.trim(),
-    gender:$("gender").value,
-    style:$("style").value,
-    tags:$("tags").value
-      .split(/[,，]/)
-      .map(x=>x.trim())
-      .filter(Boolean),
-    notes:$("notes").value.trim(),
-    status:$("status").value,
-    updatedAt:now
-  };
-
-  if(!item.name){
-    alert("請輸入作品名稱");
-    return;
-  }
-
-  const old=artworks.find(x=>x.id===editingId);
-  item.createdAt=old?.createdAt||now;
-
-  const next=editingId
-    ?artworks.map(x=>x.id===editingId?item:x)
-    :[item,...artworks];
-
-  const previous=artworks;
-  artworks=next;
-
-  if(!persist()){
-    artworks=previous;
-    return;
-  }
-
-  resetForm();
-  render();
-  alert("作品已儲存於這台電腦的瀏覽器");
-});
-
-$("resetBtn").addEventListener("click",resetForm);
-
-function editItem(id){
-  const x=artworks.find(a=>a.id===id);
-  if(!x)return;
-
-  editingId=id;
-  $("name").value=x.name;
-  $("gender").value=x.gender;
-  $("style").value=x.style;
-  $("tags").value=x.tags.join(", ");
-  $("notes").value=x.notes;
-  $("status").value=x.status;
-  $("formTitle").textContent="編輯作品";
-  $("saveBtn").textContent="更新作品";
-  window.scrollTo({top:0,behavior:"smooth"});
-}
-
-function changeStatus(id,status){
-  const x=artworks.find(a=>a.id===id);
-  if(!x)return;
-  const old=x.status;
-  x.status=status;
-  x.updatedAt=new Date().toISOString();
-
-  if(!persist()){
-    x.status=old;
-    return;
-  }
-  render();
-}
-
-function deleteItem(id){
-  if(!confirm("確定刪除這筆測試作品嗎？"))return;
-  const old=artworks;
-  artworks=artworks.filter(x=>x.id!==id);
-
-  if(!persist()){
-    artworks=old;
-    return;
-  }
-
-  if(editingId===id)resetForm();
-  render();
-}
-
-function action(label,callback){
-  const btn=document.createElement("button");
-  btn.type="button";
-  btn.textContent=label;
-  btn.addEventListener("click",callback);
-  return btn;
-}
-
-function render(){
-  const keyword=$("search").value.trim().toLowerCase();
-  const status=$("filterStatus").value;
-
-  const items=artworks.filter(x=>
-    (status==="all"||x.status===status)&&
-    [x.name,...x.tags,x.notes]
-      .join(" ").toLowerCase().includes(keyword)
-  );
-
-  $("count").textContent=
-    "目前共 "+artworks.length+" 筆作品，顯示 "+items.length+" 筆";
-
-  $("artList").replaceChildren();
-
-  if(!items.length){
-    const p=document.createElement("p");
-    p.className="hint";
-    p.textContent="目前沒有符合條件的作品。";
-    $("artList").append(p);
-    return;
-  }
-
-  items.forEach(x=>{
-    const card=document.createElement("article");
-    card.className="item";
-
-    const badge=document.createElement("span");
-    badge.className="badge";
-    badge.textContent=statusNames[x.status]||x.status;
-
-    const name=document.createElement("strong");
-    name.textContent=x.name;
-
-    const meta=document.createElement("div");
-    meta.className="meta";
-    meta.textContent=[
-      genderNames[x.gender],
-      styleNames[x.style],
-      x.tags.join("、")
-    ].filter(Boolean).join(" · ");
-
-    const buttons=document.createElement("div");
-    buttons.className="actions";
-
-    buttons.append(
-      action("編輯",()=>editItem(x.id)),
-      action(
-        x.status==="published"?"下架":"上架",
-        ()=>changeStatus(
-          x.id,
-          x.status==="published"?"archived":"published"
-        )
-      ),
-      action("刪除",()=>deleteItem(x.id))
-    );
-
-    card.append(badge,name,meta,buttons);
-    $("artList").append(card);
-  });
-}
-
-$("search").addEventListener("input",render);
-$("filterStatus").addEventListener("change",render);
-
-render();
+const styleNames={clean:'極簡日常',graphic:'潮流圖騰',metal:'暗黑金屬',fandom:'應援甲'};
+const genderNames={men:'男士美甲',women:'女士美甲',unisex:'中性／不限性別'};
+const statusNames={draft:'草稿',published:'公開上架',archived:'封存'};
+let auth,db,unsubscribe=null,artworks=[],editingId=null,isOwner=false;
+function message(text,type=''){ $('message').textContent=text;$('message').className='status '+type; }
+function errorText(e){const code=e?.code||'';if(code==='permission-denied')return 'Firebase 拒絕存取：請確認店主權限及安全規則。';if(code==='auth/invalid-credential')return '登入失敗，請檢查帳號或密碼。';return e?.message||String(e);}
+function showAdmin(yes){isOwner=yes;$('adminPanel').classList.toggle('hidden',!yes);$('loginPanel').classList.toggle('hidden',yes);}
+function resetForm(){editingId=null;$('artForm').reset();$('formTitle').textContent='新增美甲作品';$('saveBtn').textContent='儲存至 Firebase';}
+function action(label,callback){const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',callback);return b;}
+function render(){const q=$('search').value.trim().toLowerCase(),status=$('filterStatus').value;const items=artworks.filter(x=>(status==='all'||x.status===status)&&[x.name,...(Array.isArray(x.tags)?x.tags:[]),x.notes].join(' ').toLowerCase().includes(q));$('count').textContent=`雲端共 ${artworks.length} 筆，顯示 ${items.length} 筆`;$('artList').replaceChildren();if(!items.length){const p=document.createElement('p');p.className='hint';p.textContent='目前沒有符合條件的作品。';$('artList').append(p);return;}items.forEach(x=>{const card=document.createElement('article');card.className='item';const badge=document.createElement('span');badge.className='badge';badge.textContent=statusNames[x.status]||x.status;const name=document.createElement('strong');name.textContent=x.name;const meta=document.createElement('div');meta.className='meta';meta.textContent=[genderNames[x.gender],styleNames[x.style],(x.tags||[]).join('、')].filter(Boolean).join(' · ');const buttons=document.createElement('div');buttons.className='actions';buttons.append(action('編輯',()=>editItem(x.id)),action(x.status==='published'?'下架':'上架',()=>changeStatus(x.id,x.status==='published'?'archived':'published')),action('刪除',()=>removeItem(x.id)));card.append(badge,name,meta,buttons);$('artList').append(card);});}
+function editItem(id){const x=artworks.find(a=>a.id===id);if(!x)return;editingId=id;$('name').value=x.name;$('gender').value=x.gender;$('style').value=x.style;$('tags').value=(x.tags||[]).join(', ');$('notes').value=x.notes||'';$('status').value=x.status;$('formTitle').textContent='編輯作品';$('saveBtn').textContent='更新雲端作品';window.scrollTo({top:0,behavior:'smooth'});}
+async function changeStatus(id,status){if(!isOwner)return;try{await updateDoc(doc(db,'artworks',id),{status,updatedAt:serverTimestamp()});message('作品狀態已更新','success');}catch(e){message(errorText(e),'error');}}
+async function removeItem(id){if(!isOwner||!confirm('確定永久刪除這筆作品嗎？'))return;try{await deleteDoc(doc(db,'artworks',id));if(editingId===id)resetForm();message('作品已刪除','success');}catch(e){message(errorText(e),'error');}}
+$('artForm').addEventListener('submit',async e=>{e.preventDefault();if(!isOwner)return;const tags=$('tags').value.split(/[,，]/).map(x=>x.trim()).filter(Boolean);if(tags.length>20){message('搜尋標籤最多 20 個','error');return;}if(tags.some(t=>t.length>100)){message('單一標籤過長','error');return;}const data={name:$('name').value.trim(),gender:$('gender').value,style:$('style').value,tags,notes:$('notes').value.trim(),status:$('status').value,updatedAt:serverTimestamp()};if(!data.name){message('請輸入作品名稱','error');return;}const button=$('saveBtn');button.disabled=true;try{if(editingId){await updateDoc(doc(db,'artworks',editingId),data);}else{await addDoc(collection(db,'artworks'),{...data,imageUrl:'',createdAt:serverTimestamp()});}resetForm();message('作品已成功儲存到 Firebase','success');}catch(err){message(errorText(err),'error');}finally{button.disabled=false;}});
+$('resetBtn').addEventListener('click',resetForm);$('search').addEventListener('input',render);$('filterStatus').addEventListener('change',render);
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();const b=$('loginBtn');b.disabled=true;try{await signInWithEmailAndPassword(auth,$('loginEmail').value.trim(),$('loginPassword').value);$('loginPassword').value='';}catch(err){message(errorText(err),'error');}finally{b.disabled=false;}});
+$('logoutBtn').addEventListener('click',async()=>{try{await signOut(auth);message('已登出');}catch(err){message(errorText(err),'error');}});
+try{const config=window.XIANG_FIREBASE_CONFIG;if(!config?.apiKey||!config?.projectId)throw Error('找不到 firebase-config.js，請透過網站網址開啟此頁面，勿直接雙擊本機 HTML。');const app=getApps().length?getApp():initializeApp(config);auth=getAuth(app);db=getFirestore(app);onAuthStateChanged(auth,async user=>{if(unsubscribe){unsubscribe();unsubscribe=null;}showAdmin(false);artworks=[];render();if(!user){message('請使用原本 V10 的店主帳號登入。');return;}try{const snap=await getDoc(doc(db,'staff',user.uid));if(!snap.exists()||snap.data().active!==true||snap.data().role!=='owner'){message('此帳號沒有作品管理權限，請使用店主帳號。','error');return;}$('ownerName').textContent=`店主：${snap.data().name||user.email}`;showAdmin(true);message('店主已登入，正在同步作品…');unsubscribe=onSnapshot(collection(db,'artworks'),s=>{artworks=s.docs.map(d=>({id:d.id,...d.data()}));render();message('Firebase 雲端同步正常','success');},err=>message(errorText(err),'error'));}catch(err){message(errorText(err),'error');}},err=>message(errorText(err),'error'));}catch(err){message(errorText(err),'error');$('loginPanel').classList.remove('hidden');}
 </script>
-</body>
-</html>
+</body></html>

@@ -199,8 +199,8 @@ button:disabled{opacity:.55;cursor:wait}
   <section id="aiPanel" class="panel ai-panel hidden">
     <h2>✨ Gemini AI 美甲圖片辨識</h2>
     <p class="hint">
-      目前僅分析圖片，不會修改作品、儲存辨識結果
-      或自動計價。請由村長核對內容。
+      目前僅分析圖片與判斷報價類型，不會修改作品、
+      儲存辨識結果或自動計價。請由村長核對內容。
     </p>
     <p id="aiWorkName"></p>
     <div class="row">
@@ -233,6 +233,8 @@ button:disabled{opacity:.55;cursor:wait}
 </main>
 
 <script type="module">
+import { classifyArtwork } from './ai-quote-rules.js';
+
 import {initializeApp,getApps,getApp}
   from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js';
 
@@ -612,15 +614,39 @@ async function analyzeArtwork(artwork){
       });
     }
 
+    const quote=classifyArtwork(data);
+
+    lines.push(
+      '',
+      '【AI 報價分類】',
+      quote.label,
+      quote.reason
+    );
+
+    if(quote.status==='custom_quote'){
+      lines.push(
+        '此作品需由村長另外報價，不提供自動總價。'
+      );
+    }else if(quote.status==='owner_review'){
+      lines.push(
+        '請村長確認項目後再計價。'
+      );
+    }else{
+      lines.push(
+        '可進一步套用 V10 標準價目。'
+      );
+    }
+
     lines.push(
       '',
       '【目前狀態】',
-      '已完成圖片辨識。',
-      '尚未計價，也尚未儲存 AI 分析結果。',
+      '已完成圖片辨識及報價類型分類。',
+      '尚未計算總價，也尚未儲存 AI 分析結果。',
       '請先確認 AI 判斷是否正確。'
     );
 
     $('aiResult').textContent=lines.join('\n');
+
     message(
       '「'+artwork.name+'」AI 辨識完成，請核對結果。',
       'success'

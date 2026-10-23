@@ -1,930 +1,818 @@
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#f8f6f2">
-
-<title>香香村美妍製造所｜美甲靈感圖庫</title>
-
+<title>香香村｜美甲靈感與智能估價</title>
 <script src="./firebase-config.js"></script>
-
 <style>
-:root {
-  --bg:#f8f6f2;
-  --paper:#ffffff;
-  --ink:#292725;
-  --muted:#888078;
-  --gold:#a58c6a;
-  --line:#e9e4dc;
-  --soft:#f2eee8;
-}
-
-* {
-  box-sizing:border-box;
-}
-
-body {
-  margin:0;
-  background:var(--bg);
-  color:var(--ink);
-  font-family:Arial,"Microsoft JhengHei",sans-serif;
-}
-
-main {
-  max-width:920px;
-  margin:auto;
-  padding:22px 16px 90px;
-}
-
-header {
-  text-align:center;
-  padding:34px 0 26px;
-}
-
-.brand {
-  color:var(--gold);
-  font-size:11px;
-  letter-spacing:3px;
-  font-weight:bold;
-}
-
-h1 {
-  font-family:Georgia,serif;
-  font-size:34px;
-  letter-spacing:2px;
-  margin:12px 0;
-}
-
-h2 {
-  font-size:20px;
-  margin:0 0 12px;
-}
-
-p {
-  color:var(--muted);
-  line-height:1.7;
-}
-
-.panel {
-  background:var(--paper);
-  border:1px solid var(--line);
-  border-radius:20px;
-  padding:20px;
-  margin-bottom:18px;
-}
-
-button,
-input,
-textarea {
-  font:inherit;
-}
-
-button {
-  cursor:pointer;
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:12px 15px;
-  background:white;
-  color:var(--ink);
-}
-
-button:disabled {
-  opacity:.5;
-  cursor:not-allowed;
-}
-
-button.active,
-.primary {
-  background:var(--ink);
-  color:white;
-  border-color:var(--ink);
-}
-
-.primary {
-  width:100%;
-  margin-top:12px;
-  font-weight:bold;
-}
-
-input,
-textarea {
-  width:100%;
-  padding:13px;
-  border:1px solid var(--line);
-  border-radius:12px;
-  background:white;
-  margin:8px 0;
-}
-
-textarea {
-  resize:vertical;
-}
-
-.tabs,
-.filters {
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-}
-
-.tabs button {
-  flex:1;
-  min-width:95px;
-}
-
-.filters {
-  margin:12px 0;
-}
-
-.filters button {
-  font-size:13px;
-  padding:10px 12px;
-}
-
-.section-label {
-  font-size:12px;
-  color:var(--gold);
-  letter-spacing:2px;
-  margin-bottom:8px;
-}
-
-.grid {
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:14px;
-  margin-top:18px;
-}
-
-.work {
-  border:1px solid var(--line);
-  border-radius:16px;
-  overflow:hidden;
-  background:white;
-  min-width:0;
-}
-
-.art {
-  width:100%;
-  aspect-ratio:4/5;
-  object-fit:cover;
-  display:block;
-  background:var(--soft);
-}
-
-.no-photo {
-  width:100%;
-  aspect-ratio:4/5;
-  display:grid;
-  place-items:center;
-  background:linear-gradient(135deg,#f0ebe5,#d9cec2);
-  color:#8d7a65;
-  font-size:40px;
-}
-
-.work-info {
-  padding:13px;
-}
-
-.work-info strong {
-  display:block;
-  font-size:15px;
-  line-height:1.5;
-}
-
-.small {
-  color:var(--muted);
-  font-size:12px;
-  line-height:1.6;
-  margin-top:5px;
-}
-
-.heart {
-  width:100%;
-  margin-top:12px;
-  font-size:13px;
-}
-
-.heart.saved {
-  background:#f4e9e6;
-  color:#9a5555;
-}
-
-.hidden {
-  display:none!important;
-}
-
-.notice {
-  font-size:13px;
-  color:#8a634a;
-}
-
-.empty {
-  padding:35px 15px;
-  text-align:center;
-  color:var(--muted);
-  line-height:1.8;
-}
-
-#preview {
-  width:100%;
-  max-height:350px;
-  object-fit:contain;
-  border-radius:12px;
-  margin-top:12px;
-}
-
-.count {
-  font-size:13px;
-  color:var(--muted);
-  margin-top:10px;
-}
-
-footer {
-  text-align:center;
-  font-size:12px;
-  color:var(--muted);
-  padding-top:20px;
-}
-
-a {
-  color:var(--gold);
-}
-
-@media(min-width:650px) {
-  .grid {
-    grid-template-columns:repeat(3,minmax(0,1fr));
-  }
-}
-
-@media(max-width:420px) {
-  h1 {
-    font-size:29px;
-  }
-
-  .panel {
-    padding:16px;
-  }
-
-  .grid {
-    gap:10px;
-  }
-
-  .work-info {
-    padding:10px;
-  }
-}
+:root{--bg:#f8f6f2;--paper:#fff;--ink:#292725;--muted:#827b73;--gold:#a58c6a;--line:#e8e2d9;--soft:#f3efe9}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Microsoft JhengHei",sans-serif}
+main{max-width:960px;margin:auto;padding:20px 15px 100px}
+header{text-align:center;padding:30px 0}
+.brand{font-size:11px;letter-spacing:3px;color:var(--gold)}
+h1{font-family:Georgia,serif;font-size:32px;margin:12px 0}
+h2{font-size:20px;margin:0 0 12px}
+h3{font-size:16px;margin:20px 0 10px}
+p{color:var(--muted);line-height:1.7}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:19px;padding:20px;margin-bottom:17px}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;background:white;color:var(--ink);border:1px solid var(--line);border-radius:11px;padding:11px 13px}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.active,.primary{background:var(--ink);color:white;border-color:var(--ink)}
+.primary{width:100%;font-weight:bold}
+input,select,textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:white;margin:7px 0}
+textarea{resize:vertical}
+label{display:block;margin:12px 0 5px;font-size:14px}
+.tabs,.filters,.choices{display:flex;gap:8px;flex-wrap:wrap}
+.tabs button{flex:1;min-width:90px}
+.filters{margin:12px 0}
+.filters button,.choices button{font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+.work{border:1px solid var(--line);border-radius:15px;overflow:hidden;background:white;min-width:0}
+.art{width:100%;aspect-ratio:4/5;object-fit:cover;display:block;background:var(--soft)}
+.no-photo{aspect-ratio:4/5;display:grid;place-items:center;background:var(--soft);font-size:38px;color:var(--gold)}
+.work-info{padding:12px}
+.work-info strong{display:block;font-size:15px}
+.small{font-size:12px;color:var(--muted);line-height:1.6;margin-top:5px}
+.work-info button{width:100%;margin-top:8px;font-size:13px}
+.saved{color:#a05e64;background:#f7eaea}
+.hidden{display:none!important}
+.empty{text-align:center;padding:25px;color:var(--muted)}
+.notice{font-size:13px;color:#8c684c}
+.quote-layout{display:grid;grid-template-columns:1fr;gap:14px}
+.quote-section{border:1px solid var(--line);border-radius:14px;padding:15px;margin:13px 0}
+.service-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.service-options button{text-align:left;font-size:13px}
+.service-options button strong{display:block}
+.service-options button small{display:block;margin-top:5px}
+.addon{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);padding:10px 0}
+.addon-name{flex:1;min-width:0;font-size:13px}
+.addon-name small{display:block;color:var(--muted);margin-top:4px}
+.stepper{display:flex;align-items:center;gap:7px}
+.stepper button{width:32px;height:32px;padding:0}
+.stepper span{min-width:18px;text-align:center}
+.billrow{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.billrow span{flex:1}
+.billrow strong{white-space:nowrap}
+.total{display:flex;align-items:center;justify-content:space-between;margin:20px 0;font-size:17px}
+.total strong{font-size:27px}
+.selected-work{display:flex;gap:12px;align-items:center;background:var(--soft);border-radius:12px;padding:10px;margin:12px 0}
+.selected-work img{width:70px;height:80px;object-fit:cover;border-radius:9px}
+.selected-work div{flex:1}
+#preview{max-width:100%;max-height:320px;object-fit:contain;border-radius:12px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
+@media(min-width:650px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.quote-layout{grid-template-columns:1.1fr .9fr;align-items:start}}
+@media(max-width:420px){.panel{padding:15px}.grid{gap:9px}.work-info{padding:9px}h1{font-size:27px}}
 </style>
 </head>
-
 <body>
-
 <main>
-
 <header>
-  <div class="brand">XIANG BEAUTY STUDIO</div>
-  <h1>NAIL DISCOVERY</h1>
-  <p>找到喜歡的樣子，再慢慢決定就好。</p>
+<div class="brand">XIANG BEAUTY STUDIO</div>
+<h1>NAIL DISCOVERY</h1>
+<p>尋找靈感 · 收藏作品 · 自由搭配 · 即時估價</p>
 </header>
 
 <section class="panel">
-  <div class="tabs">
-    <button class="active" data-tab="gallery" type="button">
-      探索作品
-    </button>
-
-    <button data-tab="upload" type="button">
-      參考圖片
-    </button>
-
-    <button data-tab="favorites" type="button">
-      我的收藏
-    </button>
-  </div>
+<div class="tabs">
+<button class="active" data-tab="gallery">探索作品</button>
+<button data-tab="favorites">我的收藏</button>
+<button data-tab="quote">智能估價</button>
+<button data-tab="reference">參考圖片</button>
+</div>
 </section>
 
 <section id="gallery" class="panel">
-
-  <div class="section-label">EXPLORE ARTWORKS</div>
-
-  <h2>探索你的美甲風格</h2>
-
-  <p>
-    從香香村的真實作品中尋找靈感，
-    收藏喜歡的款式，再一起討論專屬設計。
-  </p>
-
-  <input
-    id="search"
-    type="search"
-    placeholder="搜尋：銀色、貓眼、鏡面、應援..."
-  >
-
-  <div class="filters" id="genderFilters"></div>
-
-  <div class="filters" id="styleFilters"></div>
-
-  <p class="count" id="count">
-    正在載入雲端作品...
-  </p>
-
-  <div class="grid" id="works"></div>
-
-  <div id="galleryEmpty" class="empty hidden">
-    目前沒有符合條件的作品。
-  </div>
-
-</section>
-
-<section id="upload" class="panel hidden">
-
-  <div class="section-label">YOUR INSPIRATION</div>
-
-  <h2>分享你的美甲靈感</h2>
-
-  <p>
-    有在 Instagram、Pinterest 或其他地方看到喜歡的款式嗎？
-    可以先選擇照片，整理好需求後再傳給香香村。
-  </p>
-
-  <input
-    id="photo"
-    type="file"
-    accept="image/*"
-  >
-
-  <img
-    id="preview"
-    class="hidden"
-    alt="參考圖片預覽"
-  >
-
-  <p class="notice">
-    目前照片只會在你的裝置上預覽，
-    不會自動上傳至香香村或傳送到 LINE。
-    詢問時請自行附上原始照片。
-  </p>
-
-  <textarea
-    id="description"
-    rows="4"
-    maxlength="1000"
-    placeholder="例如：我喜歡銀色鏡面，但想要更低調一些，短圓甲..."
-  ></textarea>
-
-  <button
-    id="photoLine"
-    class="primary"
-    type="button"
-  >
-    整理需求並透過 LINE 詢問
-  </button>
-
+<h2>探索美甲作品</h2>
+<p>收藏喜歡的作品，或直接選擇作品開始估價。</p>
+<input id="search" type="search" placeholder="搜尋銀色、鏡面、應援、貓眼...">
+<div class="filters" id="genderFilters"></div>
+<div class="filters" id="styleFilters"></div>
+<p id="count" class="small">正在讀取雲端作品…</p>
+<div class="grid" id="works"></div>
+<p id="galleryEmpty" class="empty hidden">目前沒有符合條件的作品。</p>
 </section>
 
 <section id="favorites" class="panel hidden">
-
-  <div class="section-label">MY FAVORITES</div>
-
-  <h2>我收藏的美甲</h2>
-
-  <p>
-    收藏喜歡的作品，方便比較與討論。
-    收藏會保存在目前使用的瀏覽器中。
-  </p>
-
-  <p class="count" id="favoriteCount"></p>
-
-  <div class="grid" id="savedWorks"></div>
-
-  <div id="favoriteEmpty" class="empty hidden">
-    還沒有收藏作品，先到「探索作品」逛逛吧。
-  </div>
-
-  <button
-    id="favoriteLine"
-    class="primary"
-    type="button"
-  >
-    整理收藏款式並透過 LINE 詢問
-  </button>
-
+<h2>我的收藏</h2>
+<p>收藏只保存在目前裝置的瀏覽器，不需要登入。</p>
+<div class="grid" id="savedWorks"></div>
+<p id="favoriteEmpty" class="empty hidden">尚未收藏任何作品。</p>
+<button id="favoriteLine" class="primary" style="margin-top:16px">整理收藏並詢問村長</button>
 </section>
 
-<section class="panel">
+<section id="quote" class="panel hidden">
+<h2>我的智能美甲估價</h2>
+<p>選擇服務、造型數量與卸甲項目，即時查看預估費用。</p>
+<p class="notice">目前依 V10 預設價目計算；尚未同步店主自訂調價。實際金額、特殊造型及最低施工費由村長確認。</p>
 
-  <div class="section-label">PERSONAL CONSULTATION</div>
+<div id="selectedWork" class="selected-work hidden"></div>
+<button id="clearWork" class="hidden">移除參考作品</button>
 
-  <h2>想了解價格或客製設計？</h2>
+<div class="quote-layout">
+<div>
+<div class="quote-section">
+<h3>01｜美甲類別</h3>
+<div class="choices" id="quoteGenders"></div>
+<h3>02｜施作部位</h3>
+<div class="choices" id="quoteModes"></div>
+<h3 id="styleTitle">03｜男士四大風格</h3>
+<div class="choices" id="quoteStyles"></div>
+</div>
+<div id="quoteZones"></div>
+</div>
 
-  <p>
-    不用急著預約。
-    你可以先收藏作品、整理喜歡的元素，
-    再和村長討論適合的款式與預算。
-  </p>
-
-  <button
-    class="primary"
-    id="lineButton"
-    type="button"
-  >
-    LINE 聯繫香香村
-  </button>
-
+<div>
+<div class="quote-section">
+<h3>即時估價明細</h3>
+<div id="bill"></div>
+<div class="total">
+<span>預估總額</span>
+<strong id="total">NT$ 0</strong>
+</div>
+<p id="quoteWarning" class="notice"></p>
+<label for="quoteNote">其他客製需求（選填）</label>
+<textarea id="quoteNote" rows="3" maxlength="1000" placeholder="例如：短圓甲、左手拇指 Logo、想要偏中性..."></textarea>
+<button class="primary" id="sendQuote">複製估價明細並詢問 LINE</button>
+<button id="resetQuote" style="width:100%;margin-top:9px">清除本次估價</button>
+</div>
+</div>
+</div>
 </section>
 
-<footer>
-  香香村美妍製造所<br>
-  XIANG BEAUTY STUDIO<br>
-  LINE @lry8774x
-</footer>
+<section id="reference" class="panel hidden">
+<h2>分享參考圖片</h2>
+<p>先在裝置預覽圖片，整理需求後自行透過 LINE 附上照片。</p>
+<input id="photo" type="file" accept="image/*">
+<img id="preview" class="hidden" alt="參考圖片預覽">
+<p class="notice">參考圖不會自動上傳雲端或傳送到 LINE；目前尚未啟用 AI 圖片辨識。</p>
+<textarea id="description" rows="3" maxlength="1000" placeholder="描述你喜歡的造型、顏色、長度..."></textarea>
+<button id="photoLine" class="primary">整理需求並詢問 LINE</button>
+</section>
 
+<footer>香香村美妍製造所 · XIANG BEAUTY STUDIO · LINE @lry8774x</footer>
 </main>
 
 <script type="module">
+import {initializeApp,getApps,getApp} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import {getFirestore,collection,query,where,limit,getDocs} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-import {
-  initializeApp,
-  getApps,
-  getApp
-} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+const $=id=>document.getElementById(id);
+const fmt=n=>"NT$ "+Math.max(0,Math.round(n)).toLocaleString("zh-TW");
+const LINE="https://line.me/R/ti/p/@lry8774x";
+const STORE="xiang-cloud-artwork-favorites-v1";
 
-import {
-  getFirestore,
-  collection,
-  query,
-  where,
-  limit,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
-
-const $ = id => document.getElementById(id);
-
-const LINE_URL = "https://line.me/R/ti/p/@lry8774x";
-
-const FAVORITES_KEY = "xiang-cloud-artwork-favorites-v1";
-
-const styleNames = {
-  clean:"極簡日常",
-  graphic:"潮流圖騰",
-  metal:"暗黑金屬",
-  fandom:"應援甲"
-};
-
-const genderNames = {
-  men:"男士美甲",
-  women:"女士美甲",
-  unisex:"中性／不限性別"
-};
-
-const genderOptions = [
-  {id:"all",name:"全部作品"},
-  {id:"men",name:"男士"},
-  {id:"women",name:"女士"},
-  {id:"unisex",name:"中性"}
+const STYLE=[
+{id:"clean",name:"極簡日常",premium:0},
+{id:"graphic",name:"潮流圖騰",premium:0},
+{id:"metal",name:"暗黑金屬",premium:100},
+{id:"fandom",name:"應援甲",premium:200}
 ];
 
-const styleOptions = [
-  {id:"all",name:"全部風格"},
-  {id:"clean",name:"極簡日常"},
-  {id:"graphic",name:"潮流圖騰"},
-  {id:"metal",name:"暗黑金屬"},
-  {id:"fandom",name:"應援甲"}
+const BASE={
+men:{
+hand:[
+["partial","局部造型",0,"partial"],
+["solid","單色凝膠",800,"gel"],
+["cat","貓眼凝膠",1000,"gel"],
+["mirror","鏡面凝膠",1200,"gel"],
+["french","法式凝膠",1300,"gel"],
+["care","手部基礎保養",400,"care"]
+],
+foot:[
+["partial","局部造型",0,"partial"],
+["solid","單色凝膠",900,"gel"],
+["cat","貓眼凝膠",1100,"gel"],
+["mirror","鏡面凝膠",1300,"gel"],
+["french","法式凝膠",1400,"gel"],
+["care","足部基礎保養",600,"care"]
+]
+},
+women:{
+hand:[
+["solid","單色光療",800,"gel"],
+["cat","貓眼光療",1000,"gel"],
+["mirror","鏡面光療",1100,"gel"],
+["french","法式光療",1300,"gel"],
+["care","手部基礎保養",400,"care"]
+],
+foot:[
+["solid","單色光療",900,"gel"],
+["cat","貓眼光療",1100,"gel"],
+["mirror","鏡面光療",1200,"gel"],
+["french","法式光療",1400,"gel"],
+["care","足部基礎保養",600,"care"]
+]
+}
+};
+
+const GROUP={
+men:[
+["色彩質感",[
+["jump","跳色",50],
+["matte","霧面處理",50],
+["blend","漸層暈染",80]
+]],
+["極簡圖騰",[
+["line","極簡線條",80],
+["geometry","幾何拼色",100],
+["graphic","街頭塗鴉",120],
+["fire","火焰／閃電",120],
+["cross","十字架圖騰",100]
+]],
+["金屬光感",[
+["cat1","局部貓眼",50],
+["mirror1","局部鏡面粉",70],
+["liquid","液態金屬",150]
+]],
+["客製應援",[
+["letters","字母／數字",100],
+["sticker","超薄客製貼紙",80],
+["logo","應援 Logo",250],
+["custom","精細圖案",350]
+]],
+["立體配件",[
+["gem","鑽飾",10,"顆"],
+["stud","金屬飾品",50,"件"],
+["sculpt","3D 浮雕",200]
+]]
+],
+women:[
+["造型加購",[
+["jump","跳色",50],
+["blend","暈染",80],
+["extend","甲片延甲",100],
+["french1","法式(單指)",80],
+["mirror1","鏡面粉(單指)",70],
+["cat1","貓眼造型(單指)",50],
+["gem","鑽(單顆)",10,"顆"],
+["decor","鑽飾／飾品",50,"件"]
+]]
+]
+};
+
+const EXTRA={
+men:[
+["extend","甲片延長",100],
+["repair","單指修補",100],
+["deep","深層保養",600,"次"],
+["removeGem","卸大鑽",50,"顆"],
+["removeExtend","卸延長甲",100]
+],
+women:[
+["deep","深層保養",600,"次"],
+["removeGem","卸大型鑽飾",50,"顆"],
+["removeExtend","卸延長甲",100]
+]
+};
+
+const genders={men:"男士美甲",women:"女士美甲",unisex:"中性／不限性別"};
+const styles=Object.fromEntries(STYLE.map(s=>[s.id,s.name]));
+const modes={hand:"只做手部",foot:"只做足部",both:"手＋足一起做"};
+const zones={hand:"手部",foot:"足部"};
+const rems=[
+["none","不卸甲",0],
+["continue","卸甲續作",200],
+["stop","卸甲不續作",400]
 ];
 
-let works = [];
+let works=[];
+let favorites=[];
+let genderFilter="all",styleFilter="all";
+let galleryError="";
+let selected=null;
 
-let favorites = [];
+try{
+const saved=JSON.parse(localStorage.getItem(STORE)||"[]");
+if(Array.isArray(saved))favorites=saved.filter(x=>typeof x==="string");
+}catch{}
 
-let genderFilter = "all";
+const emptyZone=()=>({base:"solid",qty:{},extras:{},rem:"none"});
+const emptyQuote=()=>({
+gender:"men",mode:"hand",style:"clean",
+hand:emptyZone(),foot:emptyZone()
+});
+let q=emptyQuote();
 
-let styleFilter = "all";
-
-let loadError = "";
-
-try {
-  const saved = JSON.parse(
-    localStorage.getItem(FAVORITES_KEY) || "[]"
-  );
-
-  if(Array.isArray(saved)) {
-    favorites = saved.filter(id=>typeof id==="string");
-  }
-} catch(error) {
-  favorites = [];
+function saveFavorites(){
+try{localStorage.setItem(STORE,JSON.stringify(favorites));}catch{}
 }
 
-function saveFavorites() {
-  try {
-    localStorage.setItem(
-      FAVORITES_KEY,
-      JSON.stringify(favorites)
-    );
-  } catch(error) {
-    console.warn("無法儲存收藏",error);
-  }
+function button(text,active,callback){
+const b=document.createElement("button");
+b.type="button";
+b.textContent=text;
+if(active)b.className="active";
+b.addEventListener("click",callback);
+return b;
 }
 
-function makeButton(label,active,callback) {
-  const button = document.createElement("button");
-
-  button.type = "button";
-  button.textContent = label;
-
-  if(active) {
-    button.classList.add("active");
-  }
-
-  button.addEventListener("click",callback);
-
-  return button;
+function switchTab(id){
+document.querySelectorAll("[data-tab]").forEach(b=>{
+b.classList.toggle("active",b.dataset.tab===id);
+});
+["gallery","favorites","quote","reference"].forEach(x=>{
+$(x).classList.toggle("hidden",x!==id);
+});
+window.scrollTo({top:0,behavior:"smooth"});
 }
 
-function renderFilters() {
-
-  $("genderFilters").replaceChildren();
-
-  genderOptions.forEach(option=>{
-    const button = makeButton(
-      option.name,
-      genderFilter===option.id,
-      ()=>{
-        genderFilter=option.id;
-        render();
-      }
-    );
-
-    $("genderFilters").append(button);
-  });
-
-  $("styleFilters").replaceChildren();
-
-  styleOptions.forEach(option=>{
-    const button = makeButton(
-      option.name,
-      styleFilter===option.id,
-      ()=>{
-        styleFilter=option.id;
-        render();
-      }
-    );
-
-    $("styleFilters").append(button);
-  });
-}
-
-function artworkCard(work) {
-
-  const selected = favorites.includes(work.id);
-
-  const card = document.createElement("article");
-  card.className = "work";
-
-  if(
-    typeof work.imageUrl==="string" &&
-    work.imageUrl.startsWith("https://")
-  ) {
-
-    const image = document.createElement("img");
-
-    image.className = "art";
-    image.src = work.imageUrl;
-    image.alt = work.name || "香香村美甲作品";
-    image.loading = "lazy";
-    image.decoding = "async";
-
-    card.append(image);
-
-  } else {
-
-    const placeholder = document.createElement("div");
-
-    placeholder.className = "no-photo";
-    placeholder.textContent = "✦";
-
-    card.append(placeholder);
-  }
-
-  const info = document.createElement("div");
-  info.className = "work-info";
-
-  const name = document.createElement("strong");
-  name.textContent = work.name || "美甲作品";
-
-  const detail = document.createElement("div");
-  detail.className = "small";
-
-  const labels = [
-    genderNames[work.gender] || "",
-    styleNames[work.style] || "",
-    ...(Array.isArray(work.tags) ? work.tags : [])
-  ];
-
-  detail.textContent = labels
-    .filter(Boolean)
-    .join(" · ");
-
-  const favoriteButton = document.createElement("button");
-
-  favoriteButton.type = "button";
-  favoriteButton.className = "heart";
-
-  if(selected) {
-    favoriteButton.classList.add("saved");
-    favoriteButton.textContent = "♥ 已收藏";
-  } else {
-    favoriteButton.textContent = "♡ 收藏款式";
-  }
-
-  favoriteButton.addEventListener("click",()=>{
-
-    if(favorites.includes(work.id)) {
-      favorites = favorites.filter(
-        id=>id!==work.id
-      );
-    } else {
-      favorites = [...favorites,work.id];
-    }
-
-    saveFavorites();
-    render();
-  });
-
-  info.append(
-    name,
-    detail,
-    favoriteButton
-  );
-
-  card.append(info);
-
-  return card;
-}
-
-function render() {
-
-  renderFilters();
-
-  const keyword = $("search").value
-    .trim()
-    .toLowerCase();
-
-  const matched = works.filter(work=>{
-
-    const matchGender =
-      genderFilter==="all" ||
-      work.gender===genderFilter;
-
-    const matchStyle =
-      styleFilter==="all" ||
-      work.style===styleFilter;
-
-    const searchText = [
-      work.name || "",
-      genderNames[work.gender] || "",
-      styleNames[work.style] || "",
-      ...(Array.isArray(work.tags) ? work.tags : []),
-      work.notes || ""
-    ].join(" ").toLowerCase();
-
-    return (
-      matchGender &&
-      matchStyle &&
-      searchText.includes(keyword)
-    );
-  });
-
-  $("count").textContent = loadError
-    ? loadError
-    : `目前公開 ${works.length} 款作品，顯示 ${matched.length} 款`;
-
-  $("works").replaceChildren(
-    ...matched.map(artworkCard)
-  );
-
-  $("galleryEmpty").classList.toggle(
-    "hidden",
-    matched.length>0 || Boolean(loadError)
-  );
-
-  const saved = works.filter(
-    work=>favorites.includes(work.id)
-  );
-
-  $("favoriteCount").textContent =
-    `已收藏 ${saved.length} 款作品`;
-
-  $("savedWorks").replaceChildren(
-    ...saved.map(artworkCard)
-  );
-
-  $("favoriteEmpty").classList.toggle(
-    "hidden",
-    saved.length>0
-  );
-
-  $("favoriteLine").disabled = saved.length===0;
-}
-
-function openLine() {
-  window.open(
-    LINE_URL,
-    "_blank",
-    "noopener,noreferrer"
-  );
-}
-
-async function prepareLine(text) {
-
-  try {
-
-    if(!navigator.clipboard?.writeText) {
-      throw new Error("Clipboard unavailable");
-    }
-
-    await navigator.clipboard.writeText(text);
-
-    alert(
-      "需求已複製！開啟 LINE 後，請貼上訊息傳給香香村。"
-    );
-
-    openLine();
-
-  } catch(error) {
-
-    window.prompt(
-      "請複製以下內容，再到 LINE 貼上：",
-      text
-    );
-
-    openLine();
-  }
-}
-
-document.querySelectorAll("[data-tab]").forEach(button=>{
-
-  button.addEventListener("click",()=>{
-
-    document.querySelectorAll("[data-tab]").forEach(item=>{
-      item.classList.toggle(
-        "active",
-        item===button
-      );
-    });
-
-    ["gallery","upload","favorites"].forEach(id=>{
-      $(id).classList.toggle(
-        "hidden",
-        id!==button.dataset.tab
-      );
-    });
-  });
+document.querySelectorAll("[data-tab]").forEach(b=>{
+b.addEventListener("click",()=>switchTab(b.dataset.tab));
 });
 
-$("search").addEventListener("input",render);
+function card(w){
+const article=document.createElement("article");
+article.className="work";
 
-$("photo").addEventListener("change",event=>{
+if(typeof w.imageUrl==="string"&&w.imageUrl.startsWith("https://")){
+const img=document.createElement("img");
+img.className="art";
+img.src=w.imageUrl;
+img.alt=w.name;
+img.loading="lazy";
+article.append(img);
+}else{
+const d=document.createElement("div");
+d.className="no-photo";
+d.textContent="✦";
+article.append(d);
+}
 
-  const file = event.target.files?.[0];
+const info=document.createElement("div");
+info.className="work-info";
+const name=document.createElement("strong");
+name.textContent=w.name||"美甲作品";
+const meta=document.createElement("div");
+meta.className="small";
+meta.textContent=[
+genders[w.gender],
+styles[w.style],
+...(Array.isArray(w.tags)?w.tags:[])
+].filter(Boolean).join(" · ");
 
-  const preview = $("preview");
+const heart=button(
+favorites.includes(w.id)?"♥ 已收藏":"♡ 收藏",
+false,()=>{
+favorites=favorites.includes(w.id)
+?favorites.filter(id=>id!==w.id)
+:[...favorites,w.id];
+saveFavorites();
+renderGallery();
+}
+);
+if(favorites.includes(w.id))heart.classList.add("saved");
 
-  if(!file) {
-    preview.classList.add("hidden");
-    preview.removeAttribute("src");
-    return;
-  }
+const choose=button("以此作品開始估價",false,()=>{
+selected=w;
+q=emptyQuote();
+q.gender=w.gender==="women"?"women":"men";
+q.style=styles[w.style]?w.style:"clean";
+renderQuote();
+switchTab("quote");
+});
 
-  if(!file.type.startsWith("image/")) {
-    alert("請選擇圖片檔案");
-    event.target.value="";
-    return;
-  }
+info.append(name,meta,heart,choose);
+article.append(info);
+return article;
+}
 
-  if(file.size>15*1024*1024) {
-    alert("圖片請勿超過 15 MB");
-    event.target.value="";
-    return;
-  }
+function filterButtons(target,items,current,setter){
+$(target).replaceChildren();
+items.forEach(x=>{
+$(target).append(button(x.name,x.id===current,()=>{
+setter(x.id);
+renderGallery();
+}));
+});
+}
 
-  const reader = new FileReader();
+function renderGallery(){
+filterButtons("genderFilters",[
+{id:"all",name:"全部"},
+{id:"men",name:"男士"},
+{id:"women",name:"女士"},
+{id:"unisex",name:"中性"}
+],genderFilter,v=>genderFilter=v);
 
-  reader.onload = ()=>{
-    preview.src = reader.result;
-    preview.classList.remove("hidden");
-  };
+filterButtons("styleFilters",[
+{id:"all",name:"全部風格"},
+...STYLE
+],styleFilter,v=>styleFilter=v);
 
-  reader.onerror = ()=>{
-    alert("無法讀取圖片，請重新選擇");
-  };
+const keyword=$("search").value.trim().toLowerCase();
+const matched=works.filter(w=>
+(genderFilter==="all"||w.gender===genderFilter)&&
+(styleFilter==="all"||w.style===styleFilter)&&
+[w.name,genders[w.gender],styles[w.style],w.notes,
+...(Array.isArray(w.tags)?w.tags:[])]
+.join(" ").toLowerCase().includes(keyword)
+);
 
-  reader.readAsDataURL(file);
+$("count").textContent=galleryError||
+`目前公開 ${works.length} 款作品，顯示 ${matched.length} 款`;
+$("works").replaceChildren(...matched.map(card));
+$("galleryEmpty").classList.toggle("hidden",matched.length>0||!!galleryError);
+
+const saved=works.filter(w=>favorites.includes(w.id));
+$("savedWorks").replaceChildren(...saved.map(card));
+$("favoriteEmpty").classList.toggle("hidden",saved.length>0);
+$("favoriteLine").disabled=!saved.length;
+}
+
+$("search").addEventListener("input",renderGallery);
+
+async function loadWorks(){
+try{
+const config=window.XIANG_FIREBASE_CONFIG;
+if(!config?.apiKey||!config?.projectId)throw Error("Firebase 設定未載入");
+const app=getApps().length?getApp():initializeApp(config);
+const db=getFirestore(app);
+const snap=await getDocs(query(
+collection(db,"artworks"),
+where("status","==","published"),
+limit(50)
+));
+works=snap.docs.map(d=>({id:d.id,...d.data()}));
+works.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+galleryError="";
+}catch(e){
+console.error("作品讀取失敗",e);
+galleryError="暫時無法讀取雲端作品，請稍後再試。";
+works=[];
+}
+renderGallery();
+}
+
+function areaKeys(){
+return q.mode==="both"?["hand","foot"]:[q.mode];
+}
+
+function baseRow(z){
+return BASE[q.gender][z].find(x=>x[0]===q[z].base)
+||BASE[q.gender][z][0];
+}
+
+function baseAmount(z){
+const row=baseRow(z);
+const premium=q.gender==="men"&&row[3]!=="care"
+?STYLE.find(s=>s.id===q.style).premium:0;
+return row[2]+premium;
+}
+
+function validAddon(z,row){
+const kind=baseRow(z)[3];
+if(kind==="care")return false;
+if(row[0]==="cat1"&&q[z].base==="cat")return false;
+if(row[0]==="mirror1"&&q[z].base==="mirror")return false;
+return true;
+}
+
+function allAddons(){
+return GROUP[q.gender].flatMap(g=>g[1]);
+}
+
+function addRow(z,kind,row){
+const id=row[0];
+const target=kind==="addon"?q[z].qty:q[z].extras;
+const qty=target[id]||0;
+const unit=row[3]||"指";
+const price=kind==="extra"&&id==="deep"
+?(z==="foot"?1300:600):row[2];
+const max=id==="deep"?1:unit==="指"?10:30;
+
+const el=document.createElement("div");
+el.className="addon";
+const name=document.createElement("div");
+name.className="addon-name";
+const title=document.createElement("strong");
+title.textContent=row[1];
+const small=document.createElement("small");
+small.textContent=`${fmt(price)}／${unit}`;
+name.append(title,small);
+
+const stepper=document.createElement("div");
+stepper.className="stepper";
+const minus=button("−",false,()=>{
+target[id]=Math.max(0,(target[id]||0)-1);
+renderQuote();
+});
+minus.disabled=qty===0;
+
+const number=document.createElement("span");
+number.textContent=qty;
+
+const plus=button("＋",false,()=>{
+target[id]=Math.min(max,(target[id]||0)+1);
+renderQuote();
+});
+plus.disabled=qty>=max;
+stepper.append(minus,number,plus);
+el.append(name,stepper);
+return el;
+}
+
+function renderQuote(){
+$("quoteGenders").replaceChildren();
+[["men","男士"],["women","女士"]].forEach(([id,name])=>{
+$("quoteGenders").append(button(name,q.gender===id,()=>{
+q.gender=id;
+q.hand=emptyZone();
+q.foot=emptyZone();
+renderQuote();
+}));
+});
+
+$("quoteModes").replaceChildren();
+Object.entries(modes).forEach(([id,name])=>{
+$("quoteModes").append(button(name,q.mode===id,()=>{
+q.mode=id;
+renderQuote();
+}));
+});
+
+$("styleTitle").classList.toggle("hidden",q.gender!=="men");
+$("quoteStyles").classList.toggle("hidden",q.gender!=="men");
+$("quoteStyles").replaceChildren();
+if(q.gender==="men"){
+STYLE.forEach(s=>{
+$("quoteStyles").append(button(
+`${s.name} ${s.premium?"+"+fmt(s.premium):"+0"}`,
+q.style===s.id,()=>{
+q.style=s.id;
+renderQuote();
+}
+));
+});
+}
+
+$("selectedWork").replaceChildren();
+$("selectedWork").classList.toggle("hidden",!selected);
+$("clearWork").classList.toggle("hidden",!selected);
+if(selected){
+if(selected.imageUrl?.startsWith("https://")){
+const img=document.createElement("img");
+img.src=selected.imageUrl;
+img.alt=selected.name;
+$("selectedWork").append(img);
+}
+const label=document.createElement("div");
+label.textContent="參考作品："+selected.name;
+$("selectedWork").append(label);
+}
+
+$("quoteZones").replaceChildren();
+
+areaKeys().forEach(z=>{
+const box=document.createElement("div");
+box.className="quote-section";
+
+const heading=document.createElement("h3");
+heading.textContent=`${zones[z]}｜基礎服務`;
+box.append(heading);
+
+const services=document.createElement("div");
+services.className="service-options";
+BASE[q.gender][z].forEach(row=>{
+const price=row[2]+(
+q.gender==="men"&&row[3]!=="care"
+?STYLE.find(s=>s.id===q.style).premium:0
+);
+const b=document.createElement("button");
+b.type="button";
+if(q[z].base===row[0])b.className="active";
+const strong=document.createElement("strong");
+strong.textContent=row[1];
+const small=document.createElement("small");
+small.textContent=fmt(price);
+b.append(strong,small);
+b.addEventListener("click",()=>{
+q[z].base=row[0];
+renderQuote();
+});
+services.append(b);
+});
+box.append(services);
+
+if(baseRow(z)[3]!=="care"){
+GROUP[q.gender].forEach(([groupName,rows])=>{
+const heading=document.createElement("h3");
+heading.textContent=groupName;
+box.append(heading);
+rows.forEach(row=>{
+if(validAddon(z,row)){
+box.append(addRow(z,"addon",row));
+}
+});
+});
+}else{
+const hint=document.createElement("p");
+hint.className="notice";
+hint.textContent="純保養不適用凝膠造型加購。";
+box.append(hint);
+}
+
+const remHeading=document.createElement("h3");
+remHeading.textContent="卸甲方式";
+box.append(remHeading);
+const remButtons=document.createElement("div");
+remButtons.className="choices";
+rems.forEach(([id,name,price])=>{
+remButtons.append(button(
+`${name} ${fmt(price)}`,
+q[z].rem===id,()=>{
+q[z].rem=id;
+renderQuote();
+}
+));
+});
+box.append(remButtons);
+
+const extraHeading=document.createElement("h3");
+extraHeading.textContent="卸甲與修整加購";
+box.append(extraHeading);
+
+EXTRA[q.gender].forEach(row=>{
+if(row[0].startsWith("remove")&&q[z].rem==="none")return;
+box.append(addRow(z,"extra",row));
+});
+
+$("quoteZones").append(box);
+});
+
+renderBill();
+}
+
+function calculate(){
+const lines=[];
+const warnings=[];
+
+areaKeys().forEach(z=>{
+const b=baseRow(z);
+lines.push({
+name:`${zones[z]}｜${b[1]}`,
+amount:baseAmount(z)
+});
+
+if(b[3]==="partial"){
+warnings.push(`${zones[z]}局部造型最低施工費尚未確定`);
+}
+
+if(b[3]!=="care"){
+allAddons().forEach(row=>{
+const qty=q[z].qty[row[0]]||0;
+if(!qty||!validAddon(z,row))return;
+lines.push({
+name:`${zones[z]}｜${row[1]} × ${qty} ${row[3]||"指"}`,
+amount:row[2]*qty
+});
+});
+}
+
+if(q[z].rem!=="none"){
+const row=rems.find(r=>r[0]===q[z].rem);
+lines.push({
+name:`${zones[z]}｜${row[1]}`,
+amount:row[2]
+});
+}
+
+EXTRA[q.gender].forEach(row=>{
+const qty=q[z].extras[row[0]]||0;
+if(!qty||(row[0].startsWith("remove")&&q[z].rem==="none"))return;
+const price=row[0]==="deep"?(z==="foot"?1300:600):row[2];
+lines.push({
+name:`${zones[z]}｜${row[1]} × ${qty} ${row[3]||"指"}`,
+amount:price*qty
+});
+});
+
+if(q[z].extras.deep){
+if(b[3]==="gel"){
+lines.push({name:`${zones[z]}｜凝膠＋保養優惠`,amount:-200});
+}else if(q[z].rem==="stop"){
+lines.push({name:`${zones[z]}｜卸甲＋保養優惠`,amount:-100});
+}
+}
+});
+
+if(selected){
+warnings.push("參考作品的完整造型費用不會自動辨識，請自行選擇加購項目");
+}
+
+warnings.push("此為 V10 預設價目試算，尚未同步店主自訂價格");
+
+return {
+lines,
+total:Math.max(0,lines.reduce((sum,x)=>sum+x.amount,0)),
+warnings
+};
+}
+
+function renderBill(){
+const result=calculate();
+$("bill").replaceChildren();
+
+result.lines.forEach(item=>{
+const row=document.createElement("div");
+row.className="billrow";
+const name=document.createElement("span");
+name.textContent=item.name;
+const price=document.createElement("strong");
+price.textContent=(item.amount<0?"−":"")+fmt(Math.abs(item.amount));
+row.append(name,price);
+$("bill").append(row);
+});
+
+$("total").textContent=fmt(result.total);
+$("quoteWarning").textContent=result.warnings.join("；")+"。";
+}
+
+$("clearWork").addEventListener("click",()=>{
+selected=null;
+renderQuote();
+});
+
+$("resetQuote").addEventListener("click",()=>{
+if(!confirm("確定清除本次估價嗎？"))return;
+q=emptyQuote();
+selected=null;
+$("quoteNote").value="";
+renderQuote();
+});
+
+function quoteText(){
+const result=calculate();
+return [
+"【香香村美甲智能估價詢問】",
+"參考作品："+(selected?.name||"未指定"),
+"美甲類別："+genders[q.gender],
+"施作部位："+modes[q.mode],
+...(q.gender==="men"?["風格："+styles[q.style]]:[]),
+"",
+"【估價明細】",
+...result.lines.map(x=>`${x.name}：${x.amount<0?"−":""}${fmt(Math.abs(x.amount))}`),
+"",
+"預估總額："+fmt(result.total),
+"其他需求："+($("quoteNote").value.trim()||"無"),
+"",
+"備註：此為 V10 預設價目試算，未同步店主自訂調價；實際價格以香香村確認為準。",
+...(selected?["參考作品名稱："+selected.name]:[])
+].join("\n");
+}
+
+async function prepareLine(text){
+try{
+if(!navigator.clipboard?.writeText)throw Error("clipboard");
+await navigator.clipboard.writeText(text);
+alert("詢問內容已複製！開啟 LINE 後請貼上訊息。");
+}catch{
+window.prompt("請複製以下內容，再貼到 LINE：",text);
+}
+window.open(LINE,"_blank","noopener,noreferrer");
+}
+
+$("sendQuote").addEventListener("click",()=>prepareLine(quoteText()));
+
+$("favoriteLine").addEventListener("click",()=>{
+const saved=works.filter(w=>favorites.includes(w.id));
+if(!saved.length)return;
+prepareLine(
+"【香香村收藏作品詢問】\n喜歡的款式："+saved.map(w=>w.name).join("、")
+);
+});
+
+$("photo").addEventListener("change",e=>{
+const file=e.target.files?.[0];
+if(!file)return;
+if(!file.type.startsWith("image/")||file.size>15*1024*1024){
+alert("請選擇 15 MB 以下的圖片");
+e.target.value="";
+return;
+}
+const reader=new FileReader();
+reader.onload=()=>{
+$("preview").src=reader.result;
+$("preview").classList.remove("hidden");
+};
+reader.readAsDataURL(file);
 });
 
 $("photoLine").addEventListener("click",()=>{
-
-  const description = $("description").value.trim();
-
-  const text =
-    "【香香村美甲參考圖詢問】\n" +
-    "需求：" +
-    (description || "請協助確認設計與價格") +
-    "\n我會另外附上參考照片。";
-
-  prepareLine(text);
-});
-
-$("favoriteLine").addEventListener("click",()=>{
-
-  const saved = works.filter(
-    work=>favorites.includes(work.id)
-  );
-
-  if(!saved.length) {
-    alert("請先收藏喜歡的作品");
-    return;
-  }
-
-  const names = saved.map(
-    work=>work.name
-  );
-
-  const text =
-    "【香香村美甲收藏款式詢問】\n" +
-    "喜歡的作品：" +
-    names.join("、") +
-    "\n想請村長協助討論適合的款式與價格。";
-
-  prepareLine(text);
-});
-
-$("lineButton").addEventListener(
-  "click",
-  openLine
+prepareLine(
+"【香香村美甲參考圖詢問】\n需求："+(
+$("description").value.trim()||"請協助確認設計與價格"
+)+"\n我會另外附上參考照片。"
 );
+});
 
-async function loadArtworks() {
-
-  try {
-
-    const config = window.XIANG_FIREBASE_CONFIG;
-
-    if(!config?.apiKey || !config?.projectId) {
-      throw new Error("Firebase 設定尚未載入");
-    }
-
-    const app = getApps().length
-      ? getApp()
-      : initializeApp(config);
-
-    const db = getFirestore(app);
-
-    // 僅查詢公開上架的作品。
-    // 不讀取草稿或封存作品。
-    const artworkQuery = query(
-      collection(db,"artworks"),
-      where("status","==","published"),
-      limit(50)
-    );
-
-    const snapshot = await getDocs(artworkQuery);
-
-    works = snapshot.docs.map(document=>({
-      id:document.id,
-      ...document.data()
-    }));
-
-    works.sort((a,b)=>{
-
-      const aTime = a.createdAt?.seconds || 0;
-      const bTime = b.createdAt?.seconds || 0;
-
-      return bTime-aTime;
-    });
-
-    loadError = "";
-    render();
-
-  } catch(error) {
-
-    console.error(
-      "香香村作品讀取失敗：",
-      error
-    );
-
-    loadError =
-      "暫時無法讀取雲端作品，請稍後再試。";
-
-    works = [];
-    render();
-  }
-}
-
-render();
-loadArtworks();
-
+renderGallery();
+renderQuote();
+loadWorks();
 </script>
-
 </body>
 </html>

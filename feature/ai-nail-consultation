@@ -1,0 +1,371 @@
+
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>香香村｜作品管理後台</title>
+<style>
+:root{
+  --bg:#f7f5f1;
+  --paper:#fff;
+  --ink:#292725;
+  --muted:#817c75;
+  --line:#e8e1d8;
+  --gold:#a58c6a;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:Arial,"Microsoft JhengHei",sans-serif;
+}
+main{max-width:850px;margin:auto;padding:24px 16px 80px}
+header{text-align:center;margin:24px 0 30px}
+.brand{color:var(--gold);font-size:12px;letter-spacing:3px}
+h1{font-size:27px;margin:12px 0}
+h2{font-size:19px}
+p,.hint{color:var(--muted);line-height:1.7}
+.panel{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:22px;
+  margin-bottom:18px;
+}
+label{display:block;margin:14px 0 5px;font-size:14px}
+input,select,textarea{
+  display:block;
+  width:100%;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  font:inherit;
+  background:white;
+}
+textarea{resize:vertical}
+button{
+  font:inherit;
+  padding:11px 15px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:white;
+  cursor:pointer;
+}
+.primary{background:var(--ink);color:white}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.item{
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:15px;
+  background:white;
+}
+.item strong{display:block;margin-bottom:8px}
+.meta{font-size:12px;color:var(--muted);line-height:1.8}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.actions button{font-size:13px}
+.badge{
+  display:inline-block;
+  border-radius:30px;
+  background:#f1ede6;
+  padding:5px 10px;
+  font-size:12px;
+  margin-bottom:10px;
+}
+.hidden{display:none}
+@media(max-width:560px){
+  .grid{grid-template-columns:1fr}
+  .row{display:block}
+}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="brand">XIANG BEAUTY STUDIO</div>
+<h1>作品管理後台</h1>
+<p>ARTWORK MANAGEMENT · 村長工作室</p>
+</header>
+
+<section class="panel">
+<h2 id="formTitle">新增美甲作品</h2>
+<p class="hint">
+目前是本機測試版，尚未連接登入權限與雲端資料庫。
+請勿輸入客戶個資或未公開的作品資料。
+</p>
+<form id="artForm">
+<label for="name">作品名稱</label>
+<input id="name" required maxlength="80"
+placeholder="例如：銀色液態金屬">
+
+<div class="row">
+<div>
+<label for="gender">作品類別</label>
+<select id="gender">
+<option value="men">男士美甲</option>
+<option value="women">女士美甲</option>
+<option value="unisex">中性／不限性別</option>
+</select>
+</div>
+<div>
+<label for="style">風格分類</label>
+<select id="style">
+<option value="clean">極簡日常</option>
+<option value="graphic">潮流圖騰</option>
+<option value="metal">暗黑金屬</option>
+<option value="fandom">應援甲</option>
+</select>
+</div>
+</div>
+
+<label for="tags">搜尋標籤（逗號分隔）</label>
+<input id="tags" placeholder="銀色, 鏡面, 金屬">
+
+<label for="notes">作品備註</label>
+<textarea id="notes" rows="3"
+placeholder="施工特色、設計細節、適合的甲型等"></textarea>
+
+<label for="status">上架狀態</label>
+<select id="status">
+<option value="draft">草稿</option>
+<option value="published">公開上架</option>
+<option value="archived">封存</option>
+</select>
+
+<div class="row" style="margin-top:20px">
+<button class="primary" type="submit" id="saveBtn">儲存作品</button>
+<button type="button" id="resetBtn">清空表單</button>
+</div>
+</form>
+</section>
+
+<section class="panel">
+<h2>作品清單</h2>
+<div class="row">
+<input id="search" placeholder="搜尋作品名稱或標籤">
+<select id="filterStatus">
+<option value="all">全部狀態</option>
+<option value="draft">草稿</option>
+<option value="published">公開上架</option>
+<option value="archived">封存</option>
+</select>
+</div>
+<p class="hint" id="count"></p>
+<div class="grid" id="artList"></div>
+</section>
+</main>
+
+<script>
+const KEY="xiang-artworks-admin-demo-v1";
+const styleNames={
+  clean:"極簡日常",
+  graphic:"潮流圖騰",
+  metal:"暗黑金屬",
+  fandom:"應援甲"
+};
+const genderNames={
+  men:"男士美甲",
+  women:"女士美甲",
+  unisex:"中性／不限性別"
+};
+const statusNames={
+  draft:"草稿",
+  published:"公開上架",
+  archived:"封存"
+};
+
+const $=id=>document.getElementById(id);
+let artworks=[];
+let editingId=null;
+
+try{
+  const data=JSON.parse(localStorage.getItem(KEY)||"[]");
+  if(Array.isArray(data))artworks=data;
+}catch{}
+
+function persist(){
+  try{
+    localStorage.setItem(KEY,JSON.stringify(artworks));
+    return true;
+  }catch{
+    alert("瀏覽器無法儲存資料，請檢查儲存空間或隱私模式。");
+    return false;
+  }
+}
+
+function resetForm(){
+  editingId=null;
+  $("artForm").reset();
+  $("formTitle").textContent="新增美甲作品";
+  $("saveBtn").textContent="儲存作品";
+}
+
+$("artForm").addEventListener("submit",e=>{
+  e.preventDefault();
+
+  const now=new Date().toISOString();
+  const item={
+    id:editingId||crypto.randomUUID(),
+    name:$("name").value.trim(),
+    gender:$("gender").value,
+    style:$("style").value,
+    tags:$("tags").value
+      .split(/[,，]/)
+      .map(x=>x.trim())
+      .filter(Boolean),
+    notes:$("notes").value.trim(),
+    status:$("status").value,
+    updatedAt:now
+  };
+
+  if(!item.name){
+    alert("請輸入作品名稱");
+    return;
+  }
+
+  const old=artworks.find(x=>x.id===editingId);
+  item.createdAt=old?.createdAt||now;
+
+  const next=editingId
+    ?artworks.map(x=>x.id===editingId?item:x)
+    :[item,...artworks];
+
+  const previous=artworks;
+  artworks=next;
+
+  if(!persist()){
+    artworks=previous;
+    return;
+  }
+
+  resetForm();
+  render();
+  alert("作品已儲存於這台電腦的瀏覽器");
+});
+
+$("resetBtn").addEventListener("click",resetForm);
+
+function editItem(id){
+  const x=artworks.find(a=>a.id===id);
+  if(!x)return;
+
+  editingId=id;
+  $("name").value=x.name;
+  $("gender").value=x.gender;
+  $("style").value=x.style;
+  $("tags").value=x.tags.join(", ");
+  $("notes").value=x.notes;
+  $("status").value=x.status;
+  $("formTitle").textContent="編輯作品";
+  $("saveBtn").textContent="更新作品";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function changeStatus(id,status){
+  const x=artworks.find(a=>a.id===id);
+  if(!x)return;
+  const old=x.status;
+  x.status=status;
+  x.updatedAt=new Date().toISOString();
+
+  if(!persist()){
+    x.status=old;
+    return;
+  }
+  render();
+}
+
+function deleteItem(id){
+  if(!confirm("確定刪除這筆測試作品嗎？"))return;
+  const old=artworks;
+  artworks=artworks.filter(x=>x.id!==id);
+
+  if(!persist()){
+    artworks=old;
+    return;
+  }
+
+  if(editingId===id)resetForm();
+  render();
+}
+
+function action(label,callback){
+  const btn=document.createElement("button");
+  btn.type="button";
+  btn.textContent=label;
+  btn.addEventListener("click",callback);
+  return btn;
+}
+
+function render(){
+  const keyword=$("search").value.trim().toLowerCase();
+  const status=$("filterStatus").value;
+
+  const items=artworks.filter(x=>
+    (status==="all"||x.status===status)&&
+    [x.name,...x.tags,x.notes]
+      .join(" ").toLowerCase().includes(keyword)
+  );
+
+  $("count").textContent=
+    "目前共 "+artworks.length+" 筆作品，顯示 "+items.length+" 筆";
+
+  $("artList").replaceChildren();
+
+  if(!items.length){
+    const p=document.createElement("p");
+    p.className="hint";
+    p.textContent="目前沒有符合條件的作品。";
+    $("artList").append(p);
+    return;
+  }
+
+  items.forEach(x=>{
+    const card=document.createElement("article");
+    card.className="item";
+
+    const badge=document.createElement("span");
+    badge.className="badge";
+    badge.textContent=statusNames[x.status]||x.status;
+
+    const name=document.createElement("strong");
+    name.textContent=x.name;
+
+    const meta=document.createElement("div");
+    meta.className="meta";
+    meta.textContent=[
+      genderNames[x.gender],
+      styleNames[x.style],
+      x.tags.join("、")
+    ].filter(Boolean).join(" · ");
+
+    const buttons=document.createElement("div");
+    buttons.className="actions";
+
+    buttons.append(
+      action("編輯",()=>editItem(x.id)),
+      action(
+        x.status==="published"?"下架":"上架",
+        ()=>changeStatus(
+          x.id,
+          x.status==="published"?"archived":"published"
+        )
+      ),
+      action("刪除",()=>deleteItem(x.id))
+    );
+
+    card.append(badge,name,meta,buttons);
+    $("artList").append(card);
+  });
+}
+
+$("search").addEventListener("input",render);
+$("filterStatus").addEventListener("change",render);
+
+render();
+</script>
+</body>
+</html>

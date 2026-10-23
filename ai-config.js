@@ -28,11 +28,11 @@ window.XIANG_AI_CONFIG = {
     onlineBooking: false
   },
 
-  styles: [
-    { id: "minimal", name: "極簡日常" },
-    { id: "street", name: "潮流圖騰" },
-    { id: "dark", name: "暗黑金屬" },
-    { id: "fan", name: "應援客製" }
+   styles: [
+    { id: "clean", name: "極簡日常" },
+    { id: "graphic", name: "潮流圖騰" },
+    { id: "metal", name: "暗黑金屬" },
+    { id: "fandom", name: "應援甲" }
   ],
 
   recognition: {

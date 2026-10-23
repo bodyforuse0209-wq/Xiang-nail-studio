@@ -2122,3 +2122,335 @@ true
 }
 
 start();
+
+/* ===== XIANG V10.1 一次升級：貼在 app.js 最後 ===== */
+(function upgradeV101(){
+  const NEW_BASE = [
+    ['gradient','漸層凝膠',1200],
+    ['mirrorCat','鏡面貓眼',1400],
+    ['gradientCat','漸層貓眼',1400]
+  ];
+
+  for (const gender of ['men','women']) {
+    for (const zone of ['hand','foot']) {
+      const rows = BASE[gender][zone];
+
+      for (const [id,label,handPrice] of NEW_BASE) {
+        if (!rows.some(row=>row[0]===id)) {
+          rows.splice(
+            rows.findIndex(row=>row[0]==='care'),
+            0,
+            [
+              id,
+              label,
+              handPrice+(zone==='foot'?100:0),
+              'gel'
+            ]
+          );
+        }
+      }
+
+      const mirror=rows.find(row=>row[0]==='mirror');
+
+      if (mirror) {
+        mirror[2]=zone==='hand'?1200:1300;
+      }
+    }
+  }
+
+  function zoneData(zone){
+    const x=q[zone];
+
+    if(!Array.isArray(x.customItems)){
+      x.customItems=[];
+    }
+
+    if(typeof x.extraCare!=='boolean'){
+      x.extraCare=false;
+    }
+
+    return x;
+  }
+
+  function isGel(zone){
+    return rowFor(zone)[3]==='gel';
+  }
+
+  const originalLines=lines;
+
+  lines=function(){
+    const result=originalLines();
+
+    for(const zone of areaKeys()){
+      const x=zoneData(zone);
+
+      if(isGel(zone)&&x.extraCare){
+        const careRow=BASE[q.gender][zone]
+          .find(row=>row[0]==='care');
+
+        result.push({
+          zone,
+          name:careRow[1],
+          amount:unitPrice(
+            zone,
+            'base',
+            'care',
+            careRow[2]
+          )
+        });
+
+        if(!x.extras.deep){
+          result.push({
+            zone,
+            name:'凝膠＋保養組合優惠',
+            amount:-200
+          });
+        }
+      }
+
+      for(const item of x.customItems){
+        const title=String(item.name||'').trim();
+
+        const qty=Math.max(
+          0,
+          Math.min(
+            999,
+            Math.floor(Number(item.qty)||0)
+          )
+        );
+
+        const price=n(item.price);
+
+        if(title&&qty>0){
+          result.push({
+            zone,
+            name:`${title} × ${qty}`,
+            amount:price*qty
+          });
+        }
+      }
+    }
+
+    return result;
+  };
+
+  const originalRenderQuote=renderQuote;
+
+  renderQuote=function(){
+    for(const zone of areaKeys()){
+      zoneData(zone);
+    }
+
+    originalRenderQuote();
+
+    document.getElementById(
+      'xiangV101Extras'
+    )?.remove();
+
+    const wrap=document.createElement('div');
+    wrap.id='xiangV101Extras';
+
+    wrap.innerHTML=areaKeys().map(zone=>{
+      const x=zoneData(zone);
+
+      const careRow=BASE[q.gender][zone]
+        .find(row=>row[0]==='care');
+
+      const isPureCare=rowFor(zone)[3]==='care';
+
+      const carePrice=unitPrice(
+        zone,
+        'base',
+        'care',
+        careRow[2]
+      );
+
+      return `
+      <section class="zone" style="margin-top:16px">
+        <div class="zonetitle">
+          <strong>${loc(zone)}｜自由搭配保養</strong>
+          <span class="pill">V10.1</span>
+        </div>
+
+        <label class="itemline"
+          style="display:flex;gap:12px;align-items:center;cursor:pointer">
+
+          <input
+            type="checkbox"
+            data-v101-care="${zone}"
+            ${isPureCare||x.extraCare?'checked':''}
+            ${isPureCare?'disabled':''}
+            style="width:20px;height:20px;flex:none"
+          >
+
+          <span class="left">
+            <strong>
+              基礎保養 ${fmt(carePrice)}
+            </strong>
+
+            <small class="meta" style="display:block">
+              ${
+                isPureCare
+                ? '已選為純保養底款'
+                : isGel(zone)
+                ? '可與凝膠一起做，自動折 NT$200'
+                : '選擇凝膠底款後可搭配優惠'
+              }
+            </small>
+          </span>
+        </label>
+
+        <p class="hint">
+          深層保養仍在下方「卸甲與修整」加購；
+          同部位凝膠搭配基礎／深層保養，
+          最多只折 NT$200。
+        </p>
+      </section>
+
+      <section class="zone" style="margin-top:16px">
+        <div class="zonetitle">
+          <strong>${loc(zone)}｜自訂收費項目</strong>
+          <span class="pill">自由報價</span>
+        </div>
+
+        <p class="hint">
+          特殊造型、局部光療、手繪與應援甲
+          都可以自己填。金額會自動加入估價單
+          及營業回報。
+        </p>
+
+        ${x.customItems.map((item,i)=>`
+          <div class="itemline"
+            style="display:block;padding:12px 0;border-bottom:1px solid #ddd">
+
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <strong>自訂項目 ${i+1}</strong>
+
+              <button
+                type="button"
+                class="button outline tiny"
+                data-v101-remove="${zone}|${i}"
+              >
+                刪除
+              </button>
+            </div>
+
+            <input
+              data-v101-field="${zone}|${i}|name"
+              placeholder="項目名稱，例如：局部貓眼"
+              value="${esc(item.name)}"
+              style="width:100%;margin-bottom:8px;box-sizing:border-box;padding:10px;border-radius:8px;border:1px solid #bbb"
+            >
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <label class="meta">
+                單價 NT$
+
+                <input
+                  type="number"
+                  min="0"
+                  inputmode="numeric"
+                  data-v101-field="${zone}|${i}|price"
+                  value="${esc(item.price)}"
+                  style="display:block;width:100%;box-sizing:border-box;padding:10px;border-radius:8px;border:1px solid #bbb"
+                >
+              </label>
+
+              <label class="meta">
+                數量
+
+                <input
+                  type="number"
+                  min="1"
+                  max="999"
+                  inputmode="numeric"
+                  data-v101-field="${zone}|${i}|qty"
+                  value="${esc(item.qty)}"
+                  style="display:block;width:100%;box-sizing:border-box;padding:10px;border-radius:8px;border:1px solid #bbb"
+                >
+              </label>
+            </div>
+          </div>
+        `).join('')}
+
+        <button
+          type="button"
+          class="button outline wide"
+          data-v101-add="${zone}"
+          style="margin-top:12px"
+        >
+          ＋ 新增自訂收費項目
+        </button>
+      </section>
+      `;
+    }).join('');
+
+    $('extraArea').insertAdjacentElement(
+      'afterend',
+      wrap
+    );
+
+    updateSummary();
+  };
+
+  document.addEventListener('change',e=>{
+    const zone=e.target?.dataset?.v101Care;
+
+    if(!zone)return;
+
+    zoneData(zone).extraCare=!!e.target.checked;
+
+    renderQuote();
+  });
+
+  document.addEventListener('input',e=>{
+    const info=e.target?.dataset?.v101Field;
+
+    if(!info)return;
+
+    const [zone,index,field]=info.split('|');
+
+    const item=zoneData(zone)
+      .customItems[Number(index)];
+
+    if(!item)return;
+
+    item[field]=e.target.value;
+
+    updateSummary();
+  });
+
+  document.addEventListener('click',e=>{
+    const add=e.target.closest('[data-v101-add]');
+
+    if(add){
+      zoneData(add.dataset.v101Add)
+        .customItems.push({
+          name:'',
+          price:'',
+          qty:'1'
+        });
+
+      renderQuote();
+      return;
+    }
+
+    const remove=e.target.closest(
+      '[data-v101-remove]'
+    );
+
+    if(remove){
+      const [zone,index]=
+        remove.dataset.v101Remove.split('|');
+
+      zoneData(zone)
+        .customItems.splice(Number(index),1);
+
+      renderQuote();
+    }
+  });
+
+  renderQuote();
+})();
+/* ===== XIANG V10.1 升級結束 ===== */
+

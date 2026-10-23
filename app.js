@@ -2452,5 +2452,101 @@ start();
 
   renderQuote();
 })();
+
+/* ===== XIANG V10.1 全站名稱統一：光療 → 凝膠 ===== */
+(function normalizeGelNaming(){
+
+  const rename = text =>
+    typeof text === 'string'
+      ? text.replace(/光療/g, '凝膠')
+      : text;
+
+  // 基礎服務
+  for (const gender of ['men', 'women']) {
+    for (const zone of ['hand', 'foot']) {
+      for (const row of BASE[gender][zone]) {
+        row[1] = rename(row[1]);
+      }
+    }
+
+    // 造型加購
+    for (const group of GROUP[gender]) {
+      group[0] = rename(group[0]);
+
+      for (const row of group[1]) {
+        row[1] = rename(row[1]);
+      }
+    }
+
+    // 其他加購
+    for (const row of EXTRA[gender]) {
+      row[1] = rename(row[1]);
+    }
+  }
+
+  // 頁面文字：包含估價明細及動態產生的內容
+  function replaceVisibleText(root) {
+    if (!root) return;
+
+    const walker = document.createTreeWalker(
+      root,
+      NodeFilter.SHOW_TEXT
+    );
+
+    let node;
+
+    while ((node = walker.nextNode())) {
+      if (node.nodeValue.includes('光療')) {
+        node.nodeValue = rename(node.nodeValue);
+      }
+    }
+
+    root.querySelectorAll?.(
+      'input[placeholder], textarea[placeholder]'
+    ).forEach(el => {
+      el.placeholder = rename(el.placeholder);
+    });
+  }
+
+  replaceVisibleText(document.body);
+
+  // 自動處理重新渲染後的畫面
+  const observer = new MutationObserver(mutations => {
+    observer.disconnect();
+
+    for (const mutation of mutations) {
+      if (mutation.type === 'characterData') {
+        const node = mutation.target;
+
+        if (node.nodeValue.includes('光療')) {
+          node.nodeValue = rename(node.nodeValue);
+        }
+      }
+
+      for (const node of mutation.addedNodes) {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          replaceVisibleText(node);
+        }
+      }
+    }
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    characterData: true
+  });
+
+  console.log('XIANG：凝膠名稱統一完成');
+
+})();
+/* ===== 名稱統一結束 ===== */
+
 /* ===== XIANG V10.1 升級結束 ===== */
 

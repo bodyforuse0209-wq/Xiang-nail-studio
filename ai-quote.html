@@ -4,7 +4,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>香香村｜AI 智能美甲估價</title>
+<meta name="theme-color" content="#f8f6f2">
+<title>香香村｜AI 智能美甲估價 V2</title>
 <script src="./firebase-config.js"></script>
 <style>
 :root{
@@ -17,541 +18,556 @@
 }
 *{box-sizing:border-box}
 body{
-  margin:0;
-  background:var(--bg);
-  color:var(--ink);
-  font-family:-apple-system,BlinkMacSystemFont,"Microsoft JhengHei",sans-serif;
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,
+  "Microsoft JhengHei",sans-serif;
   line-height:1.65;
 }
-main{max-width:650px;margin:auto;padding:30px 16px 70px}
-.brand{text-align:center;letter-spacing:3px;font-size:12px;color:var(--gold)}
-h1{text-align:center;font-size:26px;margin:10px 0 5px}
-h2{font-size:18px;margin:0 0 12px}
-.sub{text-align:center;color:var(--muted);margin:0 0 25px}
+main{max-width:680px;margin:auto;padding:30px 16px 75px}
+.brand{text-align:center;letter-spacing:4px;color:var(--gold);font-size:12px}
+h1{text-align:center;font-size:26px;margin:10px 0 4px}
+h2{font-size:19px;margin:0 0 15px}
+h3{font-size:16px;margin:16px 0 8px}
+.sub{text-align:center;color:var(--muted);margin-bottom:25px}
 .panel{
-  background:var(--paper);
-  border:1px solid var(--line);
-  border-radius:18px;
-  padding:20px;
-  margin:16px 0;
+  background:var(--paper);border:1px solid var(--line);
+  border-radius:20px;padding:20px;margin:16px 0;
 }
 .hidden{display:none!important}
-label{display:block;margin:13px 0 5px}
+label{display:block;margin:12px 0 5px}
 input,select{
-  width:100%;
-  border:1px solid var(--line);
-  border-radius:10px;
-  background:#fff;
-  padding:12px;
-  font:inherit;
+  width:100%;padding:12px;border:1px solid var(--line);
+  border-radius:10px;background:white;font:inherit;
 }
 button{
-  border:0;
-  border-radius:10px;
-  background:var(--ink);
-  color:white;
-  padding:13px 16px;
-  font:inherit;
-  cursor:pointer;
-  width:100%;
-  margin-top:15px;
+  width:100%;padding:13px 16px;margin-top:12px;
+  border:0;border-radius:11px;background:var(--ink);
+  color:white;font:inherit;cursor:pointer;
 }
 button:disabled{opacity:.5}
+.secondary{background:#eee9e2;color:var(--ink)}
 .muted{color:var(--muted);font-size:13px}
-.photo{
-  display:none;
-  width:100%;
-  max-height:350px;
-  object-fit:contain;
-  border-radius:12px;
-  margin-top:15px;
-}
 .notice{
-  background:#f7f0e6;
-  border-left:3px solid var(--gold);
-  padding:14px;
-  border-radius:8px;
-  font-size:14px;
+  background:#f7f0e6;border-left:3px solid var(--gold);
+  border-radius:10px;padding:14px;font-size:14px;
 }
-.status{white-space:pre-wrap;color:#78603f;margin:12px 0}
-.amount{font-size:30px;font-weight:700;color:#876b47}
-.item{
-  display:flex;
-  justify-content:space-between;
-  gap:15px;
-  padding:7px 0;
+.status{color:#876b47;white-space:pre-wrap;margin:12px 0}
+.photo{
+  display:none;width:100%;max-height:360px;
+  object-fit:contain;border-radius:12px;margin-top:12px;
+}
+.row{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;border-bottom:1px solid var(--line);padding:9px 0;
+}
+.row span:last-child{text-align:right}
+.tag{
+  display:inline-block;background:#f0ebe4;color:#765e42;
+  padding:5px 11px;border-radius:20px;
+  font-size:12px;margin:4px 4px 4px 0;
+}
+.amount{font-size:36px;font-weight:700;color:#8c704e}
+.editor{
+  display:grid;grid-template-columns:1fr 90px;
+  gap:10px;align-items:center;padding:7px 0;
   border-bottom:1px solid var(--line);
 }
-.item span:last-child{white-space:nowrap}
-.pill{
-  display:inline-block;
-  background:#f1ece5;
-  border-radius:30px;
-  padding:4px 11px;
-  font-size:12px;
+.editor input{text-align:center}
+.check{
+  display:flex;align-items:center;gap:10px;
 }
-a{color:#78603f}
+.check input{width:auto}
+a{color:#806846}
 </style>
 </head>
 <body>
 <main>
-
 <div class="brand">XIANG BEAUTY STUDIO</div>
 <h1>AI 智能美甲估價</h1>
-<p class="sub">參考圖片辨識・預估金額・人工確認</p>
+<p class="sub">AI 逐指辨識・雙手推估・透明計價</p>
 
-<section class="panel notice">
-  目前為<strong>村長登入測試版</strong>，尚未開放客人自行使用。
-  AI 預估金額僅供參考，不代表最終實際收費；
-  實際金額須待香香村工作人員確認並完成正式報價。
-</section>
+<div class="notice">
+  目前為村長登入測試版。
+  AI 預估金額僅供參考，不代表最終實際收費。
+  實際金額待香香村工作人員確認後正式報價。
+</div>
 
-<p id="status" class="status">正在確認登入狀態…</p>
+<p id="status" class="status">正在確認登入…</p>
 
 <section id="loginPanel" class="panel hidden">
   <h2>村長登入</h2>
   <form id="loginForm">
     <label>電子郵件
-      <input id="email" type="email" required autocomplete="username">
+      <input id="email" type="email" required>
     </label>
     <label>密碼
-      <input id="password" type="password" required autocomplete="current-password">
+      <input id="password" type="password" required>
     </label>
-    <button>登入並開始測試</button>
+    <button>登入</button>
   </form>
 </section>
 
-<section id="appPanel" class="hidden">
+<div id="appPanel" class="hidden">
+<section class="panel">
+  <h2>01｜上傳美甲參考圖</h2>
+  <p class="muted">
+    手機會自動縮圖壓縮後送交 AI 分析，
+    不需要先上傳到作品資料庫。
+  </p>
 
-  <section class="panel">
-    <h2>01｜上傳參考圖片</h2>
-    <p class="muted">
-      先以村長身分測試外部參考圖，
-      照片限 JPG、PNG、WebP，8MB 以下。
-    </p>
+  <input id="photo" type="file"
+    accept="image/jpeg,image/png,image/webp,image/*">
 
-    <label>選擇照片
-      <input id="photo" type="file" accept="image/jpeg,image/png,image/webp">
-    </label>
+  <img id="preview" class="photo" alt="參考圖片">
 
-    <img id="preview" class="photo" alt="美甲參考圖片">
+  <label>服務類別
+    <select id="gender">
+      <option value="women">女士美甲</option>
+      <option value="men">男士美甲</option>
+    </select>
+  </label>
 
-    <label>服務類別
-      <select id="gender">
-        <option value="women">女士美甲</option>
-        <option value="men">男士美甲</option>
-      </select>
-    </label>
+  <label class="check">
+    <input id="mirror" type="checkbox" checked>
+    雙手採用相同款式配置
+  </label>
 
-    <label>風格
-      <select id="style">
-        <option value="clean">極簡日常</option>
-        <option value="graphic">潮流圖騰</option>
-        <option value="metal">暗黑金屬</option>
-        <option value="fandom">應援甲</option>
-      </select>
-    </label>
+  <p class="muted">
+    若照片只有單手，勾選後會推估另一手使用相同設計。
+    這是估價假設，不代表 AI 已看見另一手。
+  </p>
 
-    <button id="analyzeBtn" type="button">
-      上傳並進行 AI 分析
-    </button>
-  </section>
+  <button id="analyzeBtn" type="button">
+    開始 AI 智能分析
+  </button>
 
-  <section id="resultPanel" class="panel hidden">
-    <h2>02｜AI 分析結果</h2>
-    <p id="summary"></p>
-    <p id="tier" class="pill"></p>
-    <div id="details"></div>
-
-    <h2 style="margin-top:20px">03｜AI 預估金額</h2>
-    <div id="amount" class="amount">待確認</div>
-    <div id="breakdown"></div>
-    <p id="reason" class="muted"></p>
-
-    <div class="notice">
-      <strong>AI 估價提醒</strong>
-      <div>
-        本系統提供之 AI 估算金額僅供參考，
-        不代表最終實際收費。
-        實際施作金額將依款式複雜度、
-        施作需求及現場評估，
-        由香香村工作人員確認後提供正式報價。
-      </div>
-    </div>
-
-    <p class="muted">
-      未包含卸甲、延長、保養等未確認服務。
-      若 AI 無法可靠辨識，則不顯示金額。
-    </p>
-  </section>
-
-  <section class="panel">
-    <a href="./ai-review.html">前往村長 AI 審核工作台 →</a>
-  </section>
-
+  <button id="retryBtn" class="secondary hidden" type="button">
+    重新分析
+  </button>
 </section>
+
+<section id="resultPanel" class="panel hidden">
+  <h2>02｜AI 風格辨識</h2>
+  <h3 id="styleName"></h3>
+  <div id="tags"></div>
+  <p id="summary"></p>
+
+  <h2>03｜照片施工辨識</h2>
+  <div id="details"></div>
+
+  <h3>逐指說明</h3>
+  <div id="nails"></div>
+
+  <h2>04｜調整施工指數</h2>
+  <p class="muted">
+    以下為照片實際辨識到的指數。
+    可以修改，金額會自動更新。
+  </p>
+
+  <div id="editor"></div>
+
+  <h2>05｜AI 預估金額</h2>
+  <div id="amount" class="amount"></div>
+  <div id="breakdown"></div>
+  <p id="pricingNote" class="muted"></p>
+
+  <div class="notice">
+    <strong>AI 估價提醒</strong>
+    <p>
+      本系統提供之 AI 估算金額僅供參考，
+      不代表最終實際收費。
+      實際施作金額將依款式複雜度、
+      施作需求及現場評估，
+      由香香村工作人員確認後提供正式報價。
+    </p>
+  </div>
+</section>
+
+<section class="panel">
+  <a href="./ai-review.html">
+    前往村長 AI 審核工作台 →
+  </a>
+</section>
+</div>
 </main>
 
 <script type="module">
 import {
   initializeApp,getApps,getApp
-} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js';
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 
 import {
   getAuth,onAuthStateChanged,signInWithEmailAndPassword
-} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js';
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 
 import {
   getFirestore,doc,getDoc
-} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js';
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
 import {
-  normalizeAnalysis,
-  classifyArtwork,
-  BASE_PRICES,
-  ADDON_PRICES
-} from './ai-pricing-engine.js';
+  BASE_PRICES,ADDON_PRICES
+} from "./ai-pricing-engine.js";
 
 const $=id=>document.getElementById(id);
-let auth,db,owner=false,busy=false;
-
-function status(s){
-  $('status').textContent=s;
-}
-
-function money(n){
-  return 'NT$ '+Number(n).toLocaleString('zh-TW');
-}
-
 const labels={
-  solid:'單色',
-  cat:'貓眼',
-  mirror:'鏡面',
-  french:'法式',
-  partial:'局部造型',
-  unknown:'無法辨識',
-  jump:'跳色',
-  matte:'霧面',
-  blend:'暈染',
-  line:'線條',
-  geometry:'幾何',
-  graphic:'圖騰',
-  fire:'火焰',
-  cross:'十字',
-  cat1:'單指貓眼',
-  mirror1:'單指鏡面',
-  liquid:'液態金屬',
-  letters:'文字',
-  sticker:'貼紙',
-  logo:'LOGO',
-  custom:'客製手繪',
-  gem:'鑽飾',
-  stud:'金屬飾品',
-  sculpt:'立體造型',
-  extend:'延長',
-  french1:'單指法式',
-  decor:'裝飾'
+  solid:"單色",cat:"貓眼",mirror:"鏡面",
+  french:"法式",partial:"局部造型",
+  jump:"跳色",matte:"霧面",blend:"暈染",
+  line:"線條",geometry:"幾何",graphic:"圖騰",
+  fire:"火焰",cross:"十字",cat1:"單指貓眼",
+  mirror1:"單指鏡面",liquid:"液態金屬",
+  letters:"文字",sticker:"貼紙",
+  logo:"LOGO",custom:"客製手繪",
+  gem:"鑽飾",stud:"金屬飾品",
+  sculpt:"立體造型",extend:"延長",
+  french1:"單指法式",decor:"裝飾"
 };
 
-function row(parent,name,value){
-  const el=document.createElement('div');
-  el.className='item';
+let auth,db,owner=false,busy=false;
+let analysis=null;
+let counts={};
+let compressed=null;
+let compressedKey="";
+let previewUrl="";
 
-  const a=document.createElement('span');
+const money=n=>"NT$"+Number(n).toLocaleString("zh-TW");
+const status=s=>$("status").textContent=s;
+
+function addRow(target,name,value){
+  const div=document.createElement("div");
+  div.className="row";
+  const a=document.createElement("span");
+  const b=document.createElement("span");
   a.textContent=name;
-
-  const b=document.createElement('span');
   b.textContent=value;
-
-  el.append(a,b);
-  parent.append(el);
+  div.append(a,b);
+  target.append(div);
 }
 
-$('photo').addEventListener('change',()=>{
-  const f=$('photo').files[0];
-  const img=$('preview');
+function tag(target,value){
+  const span=document.createElement("span");
+  span.className="tag";
+  span.textContent=value;
+  target.append(span);
+}
 
-  if(img.dataset.url){
-    URL.revokeObjectURL(img.dataset.url);
+async function compress(file){
+  if(file.size>20*1024*1024){
+    throw Error("原始照片請勿超過 20MB");
   }
 
-  img.style.display='none';
+  const bitmap=await createImageBitmap(file);
+  const max=1280;
+  const scale=Math.min(
+    1,max/Math.max(bitmap.width,bitmap.height)
+  );
 
-  if(f){
-    img.dataset.url=URL.createObjectURL(f);
-    img.src=img.dataset.url;
-    img.style.display='block';
+  const canvas=document.createElement("canvas");
+  canvas.width=Math.max(1,Math.round(bitmap.width*scale));
+  canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+
+  const ctx=canvas.getContext("2d");
+  ctx.fillStyle="#fff";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+  bitmap.close();
+
+  let quality=.82;
+  let blob;
+
+  do{
+    blob=await new Promise(resolve=>
+      canvas.toBlob(resolve,"image/jpeg",quality)
+    );
+    quality-=.12;
+  }while(blob && blob.size>2*1024*1024 && quality>=.45);
+
+  if(!blob) throw Error("圖片壓縮失敗");
+
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(reader.result);
+    reader.onerror=()=>reject(Error("圖片讀取失敗"));
+    reader.readAsDataURL(blob);
+  });
+}
+
+$("photo").onchange=()=>{
+  const file=$("photo").files[0];
+
+  compressed=null;
+  compressedKey="";
+  analysis=null;
+  $("resultPanel").classList.add("hidden");
+
+  if(previewUrl) URL.revokeObjectURL(previewUrl);
+
+  if(file){
+    previewUrl=URL.createObjectURL(file);
+    $("preview").src=previewUrl;
+    $("preview").style.display="block";
+  }else{
+    $("preview").style.display="none";
   }
+};
 
-  $('resultPanel').classList.add('hidden');
-});
-
-$('loginForm').onsubmit=async e=>{
+$("loginForm").onsubmit=async e=>{
   e.preventDefault();
-
   try{
     await signInWithEmailAndPassword(
-      auth,
-      $('email').value.trim(),
-      $('password').value
+      auth,$("email").value.trim(),$("password").value
     );
-  }catch(err){
-    status('登入失敗：'+err.message);
+  }catch(e){
+    status("登入失敗："+e.message);
   }
 };
 
-function estimate(a,gender,style,tier){
-  if(tier.status!=='standard'){
-    return null;
+function showAnalysis(data){
+  analysis=data;
+  counts={};
+
+  $("resultPanel").classList.remove("hidden");
+  $("styleName").textContent=
+    data.styleName||"AI 款式辨識";
+
+  $("tags").replaceChildren();
+
+  for(const t of [
+    ...(data.styleTags||[]),
+    ...(data.colors||[])
+  ]){
+    tag($("tags"),t);
+  }
+
+  $("summary").textContent=data.summary||"";
+
+  const details=$("details");
+  details.replaceChildren();
+
+  addRow(
+    details,"施作部位",
+    data.zone==="hand"?"手部":
+    data.zone==="foot"?"足部":"未確認"
+  );
+
+  addRow(details,"底款",labels[data.base]||"未確認");
+  addRow(details,"可見指甲",data.visibleNails+" 指");
+
+  const nails=$("nails");
+  nails.replaceChildren();
+
+  for(const nail of data.nails||[]){
+    addRow(
+      nails,
+      nail.position||"指甲",
+      nail.description||"未辨識"
+    );
+  }
+
+  const editor=$("editor");
+  editor.replaceChildren();
+
+  for(const item of data.items||[]){
+    counts[item.id]=(counts[item.id]||0)+item.count;
+  }
+
+  for(const [id,count] of Object.entries(counts)){
+    const div=document.createElement("div");
+    div.className="editor";
+
+    const label=document.createElement("label");
+    label.textContent=labels[id]||id;
+
+    const input=document.createElement("input");
+    input.type="number";
+    input.min="0";
+    input.max=id==="gem"?"50":"10";
+    input.value=count;
+
+    input.oninput=()=>{
+      counts[id]=Math.max(
+        0,Math.min(
+          id==="gem"?50:10,
+          Number(input.value)||0
+        )
+      );
+      calculate();
+    };
+
+    div.append(label,input);
+    editor.append(div);
+  }
+
+  if(!Object.keys(counts).length){
+    editor.textContent="未辨識到額外施工項目";
+  }
+
+  calculate();
+
+  $("resultPanel").scrollIntoView({
+    behavior:"smooth"
+  });
+}
+
+function calculate(){
+  if(!analysis)return;
+
+  const gender=$("gender").value;
+  const a=analysis;
+  const mirror=$("mirror").checked;
+  const multiplier=mirror && a.visibleNails<=5?2:1;
+
+  const breakdown=$("breakdown");
+  breakdown.replaceChildren();
+
+  if(!a.isNailImage){
+    $("amount").textContent="無法辨識美甲作品";
+    $("pricingNote").textContent="請上傳清晰的美甲照片";
+    return;
   }
 
   const base=BASE_PRICES[gender]?.[a.zone]?.[a.base];
 
   if(!Number.isFinite(base)){
-    return null;
+    $("amount").textContent="底款待確認";
+    $("pricingNote").textContent=
+      "AI 尚未確認底款，請由工作人員判斷。";
+    return;
   }
 
-  const lines=[
-    {name:'基礎凝膠',amount:base}
-  ];
+  let total=base;
+  let incomplete=false;
+  const issues=[];
 
-  if(gender==='men'&&style==='metal'){
-    lines.push({
-      name:'暗黑金屬風格',
-      amount:100
-    });
-  }
+  addRow(breakdown,"基礎凝膠",money(base));
 
-  if(gender==='men'&&style==='fandom'){
-    lines.push({
-      name:'應援甲風格',
-      amount:200
-    });
-  }
+  for(const [id,count] of Object.entries(counts)){
+    if(count<=0)continue;
 
-  const seen=new Set();
+    if(a.base==="cat"&&id==="cat1")continue;
+    if(a.base==="mirror"&&id==="mirror1")continue;
 
-  for(const item of a.items){
-    if(seen.has(item.id)){
-      return null;
-    }
+    const unit=ADDON_PRICES[gender]?.[id];
 
-    seen.add(item.id);
-
-    if(
-      (a.base==='cat'&&item.id==='cat1')||
-      (a.base==='mirror'&&item.id==='mirror1')
-    ){
+    if(!Number.isFinite(unit)){
+      incomplete=true;
+      issues.push(labels[id]||id);
       continue;
     }
 
-    const unit=ADDON_PRICES[gender]?.[item.id];
+    const qty=Math.min(50,count*multiplier);
+    const amount=unit*qty;
 
-    if(!Number.isFinite(unit)){
-      return null;
-    }
+    total+=amount;
 
-    lines.push({
-      name:(labels[item.id]||item.id)+' × '+item.count,
-      amount:unit*item.count
-    });
+    addRow(
+      breakdown,
+      (labels[id]||id)+" "+qty+" × "+money(unit),
+      money(amount)
+    );
   }
 
-  return {
-    lines,
-    total:lines.reduce(
-      (sum,x)=>sum+x.amount,
-      0
-    )
-  };
+  $("amount").textContent=money(total);
+
+  const warnings=[];
+
+  if(multiplier===2){
+    warnings.push(
+      "已假設另一手採相同配置，造型指數乘以 2。"
+    );
+  }else if(a.visibleNails<=5){
+    warnings.push(
+      "未推估另一手的額外造型，可能低估雙手總價。"
+    );
+  }
+
+  if(incomplete){
+    warnings.push(
+      "此為已知項目的部分估價，尚未包含："+issues.join("、")
+    );
+  }
+
+  if((a.questions||[]).length){
+    warnings.push(
+      "部分施工細節需要工作人員確認。"
+    );
+  }
+
+  warnings.push(
+    "目前使用測試版參考價，尚未同步 V10 即時調價。"
+  );
+
+  $("pricingNote").textContent=warnings.join("\n");
 }
 
-$('analyzeBtn').onclick=async()=>{
-  if(!owner||busy){
-    return;
-  }
+$("mirror").onchange=calculate;
+$("gender").onchange=calculate;
 
-  const file=$('photo').files[0];
+async function analyze(){
+  if(!owner||busy)return;
+
+  const file=$("photo").files[0];
 
   if(!file){
-    status('請先選擇圖片');
-    return;
-  }
-
-  if(
-    !['image/jpeg','image/png','image/webp'].includes(file.type)||
-    file.size>8*1024*1024
-  ){
-    status('僅接受 8MB 以下 JPG、PNG、WebP');
+    status("請先選擇照片");
     return;
   }
 
   busy=true;
-  $('analyzeBtn').disabled=true;
-  $('resultPanel').classList.add('hidden');
+  $("analyzeBtn").disabled=true;
+  $("retryBtn").classList.add("hidden");
 
   try{
-    status('正在取得圖片上傳授權…');
+    const key=[
+      file.name,file.size,file.lastModified
+    ].join(":");
+
+    if(!compressed||compressedKey!==key){
+      status("正在壓縮照片…");
+      compressed=await compress(file);
+      compressedKey=key;
+    }
+
+    status("AI 正在逐指辨識款式…");
 
     const token=await auth.currentUser.getIdToken();
 
-    const signResponse=await fetch('/api/cloudinary-sign',{
-      method:'POST',
+    const response=await fetch("/api/analyze-nail",{
+      method:"POST",
       headers:{
-        'Content-Type':'application/json',
-        Authorization:'Bearer '+token
-      }
-    });
-
-    const sign=await signResponse.json();
-
-    if(!signResponse.ok){
-      throw Error(sign.error||'圖片上傳授權失敗');
-    }
-
-    const form=new FormData();
-    form.append('file',file);
-
-    for(const key of [
-      'apiKey',
-      'timestamp',
-      'signature',
-      'folder',
-      'overwrite'
-    ]){
-      form.append(
-        key==='apiKey'?'api_key':key,
-        String(sign[key])
-      );
-    }
-
-    status('正在上傳圖片…');
-
-    const uploadResponse=await fetch(
-      'https://api.cloudinary.com/v1_1/'+
-      encodeURIComponent(sign.cloudName)+
-      '/image/upload',
-      {
-        method:'POST',
-        body:form
-      }
-    );
-
-    const uploaded=await uploadResponse.json();
-
-    if(!uploadResponse.ok||!uploaded.secure_url){
-      throw Error(
-        uploaded.error?.message||'上傳失敗'
-      );
-    }
-
-    status('AI 正在辨識款式…');
-
-    const response=await fetch('/api/analyze-nail',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        Authorization:'Bearer '+token
+        "Content-Type":"application/json",
+        Authorization:"Bearer "+token
       },
       body:JSON.stringify({
-        imageUrl:uploaded.secure_url
+        imageData:compressed
       })
     });
 
-    const raw=await response.json();
+    const data=await response.json();
 
     if(!response.ok){
-      throw Error(raw.error||'AI 分析失敗');
+      throw Error(data.error||"AI 分析失敗");
     }
 
-    const a=normalizeAnalysis(raw);
-    const tier=classifyArtwork(a);
+    showAnalysis(data);
+    status("AI 分析完成，可修改指數並查看預估金額。");
 
-    const gender=$('gender').value;
-    const style=$('style').value;
-
-    $('summary').textContent=
-      a.summary||'已完成辨識';
-
-    $('tier').textContent=tier.label;
-
-    const details=$('details');
-    details.replaceChildren();
-
-    row(
-      details,
-      '施作部位',
-      a.zone==='hand'?'手部':
-      a.zone==='foot'?'足部':'無法確認'
-    );
-
-    row(
-      details,
-      '底款',
-      labels[a.base]||a.base
-    );
-
-    row(
-      details,
-      '可見指甲',
-      a.visibleNails+' 指'
-    );
-
-    for(const x of a.items){
-      row(
-        details,
-        labels[x.id]||x.id,
-        x.count+' 個／指'
-      );
-    }
-
-    const result=estimate(
-      a,gender,style,tier
-    );
-
-    const breakdown=$('breakdown');
-    breakdown.replaceChildren();
-
-    $('amount').textContent=result
-      ?money(result.total)
-      :'待工作人員報價';
-
-    if(result){
-      for(const x of result.lines){
-        row(
-          breakdown,
-          x.name,
-          money(x.amount)
-        );
-      }
-    }
-
-    $('reason').textContent=result
-      ?'此金額使用測試版內建參考價，尚未核對 Firebase V10 即時調價，不代表正式報價。'
-      :tier.reason||'需要工作人員確認。';
-
-    $('resultPanel').classList.remove('hidden');
-
-    status('AI 分析完成。');
-
-    $('resultPanel').scrollIntoView({
-      behavior:'smooth'
-    });
-
-  }catch(err){
-    status('分析未完成：'+err.message);
+  }catch(error){
+    status("分析未完成："+error.message);
+    $("retryBtn").classList.remove("hidden");
   }finally{
     busy=false;
-    $('analyzeBtn').disabled=false;
+    $("analyzeBtn").disabled=false;
   }
-};
+}
+
+$("analyzeBtn").onclick=analyze;
+$("retryBtn").onclick=analyze;
 
 try{
-  if(
-    !window.XIANG_FIREBASE_CONFIG||
-    !window.XIANG_OWNER_UID
-  ){
-    throw Error('找不到 Firebase 設定');
+  if(!window.XIANG_FIREBASE_CONFIG||
+     !window.XIANG_OWNER_UID){
+    throw Error("找不到 Firebase 設定");
   }
 
   const app=getApps().length
@@ -563,46 +579,41 @@ try{
 
   onAuthStateChanged(auth,async user=>{
     owner=false;
-
-    $('appPanel').classList.add('hidden');
-    $('loginPanel').classList.remove('hidden');
+    $("appPanel").classList.add("hidden");
+    $("loginPanel").classList.remove("hidden");
 
     if(!user){
-      status('請先以村長帳號登入。');
+      status("請使用村長帳號登入");
       return;
     }
 
     try{
       if(user.uid!==window.XIANG_OWNER_UID){
-        throw Error('此測試頁僅限村長');
+        throw Error("此測試頁僅限村長");
       }
 
       const snap=await getDoc(
-        doc(db,'staff',user.uid)
+        doc(db,"staff",user.uid)
       );
 
-      if(
-        !snap.exists()||
-        snap.data().role!=='owner'||
-        snap.data().active!==true
-      ){
-        throw Error('店主權限未啟用');
+      if(!snap.exists()||
+         snap.data().role!=="owner"||
+         snap.data().active!==true){
+        throw Error("店主權限未啟用");
       }
 
       owner=true;
+      $("loginPanel").classList.add("hidden");
+      $("appPanel").classList.remove("hidden");
+      status("村長登入成功，可以開始 AI 分析。");
 
-      $('loginPanel').classList.add('hidden');
-      $('appPanel').classList.remove('hidden');
-
-      status('村長登入成功，可以開始測試 AI 辨識。');
-
-    }catch(err){
-      status('權限確認失敗：'+err.message);
+    }catch(error){
+      status("權限確認失敗："+error.message);
     }
   });
 
-}catch(err){
-  status('初始化失敗：'+err.message);
+}catch(error){
+  status("初始化失敗："+error.message);
 }
 </script>
 </body>

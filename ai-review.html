@@ -1,0 +1,802 @@
+
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport"
+ content="width=device-width,initial-scale=1">
+<title>香香村｜AI 智能報價工作台</title>
+<script src="./firebase-config.js"></script>
+<style>
+:root{
+ --bg:#f7f5f1;--paper:#fff;
+ --ink:#302b27;--muted:#817b73;
+ --gold:#a58c6a;--line:#e8e0d6;
+}
+*{box-sizing:border-box}
+body{
+ margin:0;background:var(--bg);color:var(--ink);
+ font-family:-apple-system,BlinkMacSystemFont,
+ "Microsoft JhengHei",sans-serif;
+ line-height:1.65;
+}
+main{max-width:820px;margin:auto;padding:22px 15px 70px}
+h1{font-size:25px;margin:0}
+h2{font-size:19px;margin:0 0 12px}
+p{margin:8px 0}
+small,.hint{color:var(--muted)}
+.panel{
+ background:var(--paper);
+ border:1px solid var(--line);
+ border-radius:18px;padding:19px;
+ margin:17px 0;
+}
+label{display:block;margin:12px 0 5px;font-weight:600}
+input,select,textarea{
+ width:100%;padding:12px;
+ border:1px solid var(--line);
+ border-radius:10px;background:white;
+ color:var(--ink);font-size:16px;
+}
+textarea{min-height:75px}
+button{
+ border:1px solid var(--line);
+ background:white;color:var(--ink);
+ border-radius:11px;padding:11px 15px;
+ font-size:15px;cursor:pointer;
+}
+button.primary{
+ background:var(--ink);color:white;
+ border-color:var(--ink);
+}
+button:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1;min-width:130px}
+.hidden{display:none!important}
+.photo{
+ width:100%;max-height:320px;
+ object-fit:contain;border-radius:12px;
+ background:#eee;margin-top:12px;
+}
+.status{
+ white-space:pre-wrap;
+ background:#f4f0ea;border-radius:12px;
+ padding:12px;margin:12px 0;
+}
+.item{
+ border:1px solid var(--line);
+ border-radius:12px;padding:12px;
+ margin:10px 0;
+}
+.item .row{align-items:end}
+.badge{
+ display:inline-block;background:#eee6d9;
+ border-radius:20px;padding:4px 12px;
+ font-size:13px;
+}
+.total{
+ font-size:29px;font-weight:700;
+ text-align:right;margin:14px 0;
+}
+hr{border:0;border-top:1px solid var(--line);margin:20px 0}
+a{color:#756044}
+</style>
+</head>
+<body>
+<main>
+<header>
+ <small>XIANG BEAUTY STUDIO</small>
+ <h1>AI 智能報價工作台</h1>
+ <p class="hint">
+  村長專用｜辨識修正・三層分類・客製報價
+ </p>
+ <a href="./artwork-admin.html">返回作品管理後台</a>
+</header>
+
+<section class="panel" id="loginPanel">
+ <h2>村長登入</h2>
+ <label>Firebase 登入信箱</label>
+ <input id="email" type="email" autocomplete="username">
+ <label>密碼</label>
+ <input id="password" type="password"
+  autocomplete="current-password">
+ <p><button id="loginBtn" class="primary">登入</button></p>
+</section>
+
+<div id="workspace" class="hidden">
+<section class="panel">
+ <div class="row">
+  <h2>選擇作品</h2>
+  <button id="logoutBtn">登出</button>
+ </div>
+ <label>Firebase 雲端作品</label>
+ <select id="artwork">
+  <option value="">請選擇作品</option>
+ </select>
+ <img id="photo" class="photo hidden" alt="作品照片">
+ <p id="workInfo" class="hint"></p>
+ <div class="row">
+  <button id="analyzeBtn" class="primary">
+   AI 重新辨識
+  </button>
+  <button id="loadBtn">
+   載入已儲存修正
+  </button>
+ </div>
+</section>
+
+<section id="editor" class="panel hidden">
+ <h2>01｜AI 辨識結果人工修正</h2>
+ <p class="hint">
+  可直接修正 AI 判斷。修改後請重新確認分類。
+  AI 辨識結果不代表正式收費。
+ </p>
+
+ <div class="row">
+  <div>
+   <label>施作部位</label>
+   <select id="zone">
+    <option value="hand">手部</option>
+    <option value="foot">足部</option>
+    <option value="unknown">無法確認</option>
+   </select>
+  </div>
+  <div>
+   <label>可見指甲數</label>
+   <input id="visibleNails" type="number"
+    min="0" max="10" value="0">
+  </div>
+ </div>
+
+ <label>基礎底款</label>
+ <select id="base">
+  <option value="solid">單色</option>
+  <option value="cat">貓眼</option>
+  <option value="mirror">鏡面</option>
+  <option value="french">法式</option>
+  <option value="partial">局部造型</option>
+  <option value="unknown">無法確認</option>
+ </select>
+
+ <label>AI 辨識摘要／村長修正備註</label>
+ <textarea id="summary"></textarea>
+
+ <h2 style="margin-top:22px">造型元素</h2>
+ <div id="items"></div>
+ <button id="addItemBtn">＋ 新增造型元素</button>
+
+ <label>仍需確認的問題（每行一項）</label>
+ <textarea id="questions"
+  placeholder="確認完成可清空"></textarea>
+
+ <p>
+  <button id="classifyBtn" class="primary">
+   重新判斷報價類型
+  </button>
+ </p>
+ <div id="classification" class="status"></div>
+</section>
+
+<section id="quotePanel" class="panel hidden">
+ <h2>02｜報價確認</h2>
+ <p class="hint">
+  AI 不會自動核定最終售價。
+  請先確認照片、服務內容及工時。
+ </p>
+
+ <div class="row">
+  <div>
+   <label>價目類別</label>
+   <select id="gender">
+    <option value="men">男士美甲</option>
+    <option value="women">女士美甲</option>
+   </select>
+  </div>
+  <div>
+   <label>風格</label>
+   <select id="style">
+    <option value="clean">極簡日常</option>
+    <option value="graphic">潮流圖騰</option>
+    <option value="metal">暗黑金屬</option>
+    <option value="fandom">應援甲</option>
+   </select>
+  </div>
+ </div>
+
+ <p id="standardHint" class="status"></p>
+
+ <hr>
+ <h2>03｜客製化報價表</h2>
+ <p class="hint">
+  適用於精靈狗、主題手繪、LOGO、
+  複雜立體造型等特殊作品。
+  此表為人工估算，並非 AI 自動定價。
+ </p>
+
+ <div class="row">
+  <div>
+   <label>工時（分鐘）</label>
+   <input id="minutes" type="number"
+    min="0" value="0">
+  </div>
+  <div>
+   <label>每小時人工費（NT$）</label>
+   <input id="hourly" type="number"
+    min="0" value="0">
+  </div>
+ </div>
+ <div class="row">
+  <div>
+   <label>材料費（NT$）</label>
+   <input id="materials" type="number"
+    min="0" value="0">
+  </div>
+  <div>
+   <label>施工難度加價（NT$）</label>
+   <input id="complexity" type="number"
+    min="0" value="0">
+  </div>
+ </div>
+ <label>其他人工調整（可輸入負數）</label>
+ <input id="adjustment" type="number" value="0">
+
+ <p>
+  <button id="calculateBtn" class="primary">
+   計算客製報價
+  </button>
+ </p>
+ <div id="quoteBreakdown"></div>
+ <div class="total" id="total">NT$ —</div>
+
+ <label>給客人的報價備註</label>
+ <textarea id="quoteNote"
+  placeholder="例如：實際價格依現場確認為準"></textarea>
+
+ <div class="row">
+  <button id="copyBtn">複製報價內容</button>
+  <button id="saveBtn" class="primary">
+   儲存修正及報價草稿
+  </button>
+ </div>
+ <p class="hint">
+  儲存到原作品文件的 aiReview 欄位。
+  不修改 V10 正式價目，也不自動公開給客人。
+ </p>
+</section>
+</div>
+
+<div id="notice" class="status" role="status">
+ 系統準備中
+</div>
+</main>
+
+<script type="module">
+import {
+ normalizeAnalysis,
+ classifyArtwork,
+ calculateQuote,
+ calculateCustomQuote
+} from "./ai-pricing-engine.js";
+
+import {
+ initializeApp,getApps,getApp
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+
+import {
+ getAuth,onAuthStateChanged,
+ signInWithEmailAndPassword,signOut
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+
+import {
+ getFirestore,collection,doc,getDoc,
+ getDocs,updateDoc,serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+const $=id=>document.getElementById(id);
+
+const IDS=[
+ "jump","matte","blend","line","geometry",
+ "graphic","fire","cross","cat1","mirror1",
+ "liquid","letters","sticker","logo","custom",
+ "gem","stud","sculpt","extend","french1","decor"
+];
+
+const NAMES={
+ jump:"跳色",matte:"霧面",blend:"暈染",
+ line:"線條",geometry:"幾何",graphic:"圖騰",
+ fire:"火焰",cross:"十字",cat1:"單指貓眼",
+ mirror1:"單指鏡面",liquid:"液態金屬",
+ letters:"文字",sticker:"貼紙",logo:"LOGO",
+ custom:"客製手繪",gem:"鑽飾",
+ stud:"金屬飾品",sculpt:"立體造型",
+ extend:"延長",french1:"單指法式",
+ decor:"裝飾"
+};
+
+const config=window.XIANG_FIREBASE_CONFIG;
+const ownerUid=window.XIANG_OWNER_UID;
+
+if(!config||!ownerUid){
+ throw new Error("Firebase 設定未載入");
+}
+
+const app=getApps().length
+ ?getApp():initializeApp(config);
+
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+let artworks=[];
+let selected=null;
+let analysis=null;
+let lastQuote=null;
+let owner=false;
+let busy=false;
+
+function notify(s){
+ $("notice").textContent=s;
+}
+
+function money(n){
+ return "NT$ "+Math.round(n).toLocaleString("zh-TW");
+}
+
+function safeNumber(id){
+ return Number($(id).value)||0;
+}
+
+function currentArtwork(){
+ return artworks.find(x=>x.id===$("artwork").value);
+}
+
+function setBusy(value){
+ busy=value;
+ $("analyzeBtn").disabled=value;
+ $("saveBtn").disabled=value;
+}
+
+function showWork(){
+ selected=currentArtwork();
+ analysis=null;
+ lastQuote=null;
+ $("editor").classList.add("hidden");
+ $("quotePanel").classList.add("hidden");
+
+ const photo=$("photo");
+ photo.removeAttribute("src");
+ photo.classList.add("hidden");
+
+ if(!selected)return;
+
+ $("workInfo").textContent=
+  selected.name||"未命名作品";
+
+ if(selected.imageUrl){
+  photo.src=selected.imageUrl;
+  photo.classList.remove("hidden");
+ }
+
+ $("gender").value=
+  selected.gender==="women"?"women":"men";
+
+ $("style").value=
+  ["clean","graphic","metal","fandom"]
+   .includes(selected.style)
+   ?selected.style:"clean";
+
+ notify("作品已載入，可以進行 AI 辨識。");
+}
+
+async function loadArtworks(){
+ const snap=await getDocs(collection(db,"artworks"));
+
+ artworks=snap.docs.map(d=>({
+  id:d.id,...d.data()
+ }));
+
+ artworks.sort((a,b)=>
+  String(a.name||"").localeCompare(
+   String(b.name||""),"zh-Hant"
+  )
+ );
+
+ $("artwork").replaceChildren(
+  new Option("請選擇作品","")
+ );
+
+ for(const a of artworks){
+  $("artwork").add(
+   new Option(a.name||a.id,a.id)
+  );
+ }
+
+ notify("已載入 "+artworks.length+" 筆作品。");
+}
+
+function addItem(item={}){
+ const wrap=document.createElement("div");
+ wrap.className="item";
+
+ const line=document.createElement("div");
+ line.className="row";
+
+ const id=document.createElement("select");
+ id.className="itemId";
+
+ for(const key of IDS){
+  id.add(new Option(NAMES[key],key));
+ }
+
+ id.value=IDS.includes(item.id)
+  ?item.id:"line";
+
+ const count=document.createElement("input");
+ count.type="number";
+ count.min="1";
+ count.max="50";
+ count.value=item.count||1;
+ count.className="itemCount";
+
+ const confidence=document.createElement("select");
+ confidence.className="itemConfidence";
+
+ for(const c of ["high","medium","low"]){
+  confidence.add(
+   new Option(
+    c==="high"?"高":
+    c==="medium"?"中":"低",c
+   )
+  );
+ }
+
+ confidence.value=item.confidence||"high";
+
+ const remove=document.createElement("button");
+ remove.type="button";
+ remove.textContent="移除";
+ remove.onclick=()=>wrap.remove();
+
+ line.append(id,count,confidence,remove);
+
+ const reason=document.createElement("input");
+ reason.placeholder="造型備註";
+ reason.value=item.reason||"";
+ reason.className="itemReason";
+
+ wrap.append(line,reason);
+ $("items").append(wrap);
+}
+
+function fillEditor(raw){
+ analysis=normalizeAnalysis(raw);
+
+ $("zone").value=analysis.zone;
+ $("base").value=analysis.base;
+ $("visibleNails").value=analysis.visibleNails;
+ $("summary").value=analysis.summary;
+ $("questions").value=
+  analysis.questions.join("\n");
+
+ $("items").replaceChildren();
+
+ for(const item of analysis.items){
+  addItem(item);
+ }
+
+ $("editor").classList.remove("hidden");
+ $("quotePanel").classList.remove("hidden");
+
+ classify();
+}
+
+function readEditor(){
+ const items=[
+  ...document.querySelectorAll(".item")
+ ].map(el=>({
+  id:el.querySelector(".itemId").value,
+  count:Number(
+   el.querySelector(".itemCount").value
+  ),
+  confidence:
+   el.querySelector(".itemConfidence").value,
+  reason:el.querySelector(".itemReason").value
+ }));
+
+ return normalizeAnalysis({
+  zone:$("zone").value,
+  base:$("base").value,
+  visibleNails:safeNumber("visibleNails"),
+  summary:$("summary").value,
+  questions:$("questions").value
+   .split("\n").map(s=>s.trim()).filter(Boolean),
+  items
+ });
+}
+
+function classify(){
+ analysis=readEditor();
+ const tier=classifyArtwork(analysis);
+
+ $("classification").textContent=
+  tier.label+"\n"+tier.reason;
+
+ // 目前不直接使用固定價目。
+ // V10 即時價目尚未連接，避免錯價。
+ const estimate=calculateQuote(
+  analysis,{
+   gender:$("gender").value,
+   style:$("style").value,
+   ownerApproved:false,
+   prices:null
+  }
+ );
+
+ $("standardHint").textContent=
+  tier.status==="standard"
+  ?"辨識可套用標準價目；但尚未同步 V10 即時價目，暫不顯示自動金額。"
+  :tier.reason;
+
+ return {tier,estimate};
+}
+
+async function analyze(){
+ if(!owner||busy)return;
+
+ selected=currentArtwork();
+
+ if(!selected?.imageUrl){
+  notify("請先選擇有照片的作品。");
+  return;
+ }
+
+ setBusy(true);
+ notify("Gemini 正在辨識，請稍候……");
+
+ try{
+  const token=await auth.currentUser.getIdToken();
+
+  const response=await fetch(
+   "/api/analyze-nail",{
+    method:"POST",
+    headers:{
+     "Content-Type":"application/json",
+     Authorization:"Bearer "+token
+    },
+    body:JSON.stringify({
+     imageUrl:selected.imageUrl
+    })
+   }
+  );
+
+  const data=await response.json();
+
+  if(!response.ok){
+   throw new Error(
+    data.error||
+    "HTTP "+response.status
+   );
+  }
+
+  fillEditor(data);
+
+  notify(
+   "AI 辨識完成（嘗試 "+
+   (data.attempts||1)+
+   " 次）。請由村長核對結果。"
+  );
+
+ }catch(e){
+  notify("AI 分析失敗："+e.message);
+ }finally{
+  setBusy(false);
+ }
+}
+
+function calculate(){
+ const result=calculateCustomQuote({
+  laborMinutes:safeNumber("minutes"),
+  hourlyRate:safeNumber("hourly"),
+  materials:safeNumber("materials"),
+  complexityFee:safeNumber("complexity"),
+  adjustment:safeNumber("adjustment")
+ });
+
+ if(!result.valid){
+  notify(result.error);
+  return;
+ }
+
+ lastQuote=result;
+
+ $("quoteBreakdown").replaceChildren();
+
+ for(const line of result.breakdown){
+  const p=document.createElement("p");
+  p.textContent=
+   line.name+"："+money(line.amount);
+  $("quoteBreakdown").append(p);
+ }
+
+ $("total").textContent=money(result.total);
+
+ notify("客製報價草稿已計算，尚未核定。");
+}
+
+function quoteText(){
+ if(!selected||!lastQuote){
+  return "";
+ }
+
+ return [
+  "香香村美妍製造所｜客製報價草稿",
+  "作品："+(selected.name||"未命名"),
+  "估算金額："+money(lastQuote.total),
+  $("quoteNote").value.trim(),
+  "實際價格以村長確認之報價為準。"
+ ].filter(Boolean).join("\n");
+}
+
+async function save(){
+ if(!owner||busy)return;
+
+ selected=currentArtwork();
+
+ if(!selected||!analysis){
+  notify("請先選擇作品並確認辨識結果。");
+  return;
+ }
+
+ const {tier}=classify();
+
+ const data={
+  analysis,
+  tier:{
+   status:tier.status,
+   label:tier.label,
+   reason:tier.reason
+  },
+  customQuote:lastQuote
+   ?{
+    laborMinutes:safeNumber("minutes"),
+    hourlyRate:safeNumber("hourly"),
+    materials:safeNumber("materials"),
+    complexityFee:safeNumber("complexity"),
+    adjustment:safeNumber("adjustment"),
+    total:lastQuote.total,
+    note:$("quoteNote").value,
+    approved:false
+   }
+   :null,
+  updatedAt:serverTimestamp(),
+  updatedBy:auth.currentUser.uid
+ };
+
+ setBusy(true);
+
+ try{
+  await updateDoc(
+   doc(db,"artworks",selected.id),
+   {aiReview:data}
+  );
+
+  selected.aiReview=data;
+
+  notify(
+   "已儲存 AI 修正及報價草稿。" +
+   " 尚未核定正式價格。"
+  );
+
+ }catch(e){
+  notify(
+   "儲存失敗："+e.message+
+   "。請檢查 Firestore 權限。"
+  );
+ }finally{
+  setBusy(false);
+ }
+}
+
+function loadSaved(){
+ selected=currentArtwork();
+
+ const saved=selected?.aiReview;
+
+ if(!saved?.analysis){
+  notify("此作品尚未儲存 AI 修正紀錄。");
+  return;
+ }
+
+ fillEditor(saved.analysis);
+
+ const q=saved.customQuote;
+
+ if(q){
+  $("minutes").value=q.laborMinutes||0;
+  $("hourly").value=q.hourlyRate||0;
+  $("materials").value=q.materials||0;
+  $("complexity").value=q.complexityFee||0;
+  $("adjustment").value=q.adjustment||0;
+  $("quoteNote").value=q.note||"";
+  calculate();
+ }
+
+ notify("已載入先前儲存的修正紀錄。");
+}
+
+$("loginBtn").onclick=async()=>{
+ try{
+  await signInWithEmailAndPassword(
+   auth,$("email").value,
+   $("password").value
+  );
+ }catch(e){
+  notify("登入失敗："+e.message);
+ }
+};
+
+$("logoutBtn").onclick=()=>signOut(auth);
+
+$("artwork").onchange=showWork;
+$("analyzeBtn").onclick=analyze;
+$("loadBtn").onclick=loadSaved;
+$("addItemBtn").onclick=()=>addItem();
+$("classifyBtn").onclick=classify;
+$("calculateBtn").onclick=calculate;
+$("saveBtn").onclick=save;
+
+$("copyBtn").onclick=async()=>{
+ const content=quoteText();
+
+ if(!content){
+  notify("請先計算客製報價。");
+  return;
+ }
+
+ try{
+  await navigator.clipboard.writeText(content);
+  notify("已複製報價草稿。");
+ }catch{
+  notify("無法自動複製，請使用瀏覽器複製。");
+ }
+};
+
+onAuthStateChanged(auth,async user=>{
+ owner=false;
+ $("workspace").classList.add("hidden");
+ $("loginPanel").classList.remove("hidden");
+
+ if(!user){
+  notify("請使用村長帳號登入。");
+  return;
+ }
+
+ try{
+  if(user.uid!==ownerUid){
+   throw new Error("不是授權店主帳號");
+  }
+
+  const staff=await getDoc(
+   doc(db,"staff",user.uid)
+  );
+
+  if(
+   !staff.exists()||
+   staff.data().role!=="owner"||
+   staff.data().active!==true
+  ){
+   throw new Error("店主權限未啟用");
+  }
+
+  owner=true;
+  $("loginPanel").classList.add("hidden");
+  $("workspace").classList.remove("hidden");
+
+  await loadArtworks();
+
+ }catch(e){
+  notify("權限確認失敗："+e.message);
+ }
+});
+</script>
+</body>
+</html>

@@ -1,17 +1,48 @@
 
-const OWNER_UID = "T9nwxBSXqKYWVsS6dmEN62tpt232";
-const MODEL = "gemini-3.5-flash";
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+/*
+ * 香香村 AI Nail Analysis V2
+ * 測試分支專用
+ * Gemini 自動重試 + 錯誤診斷
+ * 保留 Firebase 店主驗證及 Cloudinary 限制
+ */
+
+const OWNER_UID =
+  "T9nwxBSXqKYWVsS6dmEN62tpt232";
+
+const MODEL =
+  process.env.GEMINI_MODEL || "gemini-3.5-flash";
+
 const CLOUD_NAME = "mby1sz4i";
+
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+
+const MAX_ATTEMPTS = 3;
+
+const RETRYABLE_STATUS = new Set([
+  408, 429, 500, 502, 503, 504
+]);
 
 function reply(res, status, body) {
   res.setHeader("Cache-Control", "no-store");
-  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader(
+    "X-Content-Type-Options",
+    "nosniff"
+  );
+
   return res.status(status).json(body);
 }
 
+function wait(ms) {
+  return new Promise(resolve =>
+    setTimeout(resolve, ms)
+  );
+}
+
 function parseImageUrl(value) {
-  if (typeof value !== "string" || value.length > 2048) {
+  if (
+    typeof value !== "string" ||
+    value.length > 2048
+  ) {
     return null;
   }
 
@@ -37,12 +68,16 @@ function parseImageUrl(value) {
     }
 
     if (
-      !url.pathname.includes("/xiang-beauty-artworks/")
+      !url.pathname.includes(
+        "/xiang-beauty-artworks/"
+      )
     ) {
       return null;
     }
 
-    if (url.search || url.hash) return null;
+    if (url.search || url.hash) {
+      return null;
+    }
 
     return url;
   } catch {
@@ -55,12 +90,17 @@ async function verifyOwner(req) {
     req.headers.authorization || ""
   ).match(/^Bearer\s+(\S+)$/i);
 
-  if (!match) return false;
+  if (!match) {
+    return false;
+  }
 
-  const key = process.env.FIREBASE_WEB_API_KEY;
+  const key =
+    process.env.FIREBASE_WEB_API_KEY;
 
   if (!key) {
-    throw new Error("FIREBASE_WEB_API_KEY 尚未設定");
+    throw new Error(
+      "FIREBASE_WEB_API_KEY 尚未設定"
+    );
   }
 
   const response = await fetch(
@@ -79,9 +119,12 @@ async function verifyOwner(req) {
     }
   );
 
-  if (!response.ok) return false;
+  if (!response.ok) {
+    return false;
+  }
 
   const data = await response.json();
+
   const user = data.users?.[0];
 
   return Boolean(
@@ -94,11 +137,11 @@ async function verifyOwner(req) {
 const INSTRUCTION = `
 你是香香村美妍製造所的美甲照片辨識助手。
 
-只辨識照片中能看見的指甲。
+只能辨識照片中確實看得見的指甲。
 不可猜測未拍到的手指、材料、價格或工時。
 一律使用繁體中文。
 
-辨識：
+請辨識：
 1. 手部或足部
 2. 可見指甲數量
 3. 基礎底款
@@ -137,19 +180,39 @@ extend：延長
 french1：單指法式
 decor：裝飾
 
-只列出照片確實看得見的項目。
-count 表示可見施工指數；
-gem 可以使用可見顆數。
-
-不要提供任何價格。
+重要：
+- count 表示照片可見的施工指數。
+- gem 可以使用可見顆數。
+- 不要猜測不可見的手指。
+- 貓眼底款可以同時辨識貓眼效果，
+  但不得自行推算加購價格。
+- 主題手繪請辨識 custom。
+- 複雜 LOGO 請辨識 logo。
+- 不確定的項目請降低 confidence。
+- 不要提供任何價格。
 `;
 
 const ITEM_IDS = [
-  "jump", "matte", "blend", "line",
-  "geometry", "graphic", "fire", "cross",
-  "cat1", "mirror1", "liquid", "letters",
-  "sticker", "logo", "custom", "gem",
-  "stud", "sculpt", "extend", "french1",
+  "jump",
+  "matte",
+  "blend",
+  "line",
+  "geometry",
+  "graphic",
+  "fire",
+  "cross",
+  "cat1",
+  "mirror1",
+  "liquid",
+  "letters",
+  "sticker",
+  "logo",
+  "custom",
+  "gem",
+  "stud",
+  "sculpt",
+  "extend",
+  "french1",
   "decor"
 ];
 
@@ -158,7 +221,11 @@ const RESPONSE_SCHEMA = {
   properties: {
     zone: {
       type: "STRING",
-      enum: ["hand", "foot", "unknown"]
+      enum: [
+        "hand",
+        "foot",
+        "unknown"
+      ]
     },
     visibleNails: {
       type: "INTEGER"
@@ -166,8 +233,12 @@ const RESPONSE_SCHEMA = {
     base: {
       type: "STRING",
       enum: [
-        "solid", "cat", "mirror",
-        "french", "partial", "unknown"
+        "solid",
+        "cat",
+        "mirror",
+        "french",
+        "partial",
+        "unknown"
       ]
     },
     items: {
@@ -184,14 +255,21 @@ const RESPONSE_SCHEMA = {
           },
           confidence: {
             type: "STRING",
-            enum: ["high", "medium", "low"]
+            enum: [
+              "high",
+              "medium",
+              "low"
+            ]
           },
           reason: {
             type: "STRING"
           }
         },
         required: [
-          "id", "count", "confidence", "reason"
+          "id",
+          "count",
+          "confidence",
+          "reason"
         ]
       }
     },
@@ -200,7 +278,9 @@ const RESPONSE_SCHEMA = {
     },
     questions: {
       type: "ARRAY",
-      items: { type: "STRING" }
+      items: {
+        type: "STRING"
+      }
     }
   },
   required: [
@@ -213,57 +293,367 @@ const RESPONSE_SCHEMA = {
   ]
 };
 
-export default async function handler(req, res) {
+function errorMessage(status) {
+  if (status === 400) {
+    return "Gemini 請求格式有問題，請檢查模型與結構化輸出設定。";
+  }
+
+  if (status === 401 || status === 403) {
+    return "Gemini API 金鑰或專案權限異常，請檢查 Vercel 環境變數。";
+  }
+
+  if (status === 404) {
+    return (
+      `Gemini 模型 ${MODEL} 無法使用（404）。` +
+      "請確認模型名稱及 API 版本。"
+    );
+  }
+
+  if (status === 429) {
+    return "Gemini 請求次數或額度達到限制（429），請稍後再試。";
+  }
+
+  if (status === 503) {
+    return "Gemini 服務忙碌（503），已嘗試自動重試。";
+  }
+
+  if (status >= 500) {
+    return (
+      `Gemini 伺服器錯誤（${status}），` +
+      "已嘗試自動重試。"
+    );
+  }
+
+  return `Gemini 分析失敗（HTTP ${status}）。`;
+}
+
+function normalizeResult(result) {
+  const validIds = new Set(ITEM_IDS);
+
+  const items = Array.isArray(result.items)
+    ? result.items
+        .filter(x =>
+          x &&
+          validIds.has(x.id) &&
+          Number.isInteger(x.count) &&
+          x.count >= 1 &&
+          x.count <= 50
+        )
+        .slice(0, 25)
+        .map(x => ({
+          id: x.id,
+          count: x.count,
+          confidence: [
+            "high",
+            "medium",
+            "low"
+          ].includes(x.confidence)
+            ? x.confidence
+            : "low",
+          reason: String(
+            x.reason || ""
+          ).slice(0, 150)
+        }))
+    : [];
+
+  return {
+    zone: [
+      "hand",
+      "foot",
+      "unknown"
+    ].includes(result.zone)
+      ? result.zone
+      : "unknown",
+
+    visibleNails: Number.isInteger(
+      result.visibleNails
+    )
+      ? Math.max(
+          0,
+          Math.min(
+            10,
+            result.visibleNails
+          )
+        )
+      : 0,
+
+    base: [
+      "solid",
+      "cat",
+      "mirror",
+      "french",
+      "partial",
+      "unknown"
+    ].includes(result.base)
+      ? result.base
+      : "unknown",
+
+    items,
+
+    summary: String(
+      result.summary || ""
+    ).slice(0, 500),
+
+    questions: Array.isArray(
+      result.questions
+    )
+      ? result.questions
+          .slice(0, 5)
+          .map(x =>
+            String(x).slice(0, 200)
+          )
+      : [],
+
+    pricingStatus: "not_priced",
+    requiresOwnerReview: true
+  };
+}
+
+async function requestGemini({
+  apiKey,
+  mimeType,
+  buffer
+}) {
+  const endpoint =
+    "https://generativelanguage.googleapis.com/" +
+    `v1beta/models/${MODEL}:generateContent`;
+
+  const body = JSON.stringify({
+    systemInstruction: {
+      parts: [
+        {
+          text: INSTRUCTION
+        }
+      ]
+    },
+
+    contents: [
+      {
+        role: "user",
+        parts: [
+          {
+            text:
+              "分析這張美甲作品照片，" +
+              "輸出結構化辨識結果。"
+          },
+          {
+            inlineData: {
+              mimeType,
+              data: buffer.toString("base64")
+            }
+          }
+        ]
+      }
+    ],
+
+    generationConfig: {
+      responseMimeType:
+        "application/json",
+      responseSchema:
+        RESPONSE_SCHEMA,
+      temperature: 0.1,
+      maxOutputTokens: 4096
+    }
+  });
+
+  let lastStatus = null;
+
+  for (
+    let attempt = 1;
+    attempt <= MAX_ATTEMPTS;
+    attempt++
+  ) {
+    try {
+      const response = await fetch(
+        endpoint,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+            "x-goog-api-key":
+              apiKey
+          },
+          body,
+          signal:
+            AbortSignal.timeout(20000)
+        }
+      );
+
+      if (response.ok) {
+        const payload =
+          await response.json();
+
+        const raw =
+          payload.candidates?.[0]
+            ?.content?.parts
+            ?.map(p => p.text || "")
+            .join("");
+
+        if (!raw) {
+          return {
+            ok: false,
+            status: 502,
+            error:
+              "Gemini 未回傳可用的辨識內容。",
+            attempts: attempt
+          };
+        }
+
+        let parsed;
+
+        try {
+          parsed = JSON.parse(raw);
+        } catch {
+          return {
+            ok: false,
+            status: 502,
+            error:
+              "Gemini 回傳格式不完整，請重新分析。",
+            attempts: attempt
+          };
+        }
+
+        return {
+          ok: true,
+          data: normalizeResult(parsed),
+          attempts: attempt
+        };
+      }
+
+      lastStatus = response.status;
+
+      console.error(
+        "Gemini request failed",
+        {
+          status: lastStatus,
+          attempt,
+          model: MODEL
+        }
+      );
+
+      if (
+        !RETRYABLE_STATUS.has(
+          lastStatus
+        ) ||
+        attempt === MAX_ATTEMPTS
+      ) {
+        return {
+          ok: false,
+          status: lastStatus,
+          error:
+            errorMessage(lastStatus),
+          attempts: attempt
+        };
+      }
+
+      // 避免長時間等待或頻繁重送
+      const delay =
+        attempt === 1 ? 700 : 1500;
+
+      await wait(delay);
+
+    } catch (error) {
+      console.error(
+        "Gemini network error",
+        {
+          attempt,
+          name: error?.name,
+          message: error?.message
+        }
+      );
+
+      if (attempt === MAX_ATTEMPTS) {
+        return {
+          ok: false,
+          status: 504,
+          error:
+            "Gemini 連線逾時或網路異常，" +
+            "已完成自動重試。",
+          attempts: attempt
+        };
+      }
+
+      await wait(
+        attempt === 1 ? 700 : 1500
+      );
+    }
+  }
+
+  return {
+    ok: false,
+    status: lastStatus || 502,
+    error: "Gemini 分析失敗。",
+    attempts: MAX_ATTEMPTS
+  };
+}
+
+export default async function handler(
+  req,
+  res
+) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
+
     return reply(res, 405, {
       error: "僅接受 POST 請求"
     });
   }
 
   try {
-    const owner = await verifyOwner(req);
+    const owner =
+      await verifyOwner(req);
 
     if (!owner) {
       return reply(res, 403, {
-        error: "請以村長帳號登入"
+        error:
+          "請使用村長帳號登入。"
       });
     }
 
-    const imageUrl = parseImageUrl(
-      req.body?.imageUrl
-    );
+    const imageUrl =
+      parseImageUrl(
+        req.body?.imageUrl
+      );
 
     if (!imageUrl) {
       return reply(res, 400, {
-        error: "只接受香香村 Cloudinary 作品照片網址"
+        error:
+          "只接受香香村 Cloudinary 作品照片網址。"
       });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey =
+      process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
       return reply(res, 503, {
-        error: "Gemini API 尚未設定"
+        error:
+          "GEMINI_API_KEY 尚未設定。"
       });
     }
 
-    const imageResponse = await fetch(
-      imageUrl,
-      {
-        redirect: "error",
-        signal: AbortSignal.timeout(12000)
-      }
-    );
+    const imageResponse =
+      await fetch(
+        imageUrl,
+        {
+          redirect: "error",
+          signal:
+            AbortSignal.timeout(12000)
+        }
+      );
 
     if (!imageResponse.ok) {
       return reply(res, 400, {
-        error: "無法讀取作品照片"
+        error:
+          "無法讀取作品照片。"
       });
     }
 
     const mimeType = (
-      imageResponse.headers.get("content-type") || ""
+      imageResponse.headers.get(
+        "content-type"
+      ) || ""
     ).split(";")[0].toLowerCase();
 
     if (
@@ -274,17 +664,23 @@ export default async function handler(req, res) {
       ].includes(mimeType)
     ) {
       return reply(res, 415, {
-        error: "只支援 JPG、PNG、WebP"
+        error:
+          "只支援 JPG、PNG、WebP。"
       });
     }
 
     const length = Number(
-      imageResponse.headers.get("content-length") || 0
+      imageResponse.headers.get(
+        "content-length"
+      ) || 0
     );
 
-    if (length > MAX_IMAGE_BYTES) {
+    if (
+      length > MAX_IMAGE_BYTES
+    ) {
       return reply(res, 413, {
-        error: "圖片不得超過 8MB"
+        error:
+          "圖片不得超過 8MB。"
       });
     }
 
@@ -292,157 +688,43 @@ export default async function handler(req, res) {
       await imageResponse.arrayBuffer()
     );
 
-    if (buffer.length > MAX_IMAGE_BYTES) {
+    if (
+      buffer.length >
+      MAX_IMAGE_BYTES
+    ) {
       return reply(res, 413, {
-        error: "圖片不得超過 8MB"
+        error:
+          "圖片不得超過 8MB。"
       });
     }
 
-    const gemini = await fetch(
-      "https://generativelanguage.googleapis.com/" +
-      `v1beta/models/${MODEL}:generateContent`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey
-        },
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [{ text: INSTRUCTION }]
-          },
-          contents: [
-            {
-              role: "user",
-              parts: [
-                {
-                  text:
-                    "分析這張美甲作品照片，" +
-                    "輸出可見造型的結構化辨識結果。"
-                },
-                {
-                  inlineData: {
-                    mimeType,
-                    data: buffer.toString("base64")
-                  }
-                }
-              ]
-            }
-          ],
-          generationConfig: {
-            responseMimeType: "application/json",
-            responseSchema: RESPONSE_SCHEMA,
-            temperature: 0.1,
-            maxOutputTokens: 4096
-          }
-        }),
-        signal: AbortSignal.timeout(35000)
-      }
-    );
-
-    if (!gemini.ok) {
-      const status = gemini.status;
-      console.error("Gemini request failed", status);
-
-      if (status === 429) {
-        return reply(res, 429, {
-          error:
-            "Gemini 免費額度或速率限制已達上限，" +
-            "請稍後再試"
-        });
-      }
-
-      if (status === 401 || status === 403) {
-        return reply(res, 502, {
-          error:
-            "Gemini 金鑰或專案權限有問題，" +
-            "請檢查設定"
-        });
-      }
-
-      return reply(res, 502, {
-        error: "Gemini 暫時無法分析照片"
+    const result =
+      await requestGemini({
+        apiKey,
+        mimeType,
+        buffer
       });
+
+    if (!result.ok) {
+      return reply(
+        res,
+        result.status === 429
+          ? 429
+          : 502,
+        {
+          error: result.error,
+          geminiStatus:
+            result.status,
+          attempts:
+            result.attempts
+        }
+      );
     }
-
-    const payload = await gemini.json();
-
-    const raw = payload.candidates?.[0]
-      ?.content?.parts
-      ?.map(p => p.text || "")
-      .join("");
-
-    if (!raw) {
-      return reply(res, 502, {
-        error: "Gemini 未回傳可用辨識結果"
-      });
-    }
-
-    const result = JSON.parse(raw);
-    const validIds = new Set(ITEM_IDS);
-
-    const items = Array.isArray(result.items)
-      ? result.items
-          .filter(x =>
-            validIds.has(x.id) &&
-            Number.isInteger(x.count) &&
-            x.count >= 1 &&
-            x.count <= 50
-          )
-          .slice(0, 25)
-          .map(x => ({
-            id: x.id,
-            count: x.count,
-            confidence: [
-              "high", "medium", "low"
-            ].includes(x.confidence)
-              ? x.confidence
-              : "low",
-            reason: String(
-              x.reason || ""
-            ).slice(0, 150)
-          }))
-      : [];
 
     return reply(res, 200, {
-      zone: [
-        "hand", "foot", "unknown"
-      ].includes(result.zone)
-        ? result.zone
-        : "unknown",
-
-      visibleNails: Number.isInteger(
-        result.visibleNails
-      )
-        ? Math.max(
-            0,
-            Math.min(10, result.visibleNails)
-          )
-        : 0,
-
-      base: [
-        "solid", "cat", "mirror",
-        "french", "partial", "unknown"
-      ].includes(result.base)
-        ? result.base
-        : "unknown",
-
-      items,
-
-      summary: String(
-        result.summary || ""
-      ).slice(0, 500),
-
-      questions: Array.isArray(result.questions)
-        ? result.questions
-            .slice(0, 5)
-            .map(x =>
-              String(x).slice(0, 200)
-            )
-        : [],
-
-      pricingStatus: "not_priced",
-      requiresOwnerReview: true
+      ...result.data,
+      attempts: result.attempts,
+      model: MODEL
     });
 
   } catch (error) {
@@ -452,7 +734,9 @@ export default async function handler(req, res) {
     );
 
     return reply(res, 500, {
-      error: "圖片分析失敗，請稍後重試"
+      error:
+        "圖片分析發生系統錯誤，" +
+        "請稍後再試。"
     });
   }
 }

@@ -8,35 +8,52 @@
 <script src="./firebase-config.js"></script>
 <style>
 :root{
-  --bg:#f7f5f1;--paper:#fff;--ink:#292725;
-  --muted:#817c75;--line:#e8e1d8;--gold:#a58c6a
+  --bg:#f7f5f1;
+  --paper:#fff;
+  --ink:#292725;
+  --muted:#817c75;
+  --line:#e8e1d8;
+  --gold:#a58c6a
 }
 *{box-sizing:border-box}
 body{
-  margin:0;background:var(--bg);color:var(--ink);
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
   font-family:-apple-system,BlinkMacSystemFont,
   "Microsoft JhengHei",sans-serif
 }
 main{max-width:850px;margin:auto;padding:24px 16px 80px}
-header{text-align:center;margin:22px 0 28px}
+header{text-align:center;margin:24px 0 30px}
 .brand{color:var(--gold);font-size:12px;letter-spacing:3px}
 h1{font-size:27px;margin:12px 0}
 h2{font-size:19px}
 p,.hint{color:var(--muted);line-height:1.7}
 .panel{
-  background:var(--paper);border:1px solid var(--line);
-  border-radius:18px;padding:22px;margin-bottom:18px
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:22px;
+  margin-bottom:18px
 }
 label{display:block;margin:14px 0 5px;font-size:14px}
 input,select,textarea{
-  display:block;width:100%;padding:12px;
-  border:1px solid var(--line);border-radius:10px;
-  font:inherit;background:#fff
+  display:block;
+  width:100%;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  font:inherit;
+  background:#fff
 }
 textarea{resize:vertical}
 button{
-  font:inherit;padding:11px 15px;border-radius:10px;
-  border:1px solid var(--line);background:white;cursor:pointer
+  font:inherit;
+  padding:11px 15px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:#fff;
+  cursor:pointer
 }
 button:disabled{opacity:.55;cursor:wait}
 .primary{background:var(--ink);color:#fff}
@@ -48,47 +65,89 @@ button:disabled{opacity:.55;cursor:wait}
   gap:12px
 }
 .item{
-  border:1px solid var(--line);border-radius:14px;
-  padding:15px;background:#fff;min-width:0
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:15px;
+  background:#fff;
+  min-width:0
 }
 .item strong{display:block;margin-bottom:8px}
 .meta{font-size:12px;color:var(--muted);line-height:1.8}
 .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
 .actions button{font-size:13px}
 .badge{
-  display:inline-block;border-radius:30px;
-  background:#f1ede6;padding:5px 10px;
-  font-size:12px;margin-bottom:10px
+  display:inline-block;
+  border-radius:30px;
+  background:#f1ede6;
+  padding:5px 10px;
+  font-size:12px;
+  margin-bottom:10px
 }
 .hidden{display:none!important}
 .status{
-  padding:12px;border-radius:10px;background:#f1ede6;
-  margin-bottom:18px;white-space:pre-wrap
+  padding:12px;
+  border-radius:10px;
+  background:#f1ede6;
+  margin-bottom:18px;
+  white-space:pre-wrap
 }
 .error{background:#fbe9e7;color:#8d2c20}
 .success{background:#eaf4eb;color:#205b2b}
 .photo-preview{
-  display:none;max-width:100%;max-height:320px;
-  object-fit:contain;border-radius:12px;margin-top:12px
+  display:none;
+  max-width:100%;
+  max-height:320px;
+  object-fit:contain;
+  border-radius:12px;
+  margin-top:12px
 }
 .item-photo{
-  width:100%;aspect-ratio:4/3;object-fit:cover;
-  border-radius:10px;margin-bottom:12px;background:var(--bg)
+  width:100%;
+  aspect-ratio:4/3;
+  object-fit:cover;
+  border-radius:10px;
+  margin-bottom:12px;
+  background:var(--bg)
 }
 .upload-box{
-  padding:16px;border:1px dashed var(--gold);
-  border-radius:14px;margin-top:18px;background:#fcfaf7
+  padding:16px;
+  border:1px dashed var(--gold);
+  border-radius:14px;
+  margin-top:18px;
+  background:#fcfaf7
 }
 .fixed-price{
-  background:#f8f3eb;border:1px solid #dfcfb9;
-  border-radius:14px;padding:16px;margin-top:18px
+  background:#f8f3eb;
+  border:1px solid #dfcfb9;
+  border-radius:14px;
+  padding:16px;
+  margin-top:18px
 }
 .price{
-  font-size:18px;color:#8c704d;
-  font-weight:700;margin:8px 0
+  font-size:18px;
+  color:#8c704d;
+  font-weight:700;
+  margin:8px 0
 }
 .ai-panel{border-color:var(--gold);background:#fcfaf7}
 a{color:#78603f}
+#toast{
+  position:fixed;
+  left:16px;
+  right:16px;
+  bottom:25px;
+  z-index:9999;
+  background:#292725;
+  color:white;
+  border-radius:14px;
+  padding:17px;
+  box-shadow:0 8px 30px #0003;
+  white-space:pre-wrap;
+  display:none
+}
+#toast.show{display:block}
+#toast.error{background:#872d25}
+#toast.success{background:#28623c}
 @media(max-width:560px){
   .grid{grid-template-columns:1fr}
   .row{display:block}
@@ -96,7 +155,10 @@ a{color:#78603f}
 }
 </style>
 </head>
+
 <body>
+<div id="toast" role="alert"></div>
+
 <main>
 <header>
   <div class="brand">XIANG BEAUTY STUDIO</div>
@@ -114,28 +176,34 @@ a{color:#78603f}
     <label for="loginEmail">電子郵件</label>
     <input id="loginEmail" type="email" required
       autocomplete="username">
+
     <label for="loginPassword">密碼</label>
     <input id="loginPassword" type="password" required
       autocomplete="current-password">
+
     <button class="primary" type="submit"
       style="margin-top:16px">登入</button>
   </form>
 </section>
 
 <section id="adminPanel" class="hidden">
-  <div class="panel row">
-    <p id="ownerName">已登入</p>
-    <button id="logoutBtn" type="button">登出</button>
-  </div>
+
+  <section class="panel">
+    <div class="row">
+      <p id="ownerName">已登入</p>
+      <button id="logoutBtn" type="button">登出</button>
+    </div>
+  </section>
 
   <section class="panel">
     <h2 id="formTitle">新增美甲作品</h2>
     <p class="hint">
-      作品照片儲存 Cloudinary，資料儲存 Firebase。
-      固定售價包含底款與全部造型，不得再次加價。
+      作品固定售價包含基礎凝膠與所有造型。
+      此價格由村長手動設定，不由 AI 修改。
     </p>
 
     <form id="artForm">
+
       <label for="name">作品名稱</label>
       <input id="name" required maxlength="80"
         placeholder="例如：精靈狗">
@@ -149,6 +217,7 @@ a{color:#78603f}
             <option value="unisex">中性／不限性別</option>
           </select>
         </div>
+
         <div>
           <label for="style">風格分類</label>
           <select id="style">
@@ -164,32 +233,39 @@ a{color:#78603f}
         <label for="artworkPhoto">美甲作品照片</label>
         <input id="artworkPhoto" type="file"
           accept="image/jpeg,image/png,image/webp">
+
         <p class="hint">
-          支援 JPG、PNG、WebP，單張不超過 8MB。
-          iPhone HEIC 請先轉 JPG。
+          JPG、PNG、WebP，最多 8 MB。
         </p>
+
         <button type="button" id="uploadPhotoBtn">
           上傳照片至 Cloudinary
         </button>
+
         <p id="uploadPhotoStatus" class="hint">
           尚未選擇照片
         </p>
+
         <img id="artworkPhotoPreview"
-          class="photo-preview" alt="作品照片預覽">
+          class="photo-preview" alt="作品預覽">
       </div>
 
       <div class="fixed-price">
         <h2>作品固定售價</h2>
+
         <p class="hint">
-          此價格由村長決定，代表整套完成價，
-          包含基礎凝膠與所有造型。
-          留空代表尚未定價。
+          這是整套完成價，包含底款與所有造型。
+          留空表示尚未定價。
         </p>
 
         <label for="fixedPrice">整套固定售價（NT$）</label>
-        <input id="fixedPrice" type="number"
-          min="0" max="1000000" step="1"
-          inputmode="numeric" placeholder="例如：1800">
+        <input id="fixedPrice"
+          type="number"
+          min="0"
+          max="1000000"
+          step="1"
+          inputmode="numeric"
+          placeholder="例如：1800">
 
         <label for="showPrice">價格顯示設定</label>
         <select id="showPrice">
@@ -199,12 +275,10 @@ a{color:#78603f}
 
         <label for="priceNote">售價備註</label>
         <textarea id="priceNote" rows="2" maxlength="300"
-          placeholder="例如：整套完成價，特殊延長需另外確認"></textarea>
+          placeholder="例如：整套完成價"></textarea>
       </div>
 
-      <label for="tags">
-        搜尋標籤（逗號分隔，最多 20 個）
-      </label>
+      <label for="tags">搜尋標籤（逗號分隔）</label>
       <input id="tags" placeholder="銀色, 鏡面, 金屬">
 
       <label for="notes">作品備註</label>
@@ -221,24 +295,29 @@ a{color:#78603f}
         <button class="primary" type="submit" id="saveBtn">
           儲存至 Firebase
         </button>
-        <button type="button" id="resetBtn">清空表單</button>
+
+        <button type="button" id="resetBtn">
+          清空表單
+        </button>
       </div>
     </form>
   </section>
 
   <section class="panel ai-panel">
-    <h2>AI 分析與人工修正</h2>
+    <h2>AI 人工修正工作台</h2>
     <p class="hint">
-      你的作品固定售價由你設定，不使用 AI 自動取代。
-      客人的參考圖片估價是另一個流程。
+      店主作品售價由村長設定。
+      客人的參考圖片將由另一個估價流程處理。
     </p>
-    <a href="./ai-review.html">開啟 AI 人工修正工作台</a>
+    <a href="./ai-review.html">開啟 AI 工作台</a>
   </section>
 
   <section class="panel">
     <h2>雲端作品清單</h2>
+
     <div class="row">
       <input id="search" placeholder="搜尋作品名稱或標籤">
+
       <select id="filterStatus">
         <option value="all">全部狀態</option>
         <option value="draft">草稿</option>
@@ -246,14 +325,11 @@ a{color:#78603f}
         <option value="archived">封存</option>
       </select>
     </div>
-    <p class="hint" id="count"></p>
-    <div class="grid" id="artList"></div>
+
+    <p id="count" class="hint"></p>
+    <div id="artList" class="grid"></div>
   </section>
 </section>
-
-<footer style="text-align:center;color:var(--muted);font-size:12px">
-  香香村美妍製造所 · 僅供授權店主管理
-</footer>
 </main>
 
 <script type="module">
@@ -271,22 +347,22 @@ import {
   addDoc,updateDoc,deleteDoc,serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js';
 
-const $ = id => document.getElementById(id);
+const $=id=>document.getElementById(id);
 
-const styleNames = {
+const styleNames={
   clean:'極簡日常',
   graphic:'潮流圖騰',
   metal:'暗黑金屬',
   fandom:'應援甲'
 };
 
-const genderNames = {
+const genderNames={
   men:'男士美甲',
   women:'女士美甲',
   unisex:'中性／不限性別'
 };
 
-const statusNames = {
+const statusNames={
   draft:'草稿',
   published:'公開上架',
   archived:'封存'
@@ -298,20 +374,47 @@ let editingId=null;
 let isOwner=false;
 let uploadedImageUrl='';
 let uploading=false;
+let saving=false;
+let toastTimer=null;
 
-function message(text,type=''){
+function notify(text,type=''){
+  const box=$('toast');
+  box.textContent=text;
+  box.className='show '+type;
+
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{
+    box.className='';
+  },6500);
+}
+
+function message(text,type='',popup=false){
   $('message').textContent=text;
   $('message').className='status '+type;
+
+  if(popup){
+    notify(text,type);
+    alert(text);
+  }
 }
 
 function errorText(e){
-  if(e?.code==='permission-denied'){
-    return 'Firebase 拒絕存取，請確認店主權限及安全規則。';
+  const code=e?.code||'';
+
+  if(code.includes('permission-denied')){
+    return 'Firebase 權限不足（permission-denied）。\n'
+      +'請檢查 Firestore 安全規則是否允許店主修改作品。';
   }
-  if(e?.code==='auth/invalid-credential'){
-    return '登入失敗，請檢查帳號或密碼。';
+
+  if(code.includes('unauthenticated')){
+    return '登入已失效，請重新登入。';
   }
-  return e?.message||String(e);
+
+  if(code.includes('invalid-credential')){
+    return '帳號或密碼不正確。';
+  }
+
+  return `${code?code+'：':''}${e?.message||String(e)}`;
 }
 
 function showAdmin(yes){
@@ -372,7 +475,7 @@ function render(){
   if(!items.length){
     const p=document.createElement('p');
     p.className='hint';
-    p.textContent='目前沒有符合條件的作品。';
+    p.textContent='沒有符合條件的作品。';
     $('artList').append(p);
     return;
   }
@@ -392,7 +495,7 @@ function render(){
 
     const badge=document.createElement('span');
     badge.className='badge';
-    badge.textContent=statusNames[x.status]||x.status||'草稿';
+    badge.textContent=statusNames[x.status]||'草稿';
 
     const name=document.createElement('strong');
     name.textContent=x.name||'未命名';
@@ -403,8 +506,8 @@ function render(){
     price.textContent=
       Number.isFinite(x.fixedPrice)&&x.fixedPrice>=0
       ?'整套完成價 NT$ '+
-        x.fixedPrice.toLocaleString('zh-TW')+
-        (x.showPrice===false?'（未公開）':'')
+       x.fixedPrice.toLocaleString('zh-TW')+
+       (x.showPrice===false?'（未公開）':'')
       :'尚未設定固定售價';
 
     const meta=document.createElement('div');
@@ -467,7 +570,7 @@ function editItem(id){
 
   $('uploadPhotoStatus').textContent=
     uploadedImageUrl
-    ?'目前顯示原有照片，可選擇新照片替換。'
+    ?'目前使用原有照片，可選擇新照片替換。'
     :'這筆作品尚無照片。';
 
   window.scrollTo({top:0,behavior:'smooth'});
@@ -479,9 +582,10 @@ async function changeStatus(id,status){
       doc(db,'artworks',id),
       {status,updatedAt:serverTimestamp()}
     );
-    message('作品狀態已更新','success');
+
+    message('作品狀態已更新','success',true);
   }catch(e){
-    message(errorText(e),'error');
+    message('更新失敗：'+errorText(e),'error',true);
   }
 }
 
@@ -489,7 +593,7 @@ async function removeItem(id){
   const x=artworks.find(a=>a.id===id);
 
   if(!x||!confirm(
-    `確定刪除「${x.name}」？此操作不會自動刪除 Cloudinary 圖片。`
+    `確定刪除「${x.name}」？Cloudinary 圖片不會自動刪除。`
   ))return;
 
   try{
@@ -497,19 +601,19 @@ async function removeItem(id){
 
     if(editingId===id)resetForm();
 
-    message('作品已從 Firebase 刪除','success');
+    message('作品已刪除','success',true);
   }catch(e){
-    message(errorText(e),'error');
+    message('刪除失敗：'+errorText(e),'error',true);
   }
 }
 
 $('uploadPhotoBtn').addEventListener('click',async()=>{
-  if(!isOwner||uploading)return;
+  if(!isOwner||uploading||saving)return;
 
   const file=$('artworkPhoto').files?.[0];
 
   if(!file){
-    message('請先選擇照片','error');
+    message('請先選擇照片','error',true);
     return;
   }
 
@@ -518,12 +622,12 @@ $('uploadPhotoBtn').addEventListener('click',async()=>{
     'image/png',
     'image/webp'
   ].includes(file.type)){
-    message('請使用 JPG、PNG 或 WebP','error');
+    message('請使用 JPG、PNG 或 WebP','error',true);
     return;
   }
 
   if(file.size>8*1024*1024){
-    message('圖片不得超過 8MB','error');
+    message('圖片不得超過 8 MB','error',true);
     return;
   }
 
@@ -560,10 +664,10 @@ $('uploadPhotoBtn').addEventListener('click',async()=>{
     form.append('folder',sign.folder);
     form.append('overwrite',String(sign.overwrite));
 
-    const cloud=sign.cloudName||'mby1sz4i';
-
     const response=await fetch(
-      `https://api.cloudinary.com/v1_1/${cloud}/image/upload`,
+      `https://api.cloudinary.com/v1_1/${
+        encodeURIComponent(sign.cloudName)
+      }/image/upload`,
       {method:'POST',body:form}
     );
 
@@ -580,15 +684,15 @@ $('uploadPhotoBtn').addEventListener('click',async()=>{
     showPreview(uploadedImageUrl);
 
     $('uploadPhotoStatus').textContent=
-      '照片上傳成功，可儲存作品。';
+      '照片上傳成功，可以儲存作品。';
 
-    message('照片上傳成功','success');
+    message('照片上傳成功','success',true);
 
   }catch(e){
     $('uploadPhotoStatus').textContent=
       '上傳失敗：'+errorText(e);
 
-    message(errorText(e),'error');
+    message('上傳失敗：'+errorText(e),'error',true);
 
   }finally{
     uploading=false;
@@ -600,12 +704,12 @@ $('uploadPhotoBtn').addEventListener('click',async()=>{
 $('artForm').addEventListener('submit',async e=>{
   e.preventDefault();
 
-  if(!isOwner||uploading)return;
+  if(!isOwner||uploading||saving)return;
 
   if($('artworkPhoto').files?.length){
     message(
-      '選了新照片但尚未上傳，請先按「上傳照片至 Cloudinary」。',
-      'error'
+      '你選了新照片，但尚未上傳。請先上傳照片。',
+      'error',true
     );
     return;
   }
@@ -616,7 +720,7 @@ $('artForm').addEventListener('submit',async e=>{
     .filter(Boolean);
 
   if(tags.length>20||tags.some(t=>t.length>100)){
-    message('標籤最多 20 個，單個不得超過 100 字','error');
+    message('標籤最多 20 個，單個不超過 100 字','error',true);
     return;
   }
 
@@ -631,8 +735,8 @@ $('artForm').addEventListener('submit',async e=>{
     )
   ){
     message(
-      '固定售價請輸入 0 至 1,000,000 的整數金額',
-      'error'
+      '固定售價請輸入 0 至 1,000,000 的整數。',
+      'error',true
     );
     return;
   }
@@ -654,44 +758,89 @@ $('artForm').addEventListener('submit',async e=>{
   };
 
   if(!data.name){
-    message('請輸入作品名稱','error');
+    message('請輸入作品名稱','error',true);
     return;
   }
 
+  saving=true;
   const button=$('saveBtn');
   button.disabled=true;
+  button.textContent='正在儲存並驗證…';
+
+  const currentId=editingId;
 
   try{
-    if(editingId){
+    let savedId=currentId;
+
+    if(currentId){
       await updateDoc(
-        doc(db,'artworks',editingId),
+        doc(db,'artworks',currentId),
         data
       );
     }else{
-      await addDoc(
+      const result=await addDoc(
         collection(db,'artworks'),
-        {
-          ...data,
-          createdAt:serverTimestamp()
-        }
+        {...data,createdAt:serverTimestamp()}
+      );
+      savedId=result.id;
+    }
+
+    // 強制從 Firebase 伺服器重新讀取，
+    // 避免只看到本機快取就誤認儲存成功。
+    const verified=await getDocFromServer(
+      doc(db,'artworks',savedId)
+    );
+
+    if(!verified.exists()){
+      throw Error('儲存後找不到作品文件');
+    }
+
+    const actual=verified.data();
+
+    if(
+      actual.fixedPrice!==fixedPrice||
+      actual.priceType!=='complete_set'||
+      actual.showPrice!==data.showPrice
+    ){
+      throw Error(
+        'Firebase 資料與輸入不一致。'
+        +'預期價格：'+fixedPrice+
+        '；實際價格：'+actual.fixedPrice
       );
     }
 
     resetForm();
 
     message(
-      '作品及整套固定售價已儲存到 Firebase',
-      'success'
+      '儲存成功！\n'
+      +'已重新從 Firebase 伺服器驗證。\n'
+      +'作品：'+actual.name+'\n'
+      +'整套固定售價：'+(
+        actual.fixedPrice===null
+        ?'尚未定價'
+        :'NT$ '+actual.fixedPrice.toLocaleString('zh-TW')
+      ),
+      'success',true
     );
 
   }catch(err){
-    message(errorText(err),'error');
+    message(
+      '儲存或驗證失敗：\n'+errorText(err),
+      'error',true
+    );
   }finally{
+    saving=false;
     button.disabled=false;
+    button.textContent=editingId
+      ?'更新雲端作品'
+      :'儲存至 Firebase';
   }
 });
 
-$('resetBtn').addEventListener('click',resetForm);
+$('resetBtn').addEventListener('click',()=>{
+  if(!saving&&!uploading)resetForm();
+});
+
 $('search').addEventListener('input',render);
 $('filterStatus').addEventListener('change',render);
 
@@ -705,7 +854,7 @@ $('loginForm').addEventListener('submit',async e=>{
       $('loginPassword').value
     );
   }catch(err){
-    message(errorText(err),'error');
+    message(errorText(err),'error',true);
   }
 });
 
@@ -765,32 +914,34 @@ try{
         collection(db,'artworks'),
         snapshot=>{
           artworks=snapshot.docs.map(d=>({
-            id:d.id,
-            ...d.data()
+            id:d.id,...d.data()
           }));
 
           artworks.sort((a,b)=>
             String(a.name||'').localeCompare(
-              String(b.name||''),
-              'zh-Hant'
+              String(b.name||''),'zh-Hant'
             )
           );
 
           render();
           message('作品清單已同步','success');
         },
-        err=>message(errorText(err),'error')
+        err=>message(errorText(err),'error',true)
       );
 
     }catch(err){
       showAdmin(false);
-      message(errorText(err),'error');
+      message(errorText(err),'error',true);
     }
   });
 
 }catch(err){
-  message(errorText(err),'error');
+  message(errorText(err),'error',true);
 }
+</script>
+
+<!-- 伺服器驗證使用的 Firebase 匯入 -->
+<script type="module">
 </script>
 </body>
 </html>

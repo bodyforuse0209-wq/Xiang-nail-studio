@@ -1,15 +1,19 @@
 
 /*
- * XIANG BEAUTY AI ANALYSIS V2
- * 測試分支專用
- * 支援壓縮圖片直接分析、舊版 Cloudinary URL
- * 保留村長驗證
+ * XIANG BEAUTY AI ANALYSIS V2.1
+ * OpenRouter 優先 / Gemini 備援
+ * 僅供 feature/ai-nail-consultation 測試分支使用
  */
 
 const OWNER_UID = "T9nwxBSXqKYWVsS6dmEN62tpt232";
-const MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash";
 const CLOUD_NAME = "mby1sz4i";
 const MAX_BYTES = 4 * 1024 * 1024;
+
+const OPENROUTER_MODEL =
+  process.env.OPENROUTER_MODEL || "openrouter/free";
+
+const GEMINI_MODEL =
+  process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 const IDS = [
   "jump","matte","blend","line","geometry",
@@ -25,17 +29,18 @@ function send(res,status,data){
 }
 
 async function verifyOwner(req){
-  const token = String(req.headers.authorization||"")
+  const token=String(req.headers.authorization||"")
     .match(/^Bearer\s+(\S+)$/i)?.[1];
 
-  if(!token) return false;
+  if(!token)return false;
 
-  const key = process.env.FIREBASE_WEB_API_KEY;
-  if(!key) throw Error("Firebase API Key 未設定");
+  const key=process.env.FIREBASE_WEB_API_KEY;
 
-  const response = await fetch(
+  if(!key)throw Error("Firebase API Key 未設定");
+
+  const response=await fetch(
     "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key="
-      + encodeURIComponent(key),
+    +encodeURIComponent(key),
     {
       method:"POST",
       headers:{"Content-Type":"application/json"},
@@ -44,30 +49,36 @@ async function verifyOwner(req){
     }
   );
 
-  if(!response.ok) return false;
+  if(!response.ok)return false;
 
-  const data = await response.json();
-  const user = data.users?.[0];
+  const data=await response.json();
+  const user=data.users?.[0];
 
   return Boolean(
     user &&
-    user.localId === OWNER_UID &&
-    user.disabled !== true
+    user.localId===OWNER_UID &&
+    user.disabled!==true
   );
 }
 
 function validImageUrl(value){
   try{
-    const u = new URL(value);
+    const u=new URL(value);
+
     return (
-      u.protocol === "https:" &&
-      u.hostname === "res.cloudinary.com" &&
-      !u.port && !u.username && !u.password &&
-      !u.search && !u.hash &&
+      u.protocol==="https:" &&
+      u.hostname==="res.cloudinary.com" &&
+      !u.port &&
+      !u.username &&
+      !u.password &&
+      !u.search &&
+      !u.hash &&
       u.pathname.startsWith(
-        "/" + CLOUD_NAME + "/image/upload/"
+        "/"+CLOUD_NAME+"/image/upload/"
       ) &&
-      u.pathname.includes("/xiang-beauty-artworks/")
+      u.pathname.includes(
+        "/xiang-beauty-artworks/"
+      )
     );
   }catch{
     return false;
@@ -75,301 +86,457 @@ function validImageUrl(value){
 }
 
 async function getImage(body){
-  if(typeof body?.imageData === "string"){
-    const match = body.imageData.match(
+  if(typeof body?.imageData==="string"){
+    const match=body.imageData.match(
       /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/
     );
 
-    if(!match) throw Error("圖片格式不正確");
+    if(!match){
+      throw Error("圖片格式不正確");
+    }
 
-    if(match[2].length > MAX_BYTES * 1.4){
+    if(match[2].length>MAX_BYTES*1.4){
       throw Error("圖片太大，請重新選擇");
     }
 
-    const buffer = Buffer.from(match[2],"base64");
+    const buffer=Buffer.from(match[2],"base64");
 
-    if(!buffer.length || buffer.length > MAX_BYTES){
+    if(!buffer.length||buffer.length>MAX_BYTES){
       throw Error("圖片不可超過 4MB");
     }
 
-    return {buffer,mimeType:match[1]};
+    return {
+      buffer,
+      mimeType:match[1]
+    };
   }
 
   if(!validImageUrl(body?.imageUrl)){
     throw Error("請提供有效的美甲圖片");
   }
 
-  const response = await fetch(body.imageUrl,{
+  const response=await fetch(body.imageUrl,{
     redirect:"error",
     signal:AbortSignal.timeout(12000)
   });
 
-  if(!response.ok) throw Error("無法讀取圖片");
+  if(!response.ok){
+    throw Error("無法讀取圖片");
+  }
 
-  const length = Number(
+  const length=Number(
     response.headers.get("content-length")||0
   );
 
-  if(length > MAX_BYTES){
+  if(length>MAX_BYTES){
     throw Error("圖片不可超過 4MB");
   }
 
-  const mimeType = String(
+  const mimeType=String(
     response.headers.get("content-type")||""
   ).split(";")[0].toLowerCase();
 
-  if(!["image/jpeg","image/png","image/webp"].includes(mimeType)){
+  if(![
+    "image/jpeg","image/png","image/webp"
+  ].includes(mimeType)){
     throw Error("不支援此圖片格式");
   }
 
-  const buffer = Buffer.from(await response.arrayBuffer());
+  const buffer=Buffer.from(
+    await response.arrayBuffer()
+  );
 
-  if(buffer.length > MAX_BYTES){
+  if(buffer.length>MAX_BYTES){
     throw Error("圖片不可超過 4MB");
   }
 
   return {buffer,mimeType};
 }
 
-const PROMPT = `
-你是台灣專業美甲師，也是香香村美妍製造所的圖片分析助手。
-請以繁體中文分析照片。
+const PROMPT=`
+你是台灣專業美甲師，也是香香村美妍製造所的
+AI 美甲圖片辨識助手。
 
-第一：判斷照片是否真的有美甲作品。
-若沒有，isNailImage=false，不可虛構款式。
+請以繁體中文回答。
+只回傳 JSON，不要 Markdown，不要解釋文字。
 
-第二：依照實際可見指甲，逐指判斷施工內容。
-不能將背景、服裝、文字或人物誤認為指甲。
-不能將沒有拍到的手指當作已辨識。
+【任務一：確認圖片】
+辨識是否為美甲作品。
+若不是，isNailImage=false。
+不可將背景、衣服或其他物品當作指甲。
 
-第三：區分基礎凝膠與加購施工。
-例如五指當中三指單色、兩指暈染，
-base=solid，items 內 blend 的 count=2。
-若同時使用不同單色，可判斷 jump。
-但不要因為看見五指顏色不同，
-就直接判定跳色有五次收費。
-貓眼整手底款不得再重複計單指貓眼。
-鏡面整手底款也不得重複計價。
+【任務二：逐指分析】
+辨識照片實際可見的每一指。
+判斷顏色、質地、底款、裝飾與施工方式。
+看不到的手指不可虛構。
 
-第四：產生美甲風格名稱。
-參考小紅書常見的氛圍式命名，
-例如奶呼呼、溫柔御姐、韓系千金、
-美拉德、清冷高級感、暗黑星河、甜酷辣妹、
-靜奢裸感、果凍透感等。
-必須根據照片實際呈現的顏色、質地、氛圍命名。
-不要把店內計價項目當成風格名稱。
-styleName 是主要風格名稱。
-styleTags 是 2 至 5 個短標籤。
-colors 是 1 至 5 個顏色或質地標籤。
+例如：
+五指中三指單色、兩指暈染：
+base="solid"
+items 中 blend count=2
 
-第五：估價所需資料必須嚴謹。
-zone 只能 hand、foot、unknown。
-base 只能 solid、cat、mirror、french、partial、unknown。
-items 的 id 只能使用：
-${IDS.join(",")}。
-count 是照片中實際可見的施工指數。
-gem 可使用顆數。
-confidence 只能 high、medium、low。
-不要自行推算雙手指數，也不要輸出價格。
+【任務三：計價技術分類】
+base 只能為：
+solid、cat、mirror、french、partial、unknown
 
-請只回傳有效 JSON，結構：
+zone 只能為：
+hand、foot、unknown
+
+items.id 只能為：
+${IDS.join(",")}
+
+count 代表照片實際可見的施工指數。
+gem 可以是鑽飾顆數。
+jump 代表跳色項目，不是每一指都收一次。
+若有跳色，jump 的 count 一律為 1。
+
+整手貓眼不可以再重複算單指貓眼。
+整手鏡面不可以再重複算單指鏡面。
+
+只分析施工技術，不計算金額。
+不推估另一手。
+
+【任務四：流行美甲風格】
+styleName 請使用符合圖片氛圍的
+小紅書流行美甲命名。
+
+例如：
+奶呼呼、溫柔御姐、韓系千金、
+美拉德、清冷高級感、暗黑星河、
+甜酷辣妹、靜奢裸感、果凍透感。
+
+styleTags 產生 2 至 5 個短標籤。
+colors 產生 1 至 5 個顏色或質地標籤。
+不可把施工計價名稱當成風格名稱。
+
+【任務五：信心與待確認項目】
+無法看清楚時，confidence="low"。
+有不確定的地方，寫入 questions。
+不能假裝已經辨識完整。
+
+JSON 格式：
+
 {
- "isNailImage":true,
- "zone":"hand",
- "base":"solid",
- "visibleNails":5,
- "summary":"照片的客觀款式說明",
- "styleName":"美拉德溫柔御姐",
- "styleTags":["秋冬氛圍","韓系姐姐感"],
- "colors":["焦糖棕","鼠尾草綠"],
- "items":[
-   {
-     "id":"blend",
-     "count":2,
-     "confidence":"high",
-     "reason":"照片可見兩指漸層暈染"
-   }
- ],
- "questions":[],
- "nails":[
-   {
-     "position":"拇指",
-     "description":"棕色單色",
-     "effects":["solid"]
-   }
- ]
+  "isNailImage":true,
+  "zone":"hand",
+  "base":"solid",
+  "visibleNails":5,
+  "summary":"照片中款式的客觀說明",
+  "styleName":"美拉德溫柔御姐",
+  "styleTags":["秋冬氛圍","韓系姐姐感"],
+  "colors":["焦糖棕","鼠尾草綠"],
+  "items":[
+    {
+      "id":"blend",
+      "count":2,
+      "confidence":"high",
+      "reason":"照片可見兩指漸層暈染"
+    }
+  ],
+  "questions":[],
+  "nails":[
+    {
+      "position":"拇指",
+      "description":"焦糖棕單色",
+      "effects":["solid"]
+    }
+  ]
 }
-
-看不清楚時，降低 confidence 並說明原因。
-不得憑空猜測另一隻手。
 `;
 
 function cleanResult(raw){
-  const allowed = new Set(IDS);
-  const str = (v,n=160)=>String(v||"").slice(0,n);
+  const allowed=new Set(IDS);
+  const str=(v,n=160)=>String(v||"").slice(0,n);
 
-  const items = Array.isArray(raw.items)
-    ? raw.items.filter(x=>
-        x && allowed.has(x.id) &&
-        Number.isInteger(x.count) &&
-        x.count>=1 && x.count<=50
-      ).slice(0,25).map(x=>({
-        id:x.id,
-        count:x.count,
-        confidence:["high","medium","low"].includes(x.confidence)
-          ? x.confidence : "low",
-        reason:str(x.reason)
-      }))
-    : [];
+  const merged=new Map();
+
+  if(Array.isArray(raw.items)){
+    for(const item of raw.items){
+      if(!item||!allowed.has(item.id))continue;
+
+      const count=Number(item.count);
+
+      if(!Number.isInteger(count)||
+         count<1||count>50)continue;
+
+      const old=merged.get(item.id);
+
+      merged.set(item.id,{
+        id:item.id,
+        count:item.id==="jump"
+          ?1
+          :Math.min(50,(old?.count||0)+count),
+        confidence:["high","medium","low"]
+          .includes(item.confidence)
+          ?item.confidence:"low",
+        reason:str(item.reason)
+      });
+    }
+  }
+
+  const zone=["hand","foot","unknown"]
+    .includes(raw.zone)?raw.zone:"unknown";
+
+  const base=[
+    "solid","cat","mirror",
+    "french","partial","unknown"
+  ].includes(raw.base)?raw.base:"unknown";
+
+  const visibleNails=Number.isInteger(raw.visibleNails)
+    ?Math.max(0,Math.min(10,raw.visibleNails))
+    :0;
 
   return {
     isNailImage:raw.isNailImage===true,
-    zone:["hand","foot","unknown"].includes(raw.zone)
-      ? raw.zone : "unknown",
-    base:["solid","cat","mirror","french","partial","unknown"]
-      .includes(raw.base) ? raw.base : "unknown",
-    visibleNails:Number.isInteger(raw.visibleNails)
-      ? Math.max(0,Math.min(10,raw.visibleNails)) : 0,
+    zone,
+    base,
+    visibleNails,
     summary:str(raw.summary,500),
     styleName:str(raw.styleName,40),
     styleTags:Array.isArray(raw.styleTags)
-      ? raw.styleTags.slice(0,5).map(x=>str(x,30)) : [],
+      ?raw.styleTags.slice(0,5).map(x=>str(x,30))
+      :[],
     colors:Array.isArray(raw.colors)
-      ? raw.colors.slice(0,5).map(x=>str(x,30)) : [],
-    items,
+      ?raw.colors.slice(0,5).map(x=>str(x,30))
+      :[],
+    items:[...merged.values()],
     questions:Array.isArray(raw.questions)
-      ? raw.questions.slice(0,5).map(x=>str(x,180)) : [],
+      ?raw.questions.slice(0,5).map(x=>str(x,180))
+      :[],
     nails:Array.isArray(raw.nails)
-      ? raw.nails.slice(0,10).map(x=>({
-          position:str(x.position,20),
-          description:str(x.description,120),
-          effects:Array.isArray(x.effects)
-            ? x.effects.slice(0,8).map(v=>str(v,25))
-            : []
-        })) : [],
+      ?raw.nails.slice(0,10).map(x=>({
+        position:str(x.position,20),
+        description:str(x.description,120),
+        effects:Array.isArray(x.effects)
+          ?x.effects.slice(0,8).map(v=>str(v,25))
+          :[]
+      }))
+      :[],
     pricingStatus:"not_priced",
     requiresOwnerReview:true
   };
 }
 
-async function analyze(image,apiKey){
-  const endpoint =
-    "https://generativelanguage.googleapis.com/v1beta/models/"
-    + encodeURIComponent(MODEL) + ":generateContent";
+function parseAnalysis(text){
+  if(typeof text!=="string"||!text.trim()){
+    throw Error("AI 沒有回傳分析內容");
+  }
 
-  const body = {
-    systemInstruction:{parts:[{text:PROMPT}]},
-    contents:[{
-      role:"user",
-      parts:[
-        {text:"請逐指分析這張美甲參考圖，回傳 JSON。"},
-        {inlineData:{
-          mimeType:image.mimeType,
-          data:image.buffer.toString("base64")
-        }}
-      ]
-    }],
-    generationConfig:{
-      responseMimeType:"application/json",
-      temperature:0.15,
-      maxOutputTokens:4096
+  let cleaned=text.trim()
+    .replace(/^```(?:json)?\s*/i,"")
+    .replace(/\s*```$/,"");
+
+  try{
+    return cleanResult(JSON.parse(cleaned));
+  }catch{
+    const first=cleaned.indexOf("{");
+    const last=cleaned.lastIndexOf("}");
+
+    if(first<0||last<=first){
+      throw Error("AI 回傳內容不是有效 JSON");
     }
+
+    return cleanResult(
+      JSON.parse(cleaned.slice(first,last+1))
+    );
+  }
+}
+
+async function callOpenRouter(image,key){
+  const dataUrl=
+    "data:"+image.mimeType+";base64,"
+    +image.buffer.toString("base64");
+
+  const response=await fetch(
+    "https://openrouter.ai/api/v1/chat/completions",
+    {
+      method:"POST",
+      headers:{
+        "Authorization":"Bearer "+key,
+        "Content-Type":"application/json",
+        "HTTP-Referer":"https://xiang-beauty-studio.vercel.app",
+        "X-Title":"Xiang Beauty AI Nail Analysis"
+      },
+      body:JSON.stringify({
+        model:OPENROUTER_MODEL,
+        messages:[
+          {
+            role:"system",
+            content:PROMPT
+          },
+          {
+            role:"user",
+            content:[
+              {
+                type:"text",
+                text:"請完整分析這張美甲照片，僅輸出 JSON。"
+              },
+              {
+                type:"image_url",
+                image_url:{
+                  url:dataUrl
+                }
+              }
+            ]
+          }
+        ],
+        temperature:0.15,
+        max_tokens:2500
+      }),
+      signal:AbortSignal.timeout(22000)
+    }
+  );
+
+  if(!response.ok){
+    const error=await response.text();
+
+    console.error(
+      "OpenRouter HTTP",
+      response.status,
+      error.slice(0,350)
+    );
+
+    throw Error(
+      "OpenRouter HTTP "+response.status
+    );
+  }
+
+  const payload=await response.json();
+
+  const content=payload.choices?.[0]?.message?.content;
+
+  const text=typeof content==="string"
+    ?content
+    :Array.isArray(content)
+      ?content.map(x=>x.text||"").join("")
+      :"";
+
+  return {
+    data:parseAnalysis(text),
+    model:payload.model||OPENROUTER_MODEL,
+    provider:"OpenRouter"
   };
+}
 
-  for(let attempt=1;attempt<=2;attempt++){
-    let response;
+async function callGemini(image,key){
+  const endpoint=
+    "https://generativelanguage.googleapis.com/v1beta/models/"
+    +encodeURIComponent(GEMINI_MODEL)
+    +":generateContent";
 
+  const response=await fetch(endpoint,{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "x-goog-api-key":key
+    },
+    body:JSON.stringify({
+      systemInstruction:{
+        parts:[{text:PROMPT}]
+      },
+      contents:[{
+        role:"user",
+        parts:[
+          {
+            text:"請逐指分析照片，只輸出 JSON。"
+          },
+          {
+            inlineData:{
+              mimeType:image.mimeType,
+              data:image.buffer.toString("base64")
+            }
+          }
+        ]
+      }],
+      generationConfig:{
+        responseMimeType:"application/json",
+        temperature:0.15,
+        maxOutputTokens:3000
+      }
+    }),
+    signal:AbortSignal.timeout(22000)
+  });
+
+  if(!response.ok){
+    const error=await response.text();
+
+    console.error(
+      "Gemini HTTP",
+      response.status,
+      error.slice(0,350)
+    );
+
+    throw Error(
+      "Gemini HTTP "+response.status
+    );
+  }
+
+  const payload=await response.json();
+
+  const text=payload.candidates?.[0]?.content?.parts
+    ?.map(x=>x.text||"").join("")||"";
+
+  return {
+    data:parseAnalysis(text),
+    model:GEMINI_MODEL,
+    provider:"Gemini"
+  };
+}
+
+async function analyzeWithFallback(image){
+  const errors=[];
+
+  const openRouterKey=process.env.OPENROUTER_API_KEY;
+  const geminiKey=process.env.GEMINI_API_KEY;
+
+  if(openRouterKey){
     try{
-      response = await fetch(endpoint,{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
-          "x-goog-api-key":apiKey
-        },
-        body:JSON.stringify(body),
-        signal:AbortSignal.timeout(25000)
-      });
+      return await callOpenRouter(image,openRouterKey);
     }catch(error){
-      if(attempt===2){
-        return {
-          ok:false,status:504,
-          error:"AI 連線逾時，請稍後重新分析"
-        };
-      }
-      continue;
+      errors.push(error.message);
+      console.error(
+        "OpenRouter failed:",
+        error.message
+      );
     }
+  }else{
+    errors.push("OpenRouter API Key 未設定");
+  }
 
-    if(response.status===429){
-      return {
-        ok:false,status:429,
-        error:"Gemini 使用額度或頻率達上限，請稍後再試",
-        retryAfter:60
-      };
-    }
-
-    if(!response.ok){
-      if(response.status>=500 && attempt===1){
-        await new Promise(r=>setTimeout(r,1000));
-        continue;
-      }
-
-      return {
-        ok:false,status:502,
-        error:"Gemini 分析失敗（"+response.status+"）"
-      };
-    }
-
-    const payload = await response.json();
-    const content = payload.candidates?.[0]?.content?.parts
-      ?.map(x=>x.text||"").join("");
-
-    if(!content){
-      return {
-        ok:false,status:502,
-        error:"AI 沒有回傳完整內容，請重新分析"
-      };
-    }
-
+  if(geminiKey){
     try{
-      const cleaned = content
-        .replace(/^```(?:json)?\s*/i,"")
-        .replace(/\s*```$/,"");
-
-      const data = cleanResult(JSON.parse(cleaned));
-
-      return {ok:true,data};
-    }catch{
-      return {
-        ok:false,status:502,
-        error:"AI 回傳資料不完整，請重新分析"
-      };
+      return await callGemini(image,geminiKey);
+    }catch(error){
+      errors.push(error.message);
+      console.error(
+        "Gemini failed:",
+        error.message
+      );
     }
+  }else{
+    errors.push("Gemini API Key 未設定");
   }
 
   return {
-    ok:false,status:502,
-    error:"分析失敗"
+    failed:true,
+    errors
   };
 }
 
 export default async function handler(req,res){
   if(req.method!=="POST"){
     res.setHeader("Allow","POST");
-    return send(res,405,{error:"僅接受 POST"});
+    return send(res,405,{
+      error:"僅接受 POST"
+    });
   }
 
   try{
-    if(!await verifyOwner(req)){
+    const authorized=await verifyOwner(req);
+
+    if(!authorized){
       return send(res,403,{
         error:"請使用村長帳號登入"
-      });
-    }
-
-    const key=process.env.GEMINI_API_KEY;
-
-    if(!key){
-      return send(res,503,{
-        error:"GEMINI_API_KEY 尚未設定"
       });
     }
 
@@ -378,28 +545,43 @@ export default async function handler(req,res){
     try{
       image=await getImage(req.body);
     }catch(error){
-      return send(res,400,{error:error.message});
+      return send(res,400,{
+        error:error.message
+      });
     }
 
-    const result=await analyze(image,key);
+    const result=await analyzeWithFallback(image);
 
-    if(!result.ok){
-      return send(res,result.status,{
-        error:result.error,
-        retryAfter:result.retryAfter||null
+    if(result.failed){
+      const errors=result.errors.join("；");
+
+      console.error(
+        "All AI providers failed:",
+        errors
+      );
+
+      return send(res,503,{
+        error:
+          "OpenRouter 與 Gemini 均未完成辨識。"
+          +"請稍後重試，或檢查模型與免費額度。",
+        details:errors
       });
     }
 
     return send(res,200,{
       ...result.data,
-      model:MODEL
+      provider:result.provider,
+      model:result.model
     });
 
   }catch(error){
-    console.error("AI analysis:",error.message);
+    console.error(
+      "AI analysis system:",
+      error.message
+    );
 
     return send(res,500,{
-      error:"系統暫時無法分析，請稍後重試"
+      error:"系統暫時無法分析，請稍後再試"
     });
   }
 }

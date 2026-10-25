@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#f8f6f2">
-<title>香香村｜AI 智能美甲估價 V2</title>
+<title>香香村｜AI 智能美甲估價 V2.3</title>
 <script src="./firebase-config.js"></script>
 <style>
 :root{
@@ -73,11 +73,15 @@ button:disabled{opacity:.5}
   border-bottom:1px solid var(--line);
 }
 .editor input{text-align:center}
-.check{
-  display:flex;align-items:center;gap:10px;
-}
+.check{display:flex;align-items:center;gap:10px}
 .check input{width:auto}
 a{color:#806846}
+.diagnostic{
+  background:#f7f4ef;border:1px solid var(--line);
+  padding:14px;border-radius:12px;
+  white-space:pre-wrap;overflow-wrap:anywhere;
+  font-size:13px;line-height:1.7;
+}
 </style>
 </head>
 <body>
@@ -108,6 +112,21 @@ a{color:#806846}
 </section>
 
 <div id="appPanel" class="hidden">
+
+<section class="panel">
+  <h2>AI 連線診斷｜V2.3</h2>
+  <p class="muted">
+    不需要上傳照片，直接確認 Vercel
+    是否能連線到 OpenRouter 和 Gemini。
+  </p>
+  <button id="diagnoseBtn" class="secondary" type="button">
+    檢查 AI 連線
+  </button>
+  <div id="diagnoseResult" class="diagnostic" aria-live="polite">
+    尚未執行檢查。
+  </div>
+</section>
+
 <section class="panel">
   <h2>01｜上傳美甲參考圖</h2>
   <p class="muted">
@@ -163,7 +182,6 @@ a{color:#806846}
     以下為照片實際辨識到的指數。
     可以修改，金額會自動更新。
   </p>
-
   <div id="editor"></div>
 
   <h2>05｜AI 預估金額</h2>
@@ -209,6 +227,7 @@ import {
 } from "./ai-pricing-engine.js";
 
 const $=id=>document.getElementById(id);
+
 const labels={
   solid:"單色",cat:"貓眼",mirror:"鏡面",
   french:"法式",partial:"局部造型",
@@ -415,7 +434,7 @@ function calculate(){
   const gender=$("gender").value;
   const a=analysis;
   const mirror=$("mirror").checked;
-  const multiplier=mirror && a.visibleNails<=5?2:1;
+  const multiplier=mirror&&a.visibleNails<=5?2:1;
 
   const breakdown=$("breakdown");
   breakdown.replaceChildren();
@@ -455,9 +474,12 @@ function calculate(){
       continue;
     }
 
-    const qty=Math.min(50,count*multiplier);
-    const amount=unit*qty;
+    // 跳色費用每套只收一次，不因雙手推估而加倍
+    const qty=id==="jump"
+      ? 1
+      : Math.min(50,count*multiplier);
 
+    const amount=unit*qty;
     total+=amount;
 
     addRow(
@@ -473,7 +495,7 @@ function calculate(){
 
   if(multiplier===2){
     warnings.push(
-      "已假設另一手採相同配置，造型指數乘以 2。"
+      "已假設另一手採相同配置，造型指數乘以 2（跳色除外）。"
     );
   }else if(a.visibleNails<=5){
     warnings.push(
@@ -546,7 +568,10 @@ async function analyze(){
     const data=await response.json();
 
     if(!response.ok){
-      throw Error(data.error||"AI 分析失敗");
+      const details=Array.isArray(data.details)
+        ? "："+data.details.join("；")
+        : "";
+      throw Error((data.error||"AI 分析失敗")+details);
     }
 
     showAnalysis(data);
@@ -563,6 +588,84 @@ async function analyze(){
 
 $("analyzeBtn").onclick=analyze;
 $("retryBtn").onclick=analyze;
+
+$("diagnoseBtn").onclick=async()=>{
+  const output=$("diagnoseResult");
+  const button=$("diagnoseBtn");
+
+  if(!owner||!auth?.currentUser){
+    output.textContent="請先使用村長帳號登入";
+    return;
+  }
+
+  button.disabled=true;
+  output.textContent="正在檢查 AI 連線，約需 6 秒…";
+
+  try{
+    const token=await auth.currentUser.getIdToken();
+
+    const response=await fetch(
+      "/api/analyze-nail?check=1",
+      {
+        method:"GET",
+        headers:{
+          Authorization:"Bearer "+token
+        },
+        cache:"no-store"
+      }
+    );
+
+    const data=await response.json();
+
+    if(!response.ok){
+      output.textContent=
+        "診斷失敗（HTTP "+response.status+"）\n"+
+        (data.error||JSON.stringify(data));
+      return;
+    }
+
+    const d=data.diagnostic||{};
+    const c=data.connectivity||{};
+
+    function result(name,item){
+      if(!item)return name+"：未取得結果";
+      if(item.reachable){
+        return name+"：連線成功（HTTP "+
+          item.httpStatus+"）";
+      }
+      return name+"：連線失敗"+
+        (item.httpStatus
+          ?"（HTTP "+item.httpStatus+"）"
+          :"")+
+        (item.reason?" "+item.reason:"");
+    }
+
+    output.textContent=[
+      "版本："+(d.version||"未知"),
+      "環境："+(d.environment||"未知"),
+      "分支："+(d.branch||"未知"),
+      "",
+      "OpenRouter 模型："+(d.openRouter?.model||"未知"),
+      "OpenRouter 金鑰："+(
+        d.openRouter?.configured?"已設定":"未設定"
+      ),
+      result("OpenRouter",c.openRouter),
+      "",
+      "Gemini 模型："+(d.gemini?.model||"未知"),
+      "Gemini 金鑰："+(
+        d.gemini?.configured?"已設定":"未設定"
+      ),
+      result("Gemini",c.gemini),
+      "",
+      "注意：連線成功不代表圖片辨識一定成功。"
+    ].join("\n");
+
+  }catch(error){
+    output.textContent="診斷失敗："+error.message;
+  }finally{
+    button.disabled=false;
+  }
+};
 
 try{
   if(!window.XIANG_FIREBASE_CONFIG||

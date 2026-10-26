@@ -1,24 +1,135 @@
-/* XIANG V14 - native unified CRM / wallet preview. Replace integration.js only. */
+/* 香香村 V14.2｜原生整合客戶管理｜UTF-8｜錢包安全預覽 */
 (()=>{'use strict';
-const css=`#xiang14{max-width:1100px;margin:0 auto;padding:16px;color:#342e2b;font-family:-apple-system,BlinkMacSystemFont,'Noto Sans TC',sans-serif}#xiang14 *{box-sizing:border-box}#xiang14 .xcard{background:#fff;border:1px solid #e7ded5;border-radius:18px;padding:17px;margin:12px 0}#xiang14 .xgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}#xiang14 button{border:0;border-radius:11px;padding:12px;background:#40352f;color:white;font-size:15px}#xiang14 button.secondary{background:#f0e9e1;color:#40352f}#xiang14 input,#xiang14 select,#xiang14 textarea{width:100%;padding:12px;margin:5px 0 12px;border:1px solid #d8cfc5;border-radius:10px;background:#fff;font-size:16px}#xiang14 label{font-size:13px;display:block}#xiang14 .muted{color:#81766e;font-size:13px}#xiang14 .big{font-size:23px;font-weight:700}#xiang14 .xrow{display:flex;gap:9px;align-items:center;flex-wrap:wrap}#xiang14 .xrow>*{flex:1}#xiang14 .xitem{display:block;width:100%;text-align:left;background:#f9f6f1;color:#40352f;margin:7px 0}#xiang14 .warn{background:#fff7e8;border:1px solid #e3cda9;padding:12px;border-radius:12px}#xiang14 [hidden]{display:none!important}`;
-const style=document.createElement('style');style.textContent=css;document.head.append(style);
-const $=id=>document.getElementById(id);let db,auth,fire,staff,customers=[],chosen=null,principal=0,bonus=0,loaded=false;
-const money=n=>'NT$ '+Number(n||0).toLocaleString('zh-TW');const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function status(s){$('xstatus').textContent=s}function show(name){for(const x of ['list','detail','new'])$('x'+x).hidden=x!==name;}
-async function setup(){if(loaded)return;loaded=true;try{
- const [a,f]=await Promise.all([import('https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js'),import('https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js')]);
- const au=await import('https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js');
- const app=a.getApps().length?a.getApp():a.initializeApp(window.XIANG_FIREBASE_CONFIG);db=f.getFirestore(app);auth=au.getAuth(app);fire=f;
- au.onAuthStateChanged(auth,async user=>{if(!user){status('è«åä½¿ç¨é¦é å³ä¸è§ç»å¥å¡å·¥å¸³è');$('xcontent').hidden=true;return}try{const s=await f.getDoc(f.doc(db,'staff',user.uid));if(!s.exists()||s.data().active!==true)throw Error('æ²æå¡å·¥æ¬é');staff={uid:user.uid,...s.data()};$('xcontent').hidden=false;await refresh()}catch(e){status('ç¡æ³é©è­æ¬éï¼'+e.message);$('xcontent').hidden=true}});
- }catch(e){status('ç³»çµ±è¼å¥å¤±æï¼'+e.message)}}
-async function refresh(){try{status('åæ­¥å®¢æ¶è³æä¸­â¦');const s=await fire.getDocs(fire.collection(db,'customers'));customers=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.archived!==true);renderList();status('å·²åæ­¥ '+customers.length+' ä½å®¢æ¶')}catch(e){status('è®åå¤±æï¼'+e.message)}}
-function renderList(){const term=$('xsearch').value.trim().toLowerCase();const rows=customers.filter(c=>[c.name,c.phone,c.line].some(x=>String(x||'').toLowerCase().includes(term)));$('xcount').textContent=`å®¢æ¶ ${customers.length} ä½`;const host=$('xrows');host.replaceChildren();for(const c of rows){const b=document.createElement('button');b.className='xitem';b.textContent=`${c.name}ã${c.phone||''}`;b.onclick=()=>openCustomer(c.id);host.append(b)}if(!rows.length)host.textContent='æ²æç¬¦åçå®¢æ¶'}
-async function openCustomer(id){chosen=customers.find(c=>c.id===id);if(!chosen)return;show('detail');$('xname').textContent=chosen.name;$('xinfo').textContent=[chosen.phone,chosen.line,chosen.birthday].filter(Boolean).join(' Â· ')||'æªå¡«è¯çµ¡è³æ';principal=0;bonus=0;$('xbalance').textContent='è®åä¸­';$('xhistory').textContent='è®åä¸­';$('xamount').value='';$('xcalc').textContent='è¼¸å¥æ¶è²»éé¡å³å¯è©¦ç®';try{const w=await fire.getDoc(fire.doc(db,'wallets',id));if(w.exists()){principal=w.data().principalBalance;bonus=w.data().bonusBalance;if(!Number.isSafeInteger(principal)||!Number.isSafeInteger(bonus)||principal<0||bonus<0)throw Error('é¢åéé¡ç°å¸¸');$('xbalance').textContent=`${money(principal+bonus)}ï½æ¬é ${money(principal)}ï¼è´é ${money(bonus)}`}else $('xbalance').textContent='å°ç¡é¢åç´éï¼æªå»ºç«ï¼';const t=await fire.getDocs(fire.query(fire.collection(db,'wallets',id,'transactions'),fire.orderBy('createdAt','desc'),fire.limit(20)));$('xhistory').textContent=t.empty?'å°ç¡äº¤æ':t.docs.map(d=>{const a=d.data();return `${a.type||'äº¤æ'} ${money(a.amount)} ${a.createdAt?.toDate?.().toLocaleString('zh-TW')||''}`}).join('\n')}catch(e){$('xbalance').textContent='ç¡æ³è®åé¢åï¼å°æªéæ¾æ¬éï¼';$('xhistory').textContent='äº¤æç´éå°æªéæ¾ï¼'+e.message}}
-function simulate(){const n=Number($('xamount').value);if(!Number.isSafeInteger(n)||n<=0){$('xcalc').textContent='è«è¼¸å¥æ­£æ´æ¸éé¡';return}if(n>principal+bonus){$('xcalc').textContent='é¤é¡ä¸è¶³ï¼æ­¤èåè©¦ç®ï¼';return}const b=Math.min(bonus,n),p=n-b;$('xcalc').textContent=`åæ£è´é ${money(b)}ï¼åæ£æ¬é ${money(p)}ï¼å©é¤ ${money(principal+bonus-n)}ï¼è©¦ç®ï¼æªæ£æ¬¾ï¼`}
-async function addCustomer(){const name=$('xnewname').value.trim(),phone=$('xnewphone').value.trim(),line=$('xnewline').value.trim(),birthday=$('xnewbirthday').value,notes=$('xnewnotes').value.trim();if(!name||name.length>80){status('è«è¼¸å¥ 1â80 å­å®¢æ¶å§å');return}if(phone.length>30||line.length>100||notes.length>3000){status('æ¬ä½é·åº¦è¶ééå¶');return}const btn=$('xsave');btn.disabled=true;try{const u=auth.currentUser;if(!u||!staff)throw Error('è«åç»å¥');await fire.addDoc(fire.collection(db,'customers'),{name,phone,line,birthday,notes,categoryId:'',customFields:{},archived:false,createdAt:fire.serverTimestamp(),createdBy:u.uid,updatedAt:fire.serverTimestamp(),updatedBy:u.uid});$('xnewname').value='';$('xnewphone').value='';$('xnewline').value='';$('xnewbirthday').value='';$('xnewnotes').value='';await refresh();show('list');status('æ°å¢å®¢æ¶æå')}catch(e){status('æ°å¢å¤±æï¼'+e.message)}finally{btn.disabled=false}}
-function init(){const nav=$('nav'),app=document.querySelector('.container.app'),bar=$('bottomBar');if(!nav||!app)return;const panel=document.createElement('div');panel.id='xiang14';panel.hidden=true;panel.innerHTML=`<div class="xrow"><h2 style="margin:8px 0">é¦é¦æï½å®¢æ¶èæå¡ç®¡ç</h2><button class="secondary" id="xback">â åæºæ§ä¼°å¹</button></div><p id="xstatus" class="muted">æºåè¼å¥â¦</p><div id="xcontent" hidden><section id="xlist" class="xcard"><div class="xrow"><strong id="xcount">å®¢æ¶</strong><button id="xadd">ï¼ æ°å¢å®¢æ¶</button></div><label>æå°å§åãé»è©±ãLINE</label><input id="xsearch" placeholder="æå°å®¢æ¶"><div id="xrows"></div></section><section id="xnew" class="xcard" hidden><h3>æ°å¢å®¢æ¶</h3><label>å§å *</label><input id="xnewname" maxlength="80"><label>é»è©±</label><input id="xnewphone" maxlength="30"><label>LINE</label><input id="xnewline" maxlength="100"><label>çæ¥</label><input id="xnewbirthday" type="date"><label>åè¨»</label><textarea id="xnewnotes" rows="3" maxlength="3000"></textarea><div class="xrow"><button class="secondary" id="xcancel">åæ¶</button><button id="xsave">å²å­å®¢æ¶</button></div></section><section id="xdetail" hidden><div class="xcard"><button class="secondary" id="xtolist">â è¿åå®¢æ¶åè¡¨</button><h3 id="xname"></h3><p id="xinfo" class="muted"></p><p class="muted">æå¡é¢åé¤é¡</p><div id="xbalance" class="big"></div></div><div class="xcard"><h3>å²å¼è¦å</h3><div class="warn">æ­£å¼å²å¼å°æªåç¨ãçºä¿éæå¡æ¬¾é å®å¨ï¼ä¸è½å¨æªé©è­æ¬éåå¯«å¥é¤é¡ã</div><label>é è¨å²å¼æ¬éï¼åè¨ç®ï¼</label><input id="xtopup" type="number" min="0" step="1" placeholder="ä¾å¦ 3000"><label>é è¨è´ééï¼åè¨ç®ï¼</label><input id="xgift" type="number" min="0" step="1" placeholder="ä¾å¦ 300"><div id="xtotal" class="big">è©¦ç®å¥å¸³ NT$ 0</div><button disabled>ç¢ºèªå²å¼ï¼å°æªåç¨ï¼</button></div><div class="xcard"><h3>æ¶è²»æ£æ¬¾ï½åæ£è´éé</h3><label>æ¬æ¬¡æ¶è²»éé¡</label><input id="xamount" type="number" min="1" step="1" placeholder="ä¾å¦ 800"><p id="xcalc" class="warn">è¼¸å¥æ¶è²»éé¡å³å¯è©¦ç®</p><button disabled>ç¢ºèªæ£æ¬¾ï¼å°æªåç¨ï¼</button></div><div class="xcard"><h3>äº¤æç´é</h3><pre id="xhistory" style="white-space:pre-wrap;overflow-wrap:anywhere">å°æªè®å</pre></div></section></div>`;app.after(panel);
- const btn=document.createElement('button');btn.className='navbtn';btn.type='button';btn.textContent='â å®¢æ¶ï¼æå¡ç®¡ç';nav.append(btn);
- const oldButtons=Array.from(nav.querySelectorAll('[data-page]'));function close(){panel.hidden=true;app.hidden=false;if(bar)bar.hidden=false;btn.classList.remove('active');window.scrollTo(0,0)}btn.onclick=()=>{app.hidden=true;panel.hidden=false;if(bar)bar.hidden=true;btn.classList.add('active');setup();window.scrollTo(0,0)};oldButtons.forEach(b=>b.addEventListener('click',close));$('xback').onclick=close;$('xsearch').oninput=renderList;$('xadd').onclick=()=>show('new');$('xcancel').onclick=()=>show('list');$('xtolist').onclick=()=>show('list');$('xsave').onclick=addCustomer;$('xamount').oninput=simulate;const topup=()=>{const p=Number($('xtopup').value),b=Number($('xgift').value);$('xtotal').textContent=Number.isSafeInteger(p)&&Number.isSafeInteger(b)&&p>=0&&b>=0?`è©¦ç®å¥å¸³ ${money(p+b)}`:'è«è¼¸å¥éè² æ´æ¸'};$('xtopup').oninput=topup;$('xgift').oninput=topup;
+const $=id=>document.getElementById(id);
+const DEFAULT_CATS=[{id:'regular',name:'常客',active:true},{id:'vip',name:'VIP',active:true},{id:'stored',name:'儲值會員（尚未啟用）',active:true}];
+const META={source:'crm_source',service:'crm_service',firstVisit:'crm_firstVisit',contactPreference:'crm_contactPreference'};
+const money=n=>'NT$ '+Number(n||0).toLocaleString('zh-TW');
+let db,fire,auth,staff=null,owner=false,customers=[],chosen=null,config={categories:DEFAULT_CATS,fields:[]},ready=false;
+const css=`#xiangCRM{max-width:850px;margin:auto;padding:14px;color:#352e29;font-family:-apple-system,BlinkMacSystemFont,'Noto Sans TC',sans-serif}#xiangCRM *{box-sizing:border-box}#xiangCRM .xc{background:white;border:1px solid #e8dfd5;border-radius:18px;padding:18px;margin:12px 0}#xiangCRM button{border:0;border-radius:11px;padding:12px 16px;background:#3e332d;color:white;font-size:15px;cursor:pointer}#xiangCRM button.alt{background:#eee7df;color:#3e332d}#xiangCRM button:disabled{opacity:.55}#xiangCRM label{display:block;margin:13px 0 5px;font-size:13px;color:#6f6258}#xiangCRM input,#xiangCRM select,#xiangCRM textarea{display:block;width:100%;border:1px solid #d9cec4;border-radius:10px;padding:12px;background:white;font-size:16px}#xiangCRM .xr{display:flex;gap:8px;align-items:center;flex-wrap:wrap}#xiangCRM .xr>*{flex:1}#xiangCRM .muted{color:#85796e;font-size:13px}#xiangCRM .item{display:block;width:100%;text-align:left;background:#f5f0e9;color:#382f29;margin:7px 0}#xiangCRM .big{font-size:23px;font-weight:700}#xiangCRM .warn{background:#fff7e8;border:1px solid #e7d0a5;padding:12px;border-radius:12px;font-size:13px}#xiangCRM [hidden]{display:none!important}`;
+function say(s){$('crmStatus').textContent=s}
+function view(id){for(const x of ['list','form','detail'])$('crm_'+x).hidden=x!==id}
+function option(value,name){const o=document.createElement('option');o.value=value;o.textContent=name;return o}
+function activeCats(){return config.categories.filter(c=>c.active!==false)}
+function renderCats(value='regular'){
+ const s=$('crmCategory');s.replaceChildren();for(const c of activeCats())s.add(option(c.id,c.name));
+ if(value&&![...s.options].some(o=>o.value===value))s.add(option(value,value+'（舊分類）'));
+ s.value=value||activeCats()[0]?.id||'regular';
+ const f=$('crmFilter'),old=f.value;f.replaceChildren(option('','所有會員分類'));
+ for(const c of config.categories)f.add(option(c.id,c.name+(c.active===false?'（已隱藏）':'')));
+ f.value=[...f.options].some(o=>o.value===old)?old:'';
+}
+function renderExtra(values={}){
+ const root=$('crmExtras');root.replaceChildren();
+ for(const f of config.fields.filter(x=>x.active!==false)){
+  const label=document.createElement('label');label.textContent=f.name;
+  const input=document.createElement(f.type==='textarea'?'textarea':'input');
+  if(f.type!=='textarea')input.type=f.type==='date'?'date':'text';
+  input.maxLength=500;input.dataset.fieldId=f.id;input.value=String(values[f.id]??'');root.append(label,input);
+ }
+}
+function catName(id){return config.categories.find(x=>x.id===id)?.name||'未分類'}
+function list(){
+ const term=$('crmSearch').value.trim().toLowerCase(),cat=$('crmFilter').value;
+ const rows=customers.filter(c=>c.archived!==true&&(!cat||c.categoryId===cat)&&[c.name,c.phone,c.line,catName(c.categoryId)].some(v=>String(v||'').toLowerCase().includes(term)));
+ $('crmCount').textContent=`有效客戶 ${customers.filter(c=>c.archived!==true).length} 位`;
+ const root=$('crmRows');root.replaceChildren();
+ for(const c of rows){const b=document.createElement('button');b.className='item';b.textContent=`${c.name}｜${catName(c.categoryId)}｜${c.phone||'無電話'}`;b.onclick=()=>openCustomer(c.id);root.append(b)}
+ if(!rows.length)root.textContent='沒有符合條件的客戶';
+}
+async function refresh(){
+ const s=await fire.getDocs(fire.collection(db,'customers'));customers=s.docs.map(d=>({id:d.id,...d.data()}));list();say('資料已同步，共 '+customers.length+' 筆客戶紀錄');
+}
+async function loadConfig(){
+ const s=await fire.getDoc(fire.doc(db,'settings','customerConfig'));
+ if(s.exists()){
+  const d=s.data();config={categories:Array.isArray(d.categories)?d.categories:DEFAULT_CATS,fields:Array.isArray(d.fields)?d.fields.filter(f=>['text','textarea','date'].includes(f.type)):[]};
+ }
+ renderCats();renderExtra();
+}
+function form(c=null){
+ chosen=c;
+ $('crmFormTitle').textContent=c?'編輯客戶':'新增客戶';
+ for(const k of ['name','phone','line','birthday','notes'])$('crm_'+k).value=c?.[k]||'';
+ renderCats(c?.categoryId||'regular');
+ const custom=c?.customFields&&typeof c.customFields==='object'?c.customFields:{};
+ for(const [key,id] of Object.entries(META))$('crm_'+key).value=String(custom[id]||'');
+ renderExtra(custom);view('form');window.scrollTo(0,0);
+}
+async function save(){
+ const btn=$('crmSave');btn.disabled=true;
+ try{
+  const user=auth.currentUser;if(!user||!staff)throw Error('請先登入授權員工帳號');
+  const name=$('crm_name').value.trim(),phone=$('crm_phone').value.trim(),line=$('crm_line').value.trim(),birthday=$('crm_birthday').value,notes=$('crm_notes').value.trim();
+  if(!name||name.length>80)throw Error('姓名必須為 1–80 字');
+  if(phone.length>30||line.length>100||notes.length>3000)throw Error('欄位長度超過限制');
+  const custom={...(chosen?.customFields||{})};
+  for(const [key,id] of Object.entries(META))custom[id]=$('crm_'+key).value.trim();
+  for(const el of $('crmExtras').querySelectorAll('[data-field-id]'))custom[el.dataset.fieldId]=el.value.trim();
+  if(Object.keys(custom).length>30)throw Error('自訂欄位超過 30 個');
+  const data={name,phone,line,birthday,notes,categoryId:$('crmCategory').value,customFields:custom,updatedAt:fire.serverTimestamp(),updatedBy:user.uid};
+  if(chosen){await fire.updateDoc(fire.doc(db,'customers',chosen.id),data)}
+  else{await fire.addDoc(fire.collection(db,'customers'),{...data,archived:false,createdAt:fire.serverTimestamp(),createdBy:user.uid})}
+  await refresh();view('list');say(chosen?'客戶資料已更新':'新增客戶成功');chosen=null;
+ }catch(e){say('儲存失敗：'+e.message)}finally{btn.disabled=false}
+}
+async function openCustomer(id){
+ const c=customers.find(x=>x.id===id);if(!c)return;chosen=c;view('detail');
+ $('crmWho').textContent=c.name;$('crmInfo').textContent=`${catName(c.categoryId)}｜${c.phone||'無電話'}｜${c.line||'無 LINE'}`;
+ $('crmBalance').textContent='尚未開放讀取錢包';$('crmHistory').textContent='正式交易功能尚未啟用';
+ $('crmTopup').value='';$('crmGift').value='';$('crmAmount').value='';calculate();
+ try{
+  const s=await fire.getDoc(fire.doc(db,'wallets',id));
+  if(s.exists()){
+   const w=s.data();if(!Number.isSafeInteger(w.principalBalance)||!Number.isSafeInteger(w.bonusBalance)||w.principalBalance<0||w.bonusBalance<0)throw Error('餘額資料異常');
+   $('crmBalance').textContent=`${money(w.principalBalance+w.bonusBalance)}（本金 ${money(w.principalBalance)}／贈送 ${money(w.bonusBalance)}）`;
+  }else $('crmBalance').textContent='尚未建立錢包';
+ }catch(e){$('crmBalance').textContent='錢包尚未開放讀取權限'}
+ window.scrollTo(0,0);
+}
+function calculate(){
+ const p=Number($('crmTopup').value||0),b=Number($('crmGift').value||0);
+ $('crmTopupResult').textContent=Number.isSafeInteger(p)&&Number.isSafeInteger(b)&&p>=0&&b>=0?`預計入帳 ${money(p+b)}（僅試算）`:'請輸入非負整數';
+ $('crmDebitResult').textContent='正式餘額尚未開放，暫不提供扣款試算，避免誤認已完成交易。';
+}
+async function setup(){
+ if(ready)return;ready=true;
+ try{
+  const [a,f,au]=await Promise.all([
+   import('https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js'),
+   import('https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js'),
+   import('https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js')]);
+  const app=a.getApps().length?a.getApp():a.initializeApp(window.XIANG_FIREBASE_CONFIG);
+  fire=f;db=f.getFirestore(app);auth=au.getAuth(app);
+  au.onAuthStateChanged(auth,async user=>{
+   if(!user){$('crmContent').hidden=true;say('請先使用首頁右上角登入員工帳號');return}
+   try{
+    const s=await f.getDoc(f.doc(db,'staff',user.uid));if(!s.exists()||s.data().active!==true)throw Error('沒有員工權限');
+    staff=s.data();owner=user.uid===window.XIANG_OWNER_UID&&staff.role==='owner';
+    await loadConfig();await refresh();$('crmContent').hidden=false;view('list');
+   }catch(e){$('crmContent').hidden=true;say('讀取失敗：'+e.message)}
+  });
+ }catch(e){say('系統載入失敗：'+e.message)}
+}
+function init(){
+ const nav=$('nav'),app=document.querySelector('.container.app'),bar=$('bottomBar');if(!nav||!app)return;
+ const style=document.createElement('style');style.textContent=css;document.head.append(style);
+ const panel=document.createElement('div');panel.id='xiangCRM';panel.hidden=true;
+ panel.innerHTML=`<div class="xr"><h2>香香村｜客戶與會員管理</h2><button class="alt" id="crmBack">← 回智慧估價</button></div><p class="muted" id="crmStatus">準備載入…</p>
+ <div id="crmContent" hidden>
+ <section id="crm_list" class="xc"><div class="xr"><strong id="crmCount">客戶管理</strong><button id="crmAdd">＋ 新增客戶</button></div><label>搜尋姓名、電話、LINE、分類</label><input id="crmSearch" placeholder="搜尋客戶"><label>會員分類</label><select id="crmFilter"></select><div id="crmRows"></div></section>
+ <section id="crm_form" class="xc" hidden><h3 id="crmFormTitle">新增客戶</h3><label>姓名 *</label><input id="crm_name" maxlength="80"><label>電話</label><input id="crm_phone" maxlength="30"><label>LINE</label><input id="crm_line" maxlength="100"><label>生日</label><input id="crm_birthday" type="date"><label>會員分類</label><select id="crmCategory"></select><label>客戶來源</label><input id="crm_source" placeholder="例如：IG、朋友介紹"><label>偏好服務</label><input id="crm_service" placeholder="例如：美甲、美睫"><label>首次到店日期</label><input id="crm_firstVisit" type="date"><label>偏好聯繫方式</label><input id="crm_contactPreference" placeholder="例如：LINE"><div id="crmExtras"></div><label>備註</label><textarea id="crm_notes" rows="3" maxlength="3000"></textarea><div class="xr"><button class="alt" id="crmCancel">取消</button><button id="crmSave">儲存客戶</button></div></section>
+ <section id="crm_detail" hidden><div class="xc"><button class="alt" id="crmReturn">← 返回客戶列表</button><h3 id="crmWho"></h3><p class="muted" id="crmInfo"></p><button id="crmEdit">編輯客戶資料</button><p class="muted">會員錢包餘額</p><div id="crmBalance" class="big">尚未讀取</div></div>
+ <div class="xc"><h3>儲值規劃</h3><div class="warn">正式儲值尚未啟用。以下金額只供試算，不會寫入帳務。</div><label>預計儲值本金</label><input id="crmTopup" type="number" min="0" step="1" placeholder="例如 3000"><label>預計贈送金</label><input id="crmGift" type="number" min="0" step="1" placeholder="例如 300"><p id="crmTopupResult" class="big"></p><button disabled>確認儲值（尚未啟用）</button></div>
+ <div class="xc"><h3>消費扣款｜先扣贈送金</h3><label>本次消費金額</label><input id="crmAmount" type="number" min="1" step="1" placeholder="例如 800"><p id="crmDebitResult" class="warn"></p><button disabled>確認扣款（尚未啟用）</button></div>
+ <div class="xc"><h3>交易紀錄</h3><p id="crmHistory" class="muted">尚未啟用</p></div></section></div>`;
+ app.after(panel);
+ const btn=document.createElement('button');btn.className='navbtn';btn.type='button';btn.textContent='♙ 客戶／會員管理';nav.append(btn);
+ function close(){panel.hidden=true;app.hidden=false;if(bar)bar.hidden=false;btn.classList.remove('active');window.scrollTo(0,0)}
+ btn.onclick=()=>{app.hidden=true;panel.hidden=false;if(bar)bar.hidden=true;btn.classList.add('active');setup();window.scrollTo(0,0)};
+ nav.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',close));
+ $('crmBack').onclick=close;$('crmAdd').onclick=()=>form();$('crmCancel').onclick=()=>view('list');$('crmReturn').onclick=()=>view('list');
+ $('crmSave').onclick=save;$('crmEdit').onclick=()=>form(chosen);$('crmSearch').oninput=list;$('crmFilter').onchange=list;
+ $('crmTopup').oninput=calculate;$('crmGift').oninput=calculate;$('crmAmount').oninput=calculate;
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();

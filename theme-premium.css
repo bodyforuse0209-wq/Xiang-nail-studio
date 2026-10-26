@@ -1,55 +1,111 @@
-/* XIANG BEAUTY STUDIO — V14.3 premium mobile polish
-   Add as theme-premium.css. CSS only: no data, auth, or transaction changes. */
-:root{font-family:-apple-system,BlinkMacSystemFont,'PingFang TC','Noto Sans TC',sans-serif}
-body{font-family:-apple-system,BlinkMacSystemFont,'PingFang TC','Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased}
-.sitehead{border-bottom:1px solid #e9e3db}
-.sitehead .headbar{gap:12px}
-.sitehead .brand-title{letter-spacing:.025em}
-.nav{gap:8px;scrollbar-width:none}
-.nav::-webkit-scrollbar{display:none}
-.nav .navbtn{border-radius:13px;transition:background .18s ease,transform .18s ease;min-height:43px}
-.nav .navbtn:active{transform:scale(.98)}
-/* New CRM shell — increased specificity beats the legacy inline V14.2 stylesheet. */
-#xiangCRM#xiangCRM{max-width:1020px;margin:0 auto;padding:clamp(14px,3vw,32px);color:#302a26;background:#faf8f5;min-height:75vh;letter-spacing:.01em}
-#xiangCRM#xiangCRM> .xr:first-child{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 14px}
-#xiangCRM#xiangCRM> .xr:first-child h2{font-size:clamp(20px,3.5vw,29px);line-height:1.25;letter-spacing:.02em;font-weight:700;margin:0;flex:1 1 55%}
-#xiangCRM#xiangCRM> .xr:first-child button{flex:0 1 auto;white-space:nowrap}
-#xiangCRM#xiangCRM .xc{background:#fffefd;border:1px solid #e8e0d7;border-radius:22px;padding:clamp(18px,3vw,29px);margin:14px 0;box-shadow:0 8px 30px rgba(59,44,31,.035)}
-#xiangCRM#xiangCRM .xc h3{font-size:20px;font-weight:700;letter-spacing:.01em;margin:4px 0 18px}
-#xiangCRM#xiangCRM .xc strong{font-size:17px}
-#xiangCRM#xiangCRM .muted{color:#857b73;font-size:13px;line-height:1.6}
-#xiangCRM#xiangCRM label{font-size:13px;font-weight:600;letter-spacing:.025em;color:#6b615a;margin:17px 0 8px}
-#xiangCRM#xiangCRM input,#xiangCRM#xiangCRM select,#xiangCRM#xiangCRM textarea{background:#fdfcfb;border:1px solid #ded6ce;border-radius:13px;min-height:48px;padding:13px 15px;color:#342d28;outline:0;box-shadow:none;transition:border-color .18s,box-shadow .18s;line-height:1.4}
-#xiangCRM#xiangCRM textarea{min-height:104px;resize:vertical}
-#xiangCRM#xiangCRM input:focus,#xiangCRM#xiangCRM select:focus,#xiangCRM#xiangCRM textarea:focus{border-color:#a78c70;box-shadow:0 0 0 3px rgba(167,140,112,.13)}
-#xiangCRM#xiangCRM button{border-radius:13px;min-height:44px;padding:12px 17px;background:#3c332d;color:#fff;font-weight:600;letter-spacing:.015em;transition:transform .16s,opacity .16s}
-#xiangCRM#xiangCRM button:active:not(:disabled){transform:scale(.985)}
-#xiangCRM#xiangCRM button.alt{background:#f1ebe4;color:#453b34}
-#xiangCRM#xiangCRM button:disabled{background:#d2ccc6;color:#fff;opacity:.75;cursor:not-allowed}
-#xiangCRM#xiangCRM .xr{gap:10px}
-#xiangCRM#xiangCRM .item{background:#faf8f5;color:#392f2a;border:1px solid #ece5de;text-align:left;border-radius:15px;margin:9px 0;padding:15px 16px;min-height:56px;font-weight:600}
-#xiangCRM#xiangCRM .item:active{background:#f2ebe3}
-#xiangCRM#xiangCRM .big{font-size:clamp(23px,5vw,32px);font-weight:700;letter-spacing:-.025em;color:#342b25;line-height:1.35}
-#xiangCRM#xiangCRM .warn{background:#fbf7ef;border:1px solid #eadbc4;border-radius:15px;padding:15px;color:#7c6245;line-height:1.7}
-#xiangCRM#xiangCRM #crmStatus{margin:0 0 14px;min-height:20px}
-#xiangCRM#xiangCRM #crmRows{margin-top:16px}
-#xiangCRM#xiangCRM #crmWho{font-size:clamp(22px,5vw,30px);margin:16px 0 4px}
-#xiangCRM#xiangCRM #crmBalance{padding:10px 0 2px}
-#xiangCRM#xiangCRM #crmHistory{white-space:pre-wrap;overflow-wrap:anywhere}
-#xiangCRM#xiangCRM #crm_form .xr{margin-top:24px}
-@media(min-width:700px){#xiangCRM#xiangCRM #crm_form{max-width:780px;margin:16px auto}#xiangCRM#xiangCRM #crm_detail{max-width:780px;margin:auto}}
-@media(max-width:560px){
- #xiangCRM#xiangCRM{padding:14px 12px 28px}
- #xiangCRM#xiangCRM> .xr:first-child{align-items:flex-start;flex-wrap:wrap}
- #xiangCRM#xiangCRM> .xr:first-child h2{flex-basis:100%}
- #xiangCRM#xiangCRM> .xr:first-child button{min-height:40px}
- #xiangCRM#xiangCRM .xc{border-radius:19px;padding:19px 16px;margin:12px 0}
- #xiangCRM#xiangCRM .xr>*{min-width:0}
- #xiangCRM#xiangCRM #crm_list>.xr{align-items:center}
- #xiangCRM#xiangCRM #crm_list>.xr strong{flex:1 1 auto}
- #xiangCRM#xiangCRM #crm_list>.xr button{flex:0 0 auto}
- #xiangCRM#xiangCRM #crm_form .xr button{flex:1 1 43%}
- .nav{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;padding-bottom:5px}
- .nav .navbtn{flex:0 0 auto;white-space:nowrap}
+/* XIANG BEAUTY STUDIO | ATELIER CONCIERGE V14.4
+   Complete replacement for theme-premium.css. CSS ONLY.
+   Preserves quote, reports, dashboard, CRM, authentication and data logic. */
+:root{font-family:-apple-system,BlinkMacSystemFont,'PingFang TC','Noto Sans TC',sans-serif;color-scheme:light}
+html{background:#f7f4ef;scroll-behavior:smooth}
+body,body[data-theme="men"],body[data-theme="women"]{
+ --bg:#f7f4ef;--surface:#fffdfa;--shade:#f5f1ea;--subshade:#ece5da;
+ --stroke:#e5ded4;--ink:#302923;--muted:#877b70;--accent:#372e28;
+ --onaccent:#fffdf8;--glow:rgba(74,55,39,.065);
+ color-scheme:light;background:linear-gradient(155deg,#fbfaf7 0%,#f7f4ef 48%,#f3eee7 100%);
+ color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'PingFang TC','Noto Sans TC',sans-serif;
+ -webkit-font-smoothing:antialiased;letter-spacing:.006em
 }
-@media(prefers-reduced-motion:reduce){#xiangCRM#xiangCRM *, .nav .navbtn{transition:none!important}}
+*{box-sizing:border-box}
+::selection{background:#e3d5bf;color:#302923}
+.container{width:min(100%,1100px);padding-inline:clamp(16px,4vw,34px)}
+.sitehead{background:rgba(255,253,250,.88);border-bottom:1px solid #e8e1d8;padding:24px 0 22px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.headbar{align-items:center;gap:18px}
+.brand-top{font-size:9px;letter-spacing:.22em;color:#98836d;text-transform:uppercase;font-weight:650}
+.brand-title{font-family:Georgia,'Times New Roman',serif;font-weight:500;font-size:clamp(28px,5vw,41px);letter-spacing:.09em;line-height:1.15;color:#352a23;margin:8px 0 6px}
+.brand-title i{font-weight:400;color:#a18a70}
+.edition{font:500 9px -apple-system,BlinkMacSystemFont,sans-serif;letter-spacing:.07em;color:#8c7a67;border:1px solid #d8c7b3;background:#faf6ef;border-radius:99px;padding:5px 9px}
+.brand-desc{color:#978b7f;font-size:9px;letter-spacing:.19em;line-height:1.5}
+.headright{gap:9px}
+.cloudbadge{border:1px solid #e3dbd1;background:#faf7f2;border-radius:99px;color:#7e7063;font-size:10px;padding:8px 12px}
+.cloudbadge.live{color:#44785a;background:#f0f6ee;border-color:#d9e6d8}
+.cloudbadge.error{color:#a24f48;background:#fbf1ed;border-color:#eedad4}
+.nav{display:flex;gap:7px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none;padding:23px 0 19px;-webkit-overflow-scrolling:touch}
+.nav::-webkit-scrollbar{display:none}
+.nav .navbtn{flex:0 0 auto;min-width:max-content;white-space:nowrap;background:transparent;color:#76685d;border:1px solid transparent;border-radius:999px;font-size:12px;font-weight:650;letter-spacing:.025em;min-height:43px;padding:12px 17px;box-shadow:none;transition:background .18s,border-color .18s,transform .18s}
+.nav .navbtn:hover{background:#efe8df;border-color:#e5dacf}
+.nav .navbtn.active{background:#3a302a;color:#fffaf4;border-color:#3a302a;box-shadow:0 5px 14px rgba(55,41,31,.11)}
+.nav .navbtn:active{transform:scale(.98)}
+.app{padding-bottom:130px}
+.card,.loginpanel{background:rgba(255,254,252,.97);border:1px solid #e8e1d8;border-radius:22px;box-shadow:0 8px 34px rgba(59,43,28,.035);padding:clamp(19px,3vw,30px);margin-bottom:17px}
+.card-header{gap:12px}
+.card-header h2,.card h2{font-size:clamp(20px,3vw,26px);font-weight:650;letter-spacing:.012em;color:#352c26}
+.eyebrow{font-size:10px!important;letter-spacing:.2em!important;color:#a18a70!important;font-weight:700}
+.hint{color:#8a7f75;line-height:1.8}
+.pill{background:#f6f0e7;color:#8a745c;border:1px solid #e9ddcd;border-radius:999px;font-size:10px;letter-spacing:.045em}
+.gendergrid{gap:12px;margin-bottom:19px}
+.gendercard{background:linear-gradient(135deg,#fffefa,#f3ece2);border:1px solid #e4d8c9;color:#3c3129;border-radius:19px;min-height:134px;padding:20px;box-shadow:0 6px 20px rgba(72,52,34,.025)}
+.gendercard.active{border-color:#a68a69;box-shadow:inset 0 0 0 1px #b89d7b,0 8px 22px rgba(85,62,40,.09)}
+.gendercard strong{font-size:18px;letter-spacing:.025em}
+.gendercard small,.genderName{color:#998571!important;letter-spacing:.09em}
+input,select,textarea{background:#fdfbf8;color:#372e28;border:1px solid #ded5c9;border-radius:12px;min-height:48px;padding:12px 14px;font-size:16px;box-shadow:none;transition:border-color .18s,box-shadow .18s}
+input:focus,select:focus,textarea:focus{border-color:#a98d6c;box-shadow:0 0 0 3px rgba(169,141,108,.12);outline:0}
+input::placeholder,textarea::placeholder{color:#aaa096}
+label{color:#786a5e;font-weight:600;line-height:1.55}
+button{touch-action:manipulation}
+.button,.actionrow button{border-radius:12px;min-height:45px;letter-spacing:.01em;font-weight:650;transition:transform .18s,box-shadow .18s}
+.button.primary,.button:not(.ghost):not(.outline):not(.text){background:#3b3029;color:#fffaf4;border-color:#3b3029}
+.button.outline,.button.ghost{background:#faf7f2;color:#55463a;border-color:#e3d8ca}
+.button:active,.actionrow button:active{transform:scale(.985)}
+.notice{background:#fbf4e9;border-color:#e9d6b8;color:#72573e;border-radius:13px}
+.summary{border-radius:17px}
+#bottomBar{box-shadow:0 -6px 26px rgba(50,38,27,.055)}
+/* Integrated native CRM: specificity overrides V14.2's injected stylesheet. */
+#xiangCRM#xiangCRM{max-width:1060px;margin:0 auto;padding:clamp(17px,3vw,32px);background:transparent;min-height:72vh;color:#352b24;letter-spacing:.008em}
+#xiangCRM#xiangCRM> .xr:first-child{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;padding:0 0 20px;border-bottom:1px solid #e7ddd2;margin-bottom:18px}
+#xiangCRM#xiangCRM> .xr:first-child h2{font:500 clamp(25px,4vw,36px)/1.2 Georgia,'Noto Serif TC',serif;letter-spacing:.025em;color:#382b22;margin:0;flex:1 1 230px}
+#xiangCRM#xiangCRM> .xr:first-child button{flex:0 0 auto}
+#xiangCRM#xiangCRM .xc{background:#fffdfa;border:1px solid #e8dfd4;border-radius:21px;padding:clamp(19px,3vw,31px);margin:15px 0;box-shadow:0 9px 34px rgba(64,47,32,.04)}
+#xiangCRM#xiangCRM .xc h3{font:600 clamp(20px,3vw,25px)/1.35 -apple-system,BlinkMacSystemFont,'PingFang TC',sans-serif;letter-spacing:.025em;color:#352b24;margin:3px 0 19px}
+#xiangCRM#xiangCRM .xc strong{font-size:16px;letter-spacing:.025em}
+#xiangCRM#xiangCRM .muted{color:#897c70;font-size:13px;line-height:1.75}
+#xiangCRM#xiangCRM label{display:block;margin:18px 0 8px;font-size:12px;letter-spacing:.055em;font-weight:650;color:#786b5e}
+#xiangCRM#xiangCRM input,#xiangCRM#xiangCRM select,#xiangCRM#xiangCRM textarea{display:block;width:100%;min-height:49px;border:1px solid #e1d8cc;background:#fdfbf8;border-radius:12px;color:#392f27;padding:13px 15px;font-size:16px;outline:0;transition:border-color .18s,box-shadow .18s}
+#xiangCRM#xiangCRM textarea{min-height:108px;resize:vertical}
+#xiangCRM#xiangCRM input:focus,#xiangCRM#xiangCRM select:focus,#xiangCRM#xiangCRM textarea:focus{border-color:#b39a79;box-shadow:0 0 0 3px rgba(179,154,121,.13)}
+#xiangCRM#xiangCRM button{background:#3b3029;color:#fffaf4;border:1px solid #3b3029;border-radius:12px;min-height:45px;padding:12px 17px;font-weight:650;letter-spacing:.025em;transition:transform .18s,background .18s}
+#xiangCRM#xiangCRM button.alt{background:#f4eee6;color:#5d4b3c;border-color:#ebe0d4}
+#xiangCRM#xiangCRM button:disabled{background:#d7d0c8;border-color:#d7d0c8;color:#fff;opacity:.75;cursor:not-allowed}
+#xiangCRM#xiangCRM button:active:not(:disabled){transform:scale(.985)}
+#xiangCRM#xiangCRM .xr{gap:11px}
+#xiangCRM#xiangCRM .item{display:block;width:100%;text-align:left;background:#faf7f2;color:#3c3129;border:1px solid #eae0d4;border-radius:15px;margin:9px 0;padding:16px;min-height:60px;font-size:14px;font-weight:650;line-height:1.55;box-shadow:none}
+#xiangCRM#xiangCRM .item:hover{background:#f4ede3;border-color:#ddcbb5}
+#xiangCRM#xiangCRM .big{font:600 clamp(25px,5vw,34px)/1.3 Georgia,'Noto Serif TC',serif;letter-spacing:-.01em;color:#3c3028}
+#xiangCRM#xiangCRM .warn{background:#faf4e9;border:1px solid #ead8bd;border-radius:14px;padding:16px;color:#7b6347;font-size:13px;line-height:1.75}
+#xiangCRM#xiangCRM #crmRows{margin-top:20px}
+#xiangCRM#xiangCRM #crmStatus{min-height:20px;margin:0 0 12px;color:#988675}
+#xiangCRM#xiangCRM #crmWho{font:500 clamp(25px,5vw,34px)/1.25 Georgia,'Noto Serif TC',serif;margin:20px 0 9px}
+#xiangCRM#xiangCRM #crmBalance{padding:10px 0 4px}
+#xiangCRM#xiangCRM #crmHistory{white-space:pre-wrap;overflow-wrap:anywhere}
+#xiangCRM#xiangCRM #crm_form .xr{margin-top:27px}
+#xiangCRM#xiangCRM #crm_list>.xr{align-items:center}
+#xiangCRM#xiangCRM #crm_list>.xr button{flex:0 0 auto}
+@media(min-width:740px){#xiangCRM#xiangCRM #crm_form,#xiangCRM#xiangCRM #crm_detail{max-width:800px;margin-inline:auto}}
+@media(max-width:600px){
+ .container{padding-inline:15px}
+ .sitehead{padding:19px 0 17px}
+ .brand-title{font-size:clamp(25px,7vw,32px)}
+ .brand-top{font-size:8px;letter-spacing:.13em}
+ .brand-desc{font-size:8px;letter-spacing:.08em}
+ .headbar{gap:9px}
+ .headright{gap:7px}
+ .cloudbadge{font-size:9px;padding:7px 9px}
+ .nav{padding:17px 0 15px;gap:5px}
+ .nav .navbtn{font-size:12px;padding:11px 13px}
+ .card,.loginpanel{padding:19px 16px;border-radius:19px}
+ .gendergrid{gap:9px}
+ .gendercard{padding:15px;min-height:119px;border-radius:16px}
+ .gendercard strong{font-size:16px}
+ #xiangCRM#xiangCRM{padding:17px 13px 28px}
+ #xiangCRM#xiangCRM> .xr:first-child h2{flex-basis:100%;font-size:29px}
+ #xiangCRM#xiangCRM .xc{padding:20px 16px;border-radius:18px;margin:12px 0}
+ #xiangCRM#xiangCRM .xr>*{min-width:0}
+ #xiangCRM#xiangCRM #crm_list>.xr strong{flex:1 1 auto}
+ #xiangCRM#xiangCRM #crm_form .xr button{flex:1 1 42%}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;scroll-behavior:auto!important}}

@@ -1,315 +1,373 @@
 
-rules_version = '2';
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>香香村 V11.3｜客戶管理</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;background:#faf8f5;color:#352e29}
+*{box-sizing:border-box}
+body{margin:0}
+header{background:#eee5d9;padding:20px}
+main{max-width:780px;margin:auto;padding:15px}
+h1{font-size:23px;margin:6px 0}
+h2{font-size:18px}
+.card{background:#fff;border:1px solid #e7ded3;border-radius:16px;padding:17px;margin-bottom:15px}
+label{display:block;margin:12px 0 5px;font-size:13px}
+input,select,textarea{width:100%;padding:11px;border:1px solid #d8cabc;border-radius:9px;background:#fff;font:inherit}
+input[type=checkbox]{width:auto}
+button{border:0;border-radius:10px;background:#453b34;color:#fff;padding:11px 13px;font:inherit;cursor:pointer}
+button:disabled{opacity:.5}
+.secondary{background:#eee5d9;color:#352f2a}
+.danger{background:#873d38}
+.hidden{display:none!important}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row>*{flex:1}
+.item{display:block;width:100%;text-align:left;margin:7px 0;background:#f8f5f0;color:#352e29}
+.muted{color:#766f68;font-size:13px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}
+.actions>*{flex:1}
+#message{white-space:pre-wrap;color:#6e5338}
+hr{border:0;border-top:1px solid #eee5d9;margin:18px 0}
+a{color:#67513d}
+</style>
+</head>
+<body>
+<header>
+<small>XIANG BEAUTY STUDIO · V11.3</small>
+<h1>香香村｜客戶管理</h1>
+<a href="./index.html">← 回美甲系統</a>
+</header>
+<main>
+<p id="message">正在確認登入…</p>
+<section id="authBox" class="card">
+<h2>員工登入</h2>
+<label>電子郵件</label><input id="email" type="email">
+<label>密碼</label><input id="password" type="password">
+<button id="loginBtn" style="margin-top:12px">登入</button>
+</section>
+<div id="workspace" class="hidden">
+<section class="card">
+<div class="row">
+<h2>客戶名單</h2>
+<button id="newBtn">＋ 新增客戶</button>
+</div>
+<input id="search" placeholder="搜尋姓名、電話、LINE、會員分類">
+<label id="archivedLabel">
+<input id="showArchived" type="checkbox"> 顯示已封存客戶（店主）
+</label>
+<div id="list"></div>
+</section>
+<section id="editor" class="card hidden">
+<h2 id="formTitle">新增客戶</h2>
+<form id="form">
+<input type="hidden" id="cid">
+<label>姓名／稱呼 *</label><input id="name" required maxlength="80">
+<label>電話</label><input id="phone" maxlength="30" type="tel">
+<label>LINE 暱稱</label><input id="line" maxlength="100">
+<label>生日</label><input id="birthday" type="date">
+<label>會員分類</label><select id="category"></select>
+<label>備註</label><textarea id="notes" rows="3" maxlength="3000"></textarea>
+<div id="customFields"></div>
+<button type="submit" id="saveBtn" style="width:100%;margin-top:12px">儲存客戶</button>
+<div class="actions">
+<button type="button" class="secondary" id="cancelBtn">取消</button>
+<button type="button" class="secondary hidden" id="archiveBtn">封存</button>
+<button type="button" class="secondary hidden" id="restoreBtn">解除封存</button>
+<button type="button" class="danger hidden" id="deleteBtn">永久刪除</button>
+</div>
+</form>
+<p class="muted">永久刪除僅限店主，且必須先封存。僅適用於確認沒有消費及帳務關聯的測試客戶。</p>
+</section>
+<section id="settings" class="card hidden">
+<h2>店主｜會員分類</h2>
+<div id="categoryList"></div>
+<label>新增分類</label>
+<div class="row">
+<input id="newCategory" maxlength="40" placeholder="例如：生日會員">
+<button id="addCategory">新增</button>
+</div>
+<hr>
+<h2>店主｜自訂欄位</h2>
+<div id="fieldList"></div>
+<label>新增欄位名稱</label>
+<input id="newField" maxlength="40" placeholder="例如：慣用甲型">
+<label>欄位類型</label>
+<select id="newFieldType">
+<option value="text">單行文字</option>
+<option value="textarea">多行備註</option>
+<option value="date">日期</option>
+</select>
+<button id="addField" style="margin-top:10px">新增欄位</button>
+</section>
+</div>
+</main>
+<script src="./firebase-config.js"></script>
+<script type="module">
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js';
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js';
+import {getFirestore,collection,doc,getDoc,getDocs,query,orderBy,addDoc,updateDoc,deleteDoc,serverTimestamp,setDoc} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js';
 
-service cloud.firestore {
-  match /databases/{database}/documents {
+const $=id=>document.getElementById(id);
+const db=getFirestore(initializeApp(window.XIANG_FIREBASE_CONFIG));
+const auth=getAuth();
+const OWNER=window.XIANG_OWNER_UID;
+const DEFAULT_CATS=[
+{id:'regular',name:'常客',active:true},
+{id:'vip',name:'VIP',active:true},
+{id:'stored',name:'儲值會員（尚未啟用）',active:true}
+];
+let current=null,isOwner=false,customers=[];
+let config={categories:DEFAULT_CATS,fields:[]};
 
-    // ===== 基礎權限 =====
-
-    function signedIn() {
-      return request.auth != null;
-    }
-
-    function ownerUid() {
-      return "T9nwxBSXqKYWVsS6dmEN62tpt232";
-    }
-
-    function staffPath() {
-      return /databases/$(database)/documents/staff/$(request.auth.uid);
-    }
-
-    function activeStaff() {
-      return signedIn()
-        && exists(staffPath())
-        && get(staffPath()).data.active == true;
-    }
-
-    function owner() {
-      return activeStaff()
-        && request.auth.uid == ownerUid()
-        && get(staffPath()).data.role == 'owner';
-    }
-
-    // ===== 業績與抽成驗證 =====
-
-    function validCommission(data) {
-      return data.keys().hasAll([
-          'amount',
-          'commissionRate',
-          'commissionAmount',
-          'storeAmount',
-          'artistUid',
-          'createdBy',
-          'updatedBy',
-          'settlementLocked'
-        ])
-        && data.amount is int
-        && data.amount >= 0
-        && data.amount <= 10000000
-        && data.commissionRate is number
-        && data.commissionRate >= 0
-        && data.commissionRate <= 100
-        && data.commissionAmount is int
-        && data.commissionAmount ==
-          int(
-            data.amount * data.commissionRate / 100 + 0.5
-          )
-        && data.storeAmount is int
-        && data.storeAmount ==
-          data.amount - data.commissionAmount
-        && data.settlementLocked is bool;
-    }
-
-    // ===== V11.2 客戶資料驗證 =====
-
-    function validCustomer(data) {
-      return data.keys().hasAll([
-          'name',
-          'phone',
-          'line',
-          'birthday',
-          'notes',
-          'categoryId',
-          'customFields',
-          'archived',
-          'createdAt',
-          'createdBy',
-          'updatedAt',
-          'updatedBy'
-        ])
-        && data.name is string
-        && data.name.size() > 0
-        && data.name.size() <= 80
-        && data.phone is string
-        && data.phone.size() <= 30
-        && data.line is string
-        && data.line.size() <= 100
-        && data.birthday is string
-        && data.birthday.size() <= 20
-        && data.notes is string
-        && data.notes.size() <= 3000
-        && data.categoryId is string
-        && data.categoryId.size() <= 100
-        && data.customFields is map
-        && data.customFields.keys().size() <= 30
-        && data.archived is bool;
-    }
-
-    // ===== 員工帳號 =====
-
-    match /staff/{uid} {
-
-      allow get: if signedIn()
-        && (
-          request.auth.uid == uid
-          || owner()
-        );
-
-      allow list: if owner();
-
-      allow create: if owner()
-        || (
-          signedIn()
-          && request.auth.uid == uid
-          && uid == ownerUid()
-          && request.resource.data.role == 'owner'
-          && request.resource.data.active == true
-        );
-
-      allow update: if owner();
-
-      allow delete: if false;
-    }
-
-    // ===== 美甲作品庫 =====
-
-    match /artworks/{artworkId} {
-
-      allow get, list: if activeStaff();
-
-      allow create, update, delete: if owner();
-    }
-
-    // ===== V11.2 客戶管理 =====
-
-    match /customers/{customerId} {
-
-      // 全店已啟用員工可查詢客戶
-      allow get, list: if activeStaff();
-
-      // 建立客戶
-      allow create: if activeStaff()
-        && request.resource.data.keys().hasOnly([
-          'name',
-          'phone',
-          'line',
-          'birthday',
-          'notes',
-          'categoryId',
-          'customFields',
-          'archived',
-          'createdAt',
-          'createdBy',
-          'updatedAt',
-          'updatedBy'
-        ])
-        && validCustomer(request.resource.data)
-        && request.resource.data.archived == false
-        && request.resource.data.createdBy ==
-           request.auth.uid
-        && request.resource.data.updatedBy ==
-           request.auth.uid
-        && request.resource.data.createdAt ==
-           request.time
-        && request.resource.data.updatedAt ==
-           request.time;
-
-      // 編輯客戶；封存及恢復限店主
-      allow update: if activeStaff()
-        && validCustomer(request.resource.data)
-        && request.resource.data.diff(resource.data)
-           .affectedKeys().hasOnly([
-             'name',
-             'phone',
-             'line',
-             'birthday',
-             'notes',
-             'categoryId',
-             'customFields',
-             'archived',
-             'updatedAt',
-             'updatedBy'
-           ])
-        && (
-          !request.resource.data.diff(resource.data)
-            .affectedKeys().hasAny(['archived'])
-          || owner()
-        )
-        && request.resource.data.updatedBy ==
-           request.auth.uid
-        && request.resource.data.updatedAt ==
-           request.time;
-
-      // 禁止直接永久刪除
-      allow delete: if false;
-    }
-
-    // ===== 業績紀錄 =====
-
-    match /reports/{reportId} {
-
-      allow get, list: if activeStaff()
-        && (
-          owner()
-          || resource.data.artistUid ==
-             request.auth.uid
-        );
-
-      allow create: if activeStaff()
-        && validCommission(request.resource.data)
-        && request.resource.data.artistUid ==
-           request.auth.uid
-        && request.resource.data.createdBy ==
-           request.auth.uid
-        && request.resource.data.updatedBy ==
-           request.auth.uid
-        && request.resource.data.settlementLocked == false
-        && request.resource.data.schemaVersion == 11;
-
-      allow update: if activeStaff()
-        && (
-          owner()
-          || resource.data.artistUid ==
-             request.auth.uid
-        )
-        && resource.data.settlementLocked != true
-        && request.resource.data.settlementLocked == false
-        && request.resource.data.artistUid ==
-           resource.data.artistUid
-        && request.resource.data.createdBy ==
-           resource.data.createdBy
-        && request.resource.data.createdAt ==
-           resource.data.createdAt
-        && request.resource.data.updatedBy ==
-           request.auth.uid
-        && request.resource.data.schemaVersion == 11
-        && validCommission(request.resource.data);
-
-      allow delete: if owner()
-        && resource.data.settlementLocked != true;
-    }
-
-    // ===== 業績稽核紀錄 =====
-
-    match /reportAudits/{auditId} {
-
-      allow get, list: if owner();
-
-      allow create: if activeStaff()
-        && request.resource.data.actorUid ==
-           request.auth.uid
-        && request.resource.data.action in [
-          'update',
-          'delete'
-        ]
-        && request.resource.data.reportId is string
-        && request.resource.data.artistUid is string
-        && request.resource.data.createdAt ==
-           request.time;
-
-      allow update, delete: if false;
-    }
-
-    // ===== 價格設定 =====
-
-    match /settings/prices {
-
-      allow read: if activeStaff();
-
-      allow create, update: if owner();
-
-      allow delete: if false;
-    }
-
-    // ===== V11.2 會員分類與自訂欄位設定 =====
-
-    match /settings/customerConfig {
-
-      // 全店員工可讀取分類及欄位
-      allow get: if activeStaff();
-
-      allow list: if false;
-
-      // 只有店主可以管理
-      allow create, update: if owner()
-        && request.resource.data.keys().hasOnly([
-          'categories',
-          'fields',
-          'updatedAt',
-          'updatedBy'
-        ])
-        && request.resource.data.keys().hasAll([
-          'categories',
-          'fields',
-          'updatedAt',
-          'updatedBy'
-        ])
-        && request.resource.data.categories is list
-        && request.resource.data.categories.size() <= 100
-        && request.resource.data.fields is list
-        && request.resource.data.fields.size() <= 100
-        && request.resource.data.updatedBy ==
-           request.auth.uid
-        && request.resource.data.updatedAt ==
-           request.time;
-
-      allow delete: if false;
-    }
-
-    // ===== 其他資料一律拒絕存取 =====
-
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
+const clean=v=>String(v??'').trim();
+const msg=s=>$('message').textContent=s;
+const uid=()=>current?.uid;
+const mk=(tag,txt,cls)=>{
+const e=document.createElement(tag);
+if(txt!==undefined)e.textContent=txt;
+if(cls)e.className=cls;
+return e;
+};
+function ownerOnly(){
+if(!isOwner)throw Error('僅店主可操作');
 }
+async function safe(fn){
+try{await fn()}catch(e){msg('操作失敗：'+e.message)}
+}
+function normalize(raw){
+return{
+categories:(Array.isArray(raw?.categories)?raw.categories:DEFAULT_CATS)
+.filter(x=>typeof x?.id==='string'&&typeof x?.name==='string'),
+fields:(Array.isArray(raw?.fields)?raw.fields:[])
+.filter(x=>typeof x?.id==='string'&&typeof x?.name==='string'&&['text','textarea','date'].includes(x.type))
+};
+}
+async function loadConfig(){
+const s=await getDoc(doc(db,'settings','customerConfig'));
+config=normalize(s.exists()?s.data():null);
+renderCategories();
+renderFields();
+renderSettings();
+}
+async function saveConfig(next){
+ownerOnly();
+await setDoc(doc(db,'settings','customerConfig'),{
+...next,updatedAt:serverTimestamp(),updatedBy:uid()
+});
+config=next;
+renderCategories();
+renderFields();
+renderSettings();
+msg('設定已儲存');
+}
+function renderCategories(){
+const e=$('category'),old=e.value;
+e.replaceChildren();
+for(const c of config.categories.filter(x=>x.active!==false)){
+const o=mk('option',c.name);
+o.value=c.id;
+e.append(o);
+}
+if([...e.options].some(o=>o.value===old))e.value=old;
+}
+function renderFields(values={}){
+const e=$('customFields');
+e.replaceChildren();
+for(const f of config.fields.filter(x=>x.active!==false)){
+const l=mk('label',f.name);
+const v=document.createElement(f.type==='textarea'?'textarea':'input');
+if(f.type!=='textarea')v.type=f.type==='date'?'date':'text';
+v.maxLength=500;
+v.dataset.fieldId=f.id;
+v.value=clean(values[f.id]);
+e.append(l,v);
+}
+}
+function renderSettings(){
+if(!isOwner)return;
+for(const [key,items,target] of [
+['categories',config.categories,'categoryList'],
+['fields',config.fields,'fieldList']
+]){
+const root=$(target);
+root.replaceChildren();
+for(const x of items){
+const row=mk('div',undefined,'row');
+const name=mk('span',x.name+(x.active===false?'（隱藏）':''));
+const rename=mk('button','改名','secondary');
+const toggle=mk('button',x.active===false?'恢復':'隱藏','secondary');
+rename.onclick=()=>safe(async()=>{
+const v=clean(prompt('新名稱',x.name));
+if(!v||v.length>40)return;
+await saveConfig({...config,[key]:items.map(z=>z.id===x.id?{...z,name:v}:z)});
+});
+toggle.onclick=()=>safe(()=>saveConfig({
+...config,[key]:items.map(z=>z.id===x.id?{...z,active:z.active===false}:z)
+}));
+row.append(name,rename,toggle);
+root.append(row);
+}
+}
+}
+function showForm(c){
+$('editor').classList.remove('hidden');
+$('formTitle').textContent=c?'編輯客戶':'新增客戶';
+$('cid').value=c?.id||'';
+for(const k of ['name','phone','line','birthday','notes']){
+$(k).value=c?.[k]||'';
+}
+renderCategories();
+if(c?.categoryId&&![...$('category').options].some(o=>o.value===c.categoryId)){
+const o=mk('option',c.categoryId+'（舊分類）');
+o.value=c.categoryId;
+$('category').append(o);
+}
+$('category').value=c?.categoryId||'regular';
+renderFields(c?.customFields||{});
+$('archiveBtn').classList.toggle('hidden',!isOwner||!c||c.archived===true);
+$('restoreBtn').classList.toggle('hidden',!isOwner||!c||c.archived!==true);
+$('deleteBtn').classList.toggle('hidden',!isOwner||!c||c.archived!==true);
+$('editor').scrollIntoView({behavior:'smooth'});
+}
+function render(){
+const term=clean($('search').value).toLowerCase();
+const show=isOwner&&$('showArchived').checked;
+const rows=customers.filter(c=>
+(show||c.archived!==true)&&
+[c.name,c.phone,c.line,config.categories.find(x=>x.id===c.categoryId)?.name]
+.some(x=>clean(x).toLowerCase().includes(term))
+);
+$('list').replaceChildren();
+if(!rows.length)$('list').append(mk('p','目前沒有符合的客戶','muted'));
+for(const c of rows){
+const b=mk('button',
+`${c.name}　${c.phone||''}｜${config.categories.find(x=>x.id===c.categoryId)?.name||'常客'}${c.archived?'（已封存）':''}`,
+'item');
+b.onclick=()=>showForm(c);
+$('list').append(b);
+}
+}
+async function load(){
+const s=await getDocs(query(collection(db,'customers'),orderBy('name')));
+customers=s.docs.map(d=>({id:d.id,...d.data()}));
+render();
+msg(`客戶資料已同步，共 ${customers.length} 位`);
+}
+async function archive(flag){
+ownerOnly();
+const id=$('cid').value;
+if(!id||!confirm(flag?'確定封存這位客戶？':'確定恢復這位客戶？'))return;
+await updateDoc(doc(db,'customers',id),{
+archived:flag,updatedAt:serverTimestamp(),updatedBy:uid()
+});
+$('editor').classList.add('hidden');
+await load();
+}
+async function permanentDelete(){
+ownerOnly();
+const id=$('cid').value;
+const c=customers.find(x=>x.id===id);
+if(!c||!c.archived)throw Error('請先封存客戶');
+const typed=prompt(
+`永久刪除「${c.name}」無法復原。\n如果客戶有任何舊業績、儲值或其他帳務紀錄，請勿刪除。\n請輸入「永久刪除」確認：`
+);
+if(typed!=='永久刪除')return;
+await deleteDoc(doc(db,'customers',id));
+$('editor').classList.add('hidden');
+await load();
+msg('客戶建檔已永久刪除；其他獨立業績紀錄不受影響。');
+}
+onAuthStateChanged(auth,async u=>{
+current=null;
+isOwner=false;
+$('workspace').classList.add('hidden');
+$('authBox').classList.remove('hidden');
+if(!u){msg('請登入香香村員工帳號');return}
+try{
+const s=await getDoc(doc(db,'staff',u.uid));
+if(!s.exists()||s.data().active!==true)throw Error('帳號未獲授權');
+current=u;
+isOwner=u.uid===OWNER&&s.data().role==='owner';
+$('authBox').classList.add('hidden');
+$('workspace').classList.remove('hidden');
+$('settings').classList.toggle('hidden',!isOwner);
+$('archivedLabel').classList.toggle('hidden',!isOwner);
+await loadConfig();
+await load();
+}catch(e){msg('登入失敗：'+e.message)}
+});
+$('loginBtn').onclick=()=>safe(()=>
+signInWithEmailAndPassword(auth,clean($('email').value),$('password').value)
+);
+$('newBtn').onclick=()=>showForm(null);
+$('cancelBtn').onclick=()=>$('editor').classList.add('hidden');
+$('search').oninput=render;
+$('showArchived').onchange=render;
+$('form').onsubmit=async e=>{
+e.preventDefault();
+if(!current)return;
+const data={};
+for(const k of ['name','phone','line','birthday','notes'])data[k]=clean($(k).value);
+data.categoryId=$('category').value||'regular';
+data.customFields={};
+for(const el of document.querySelectorAll('[data-field-id]')){
+data.customFields[el.dataset.fieldId]=clean(el.value);
+}
+if(!data.name)return msg('請填姓名');
+const id=$('cid').value;
+const duplicate=customers.find(c=>c.id!==id&&!c.archived&&(
+(data.phone&&c.phone===data.phone)||(data.line&&c.line===data.line)
+));
+if(duplicate&&!confirm(`發現可能重複客戶：「${duplicate.name}」。仍要儲存嗎？`))return;
+$('saveBtn').disabled=true;
+try{
+if(id){
+await updateDoc(doc(db,'customers',id),{
+...data,updatedAt:serverTimestamp(),updatedBy:uid()
+});
+}else{
+await addDoc(collection(db,'customers'),{
+...data,archived:false,
+createdAt:serverTimestamp(),createdBy:uid(),
+updatedAt:serverTimestamp(),updatedBy:uid()
+});
+}
+$('editor').classList.add('hidden');
+await load();
+msg('客戶資料已儲存');
+}catch(err){msg('儲存失敗：'+err.message)}
+finally{$('saveBtn').disabled=false}
+};
+$('archiveBtn').onclick=()=>safe(()=>archive(true));
+$('restoreBtn').onclick=()=>safe(()=>archive(false));
+$('deleteBtn').onclick=()=>safe(permanentDelete);
+$('addCategory').onclick=()=>safe(async()=>{
+ownerOnly();
+const name=clean($('newCategory').value);
+if(!name||name.length>40)return;
+if(config.categories.length>=100)throw Error('分類數量上限');
+await saveConfig({
+...config,categories:[...config.categories,{
+id:'cat_'+crypto.randomUUID(),name,active:true
+}]
+});
+$('newCategory').value='';
+});
+$('addField').onclick=()=>safe(async()=>{
+ownerOnly();
+const name=clean($('newField').value);
+if(!name||name.length>40)return;
+if(config.fields.length>=100)throw Error('欄位數量上限');
+await saveConfig({
+...config,fields:[...config.fields,{
+id:'field_'+crypto.randomUUID(),
+name,type:$('newFieldType').value,active:true
+}]
+});
+$('newField').value='';
+});
+</script>
+</body>
+</html>

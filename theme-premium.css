@@ -1,0 +1,55 @@
+/* XIANG BEAUTY STUDIO — V14.3 premium mobile polish
+   Add as theme-premium.css. CSS only: no data, auth, or transaction changes. */
+:root{font-family:-apple-system,BlinkMacSystemFont,'PingFang TC','Noto Sans TC',sans-serif}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang TC','Noto Sans TC',sans-serif;-webkit-font-smoothing:antialiased}
+.sitehead{border-bottom:1px solid #e9e3db}
+.sitehead .headbar{gap:12px}
+.sitehead .brand-title{letter-spacing:.025em}
+.nav{gap:8px;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav .navbtn{border-radius:13px;transition:background .18s ease,transform .18s ease;min-height:43px}
+.nav .navbtn:active{transform:scale(.98)}
+/* New CRM shell — increased specificity beats the legacy inline V14.2 stylesheet. */
+#xiangCRM#xiangCRM{max-width:1020px;margin:0 auto;padding:clamp(14px,3vw,32px);color:#302a26;background:#faf8f5;min-height:75vh;letter-spacing:.01em}
+#xiangCRM#xiangCRM> .xr:first-child{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 14px}
+#xiangCRM#xiangCRM> .xr:first-child h2{font-size:clamp(20px,3.5vw,29px);line-height:1.25;letter-spacing:.02em;font-weight:700;margin:0;flex:1 1 55%}
+#xiangCRM#xiangCRM> .xr:first-child button{flex:0 1 auto;white-space:nowrap}
+#xiangCRM#xiangCRM .xc{background:#fffefd;border:1px solid #e8e0d7;border-radius:22px;padding:clamp(18px,3vw,29px);margin:14px 0;box-shadow:0 8px 30px rgba(59,44,31,.035)}
+#xiangCRM#xiangCRM .xc h3{font-size:20px;font-weight:700;letter-spacing:.01em;margin:4px 0 18px}
+#xiangCRM#xiangCRM .xc strong{font-size:17px}
+#xiangCRM#xiangCRM .muted{color:#857b73;font-size:13px;line-height:1.6}
+#xiangCRM#xiangCRM label{font-size:13px;font-weight:600;letter-spacing:.025em;color:#6b615a;margin:17px 0 8px}
+#xiangCRM#xiangCRM input,#xiangCRM#xiangCRM select,#xiangCRM#xiangCRM textarea{background:#fdfcfb;border:1px solid #ded6ce;border-radius:13px;min-height:48px;padding:13px 15px;color:#342d28;outline:0;box-shadow:none;transition:border-color .18s,box-shadow .18s;line-height:1.4}
+#xiangCRM#xiangCRM textarea{min-height:104px;resize:vertical}
+#xiangCRM#xiangCRM input:focus,#xiangCRM#xiangCRM select:focus,#xiangCRM#xiangCRM textarea:focus{border-color:#a78c70;box-shadow:0 0 0 3px rgba(167,140,112,.13)}
+#xiangCRM#xiangCRM button{border-radius:13px;min-height:44px;padding:12px 17px;background:#3c332d;color:#fff;font-weight:600;letter-spacing:.015em;transition:transform .16s,opacity .16s}
+#xiangCRM#xiangCRM button:active:not(:disabled){transform:scale(.985)}
+#xiangCRM#xiangCRM button.alt{background:#f1ebe4;color:#453b34}
+#xiangCRM#xiangCRM button:disabled{background:#d2ccc6;color:#fff;opacity:.75;cursor:not-allowed}
+#xiangCRM#xiangCRM .xr{gap:10px}
+#xiangCRM#xiangCRM .item{background:#faf8f5;color:#392f2a;border:1px solid #ece5de;text-align:left;border-radius:15px;margin:9px 0;padding:15px 16px;min-height:56px;font-weight:600}
+#xiangCRM#xiangCRM .item:active{background:#f2ebe3}
+#xiangCRM#xiangCRM .big{font-size:clamp(23px,5vw,32px);font-weight:700;letter-spacing:-.025em;color:#342b25;line-height:1.35}
+#xiangCRM#xiangCRM .warn{background:#fbf7ef;border:1px solid #eadbc4;border-radius:15px;padding:15px;color:#7c6245;line-height:1.7}
+#xiangCRM#xiangCRM #crmStatus{margin:0 0 14px;min-height:20px}
+#xiangCRM#xiangCRM #crmRows{margin-top:16px}
+#xiangCRM#xiangCRM #crmWho{font-size:clamp(22px,5vw,30px);margin:16px 0 4px}
+#xiangCRM#xiangCRM #crmBalance{padding:10px 0 2px}
+#xiangCRM#xiangCRM #crmHistory{white-space:pre-wrap;overflow-wrap:anywhere}
+#xiangCRM#xiangCRM #crm_form .xr{margin-top:24px}
+@media(min-width:700px){#xiangCRM#xiangCRM #crm_form{max-width:780px;margin:16px auto}#xiangCRM#xiangCRM #crm_detail{max-width:780px;margin:auto}}
+@media(max-width:560px){
+ #xiangCRM#xiangCRM{padding:14px 12px 28px}
+ #xiangCRM#xiangCRM> .xr:first-child{align-items:flex-start;flex-wrap:wrap}
+ #xiangCRM#xiangCRM> .xr:first-child h2{flex-basis:100%}
+ #xiangCRM#xiangCRM> .xr:first-child button{min-height:40px}
+ #xiangCRM#xiangCRM .xc{border-radius:19px;padding:19px 16px;margin:12px 0}
+ #xiangCRM#xiangCRM .xr>*{min-width:0}
+ #xiangCRM#xiangCRM #crm_list>.xr{align-items:center}
+ #xiangCRM#xiangCRM #crm_list>.xr strong{flex:1 1 auto}
+ #xiangCRM#xiangCRM #crm_list>.xr button{flex:0 0 auto}
+ #xiangCRM#xiangCRM #crm_form .xr button{flex:1 1 43%}
+ .nav{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;padding-bottom:5px}
+ .nav .navbtn{flex:0 0 auto;white-space:nowrap}
+}
+@media(prefers-reduced-motion:reduce){#xiangCRM#xiangCRM *, .nav .navbtn{transition:none!important}}

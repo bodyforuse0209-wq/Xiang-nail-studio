@@ -2921,4 +2921,432 @@ start();
 
 })();
 
+/* ====================================================
+ XIANG V10.3
+ 即時抽成修復＋員工個人業績明細
+ ==================================================== */
+
+(function installV103() {
+  'use strict';
+
+  const RATE_DEFAULT = 40;
+  let selectedUid = null;
+  let selectedMonth = DAY().slice(0, 7);
+
+  const money = value =>
+    'NT$ ' + Math.round(Number(value) || 0)
+      .toLocaleString('zh-TW');
+
+  function getRate(record) {
+    const rate = Number(
+      record.commissionRate ?? RATE_DEFAULT
+    );
+    return Number.isFinite(rate)
+      ? Math.max(0, Math.min(100, rate))
+      : RATE_DEFAULT;
+  }
+
+  function getCommission(record) {
+    return Math.round(
+      (Number(record.amount) || 0) *
+      getRate(record) / 100
+    );
+  }
+
+  // 修復程式自動填入成交金額時，
+  // 原本 input 事件不會觸發的問題。
+  function refreshCommission() {
+    const page = $('reportPage');
+    const amountInput = $('reportAmount');
+    const rateInput = $('reportCommissionRate');
+    const result = $('reportCommissionAmount');
+    const preview = $('commissionPreview');
+
+    if (
+      !page || !amountInput || !rateInput ||
+      !result || !preview
+    ) return;
+
+    if (page.classList.contains('hidden')) return;
+
+    const amount = Math.max(
+      0,
+      Number(amountInput.value) || 0
+    );
+
+    const rate = Number(rateInput.value);
+
+    if (
+      rateInput.value.trim() === '' ||
+      !Number.isFinite(rate) ||
+      rate < 0 ||
+      rate > 100
+    ) {
+      result.value = '';
+      preview.textContent =
+        '請輸入 0–100% 的有效抽成比例';
+      return;
+    }
+
+    const commission = Math.round(
+      amount * rate / 100
+    );
+
+    const store = Math.round(
+      amount - commission
+    );
+
+    result.value = String(commission);
+
+    const signature =
+      `${amount}|${rate}|${commission}|${store}`;
+
+    if (preview.dataset.v103Signature === signature) {
+      return;
+    }
+
+    preview.dataset.v103Signature = signature;
+
+    preview.innerHTML = `
+      <div class="metric">
+        <span>本筆抽成（${rate}%）</span>
+        <strong>${money(commission)}</strong>
+      </div>
+      <div class="metric">
+        <span>店家分潤</span>
+        <strong>${money(store)}</strong>
+      </div>
+    `;
+  }
+
+  // 在回報頁開啟期間持續檢查數值，
+  // 包含由其他程式直接設定的欄位。
+  function animationLoop() {
+    refreshCommission();
+    requestAnimationFrame(animationLoop);
+  }
+
+  requestAnimationFrame(animationLoop);
+
+  // 個人業績資料來源
+  function personalRecords(uid, month) {
+    return records
+      .filter(r =>
+        r.artistUid === uid &&
+        (!month || r.date?.slice(0, 7) === month)
+      )
+      .sort((a, b) =>
+        String(b.date || '').localeCompare(
+          String(a.date || '')
+        )
+      );
+  }
+
+  function canView(uid) {
+    const owner = demo
+      ? mode === 'owner'
+      : profile?.role === 'owner';
+
+    return owner ||
+      uid === (actor?.uid ||
+        (demo ? 'demo_staff' : ''));
+  }
+
+  function artistName(uid) {
+    const person = staff.find(s => s.uid === uid);
+
+    return person?.name ||
+      records.find(r => r.artistUid === uid)?.artist ||
+      profile?.name ||
+      '美甲師';
+  }
+
+  function openPersonal(uid) {
+    if (!canView(uid)) {
+      notify('只能查看自己的個人業績', true);
+      return;
+    }
+
+    selectedUid = uid;
+    selectedMonth =
+      $('filterMonth')?.value ||
+      DAY().slice(0, 7);
+
+    renderPersonal();
+  }
+
+  function renderPersonal() {
+    if (!selectedUid || !canView(selectedUid)) {
+      return;
+    }
+
+    const rr = personalRecords(
+      selectedUid,
+      selectedMonth
+    );
+
+    const paid = rr.filter(
+      r => r.status === '已結帳'
+    );
+
+    const pending = rr.filter(
+      r => r.status !== '已結帳'
+    );
+
+    const revenue = paid.reduce(
+      (sum, r) => sum + (Number(r.amount) || 0),
+      0
+    );
+
+    const commission = paid.reduce(
+      (sum, r) => sum + getCommission(r),
+      0
+    );
+
+    const pendingAmount = pending.reduce(
+      (sum, r) => sum + (Number(r.amount) || 0),
+      0
+    );
+
+    const body = `
+      <div style="padding:4px 0 20px">
+
+        <div class="softtitle">
+          ${esc(artistName(selectedUid))}
+          ｜個人業績表
+        </div>
+
+        <label class="meta"
+          style="display:block;margin:16px 0">
+          選擇月份
+          <input
+            id="v103Month"
+            type="month"
+            value="${esc(selectedMonth)}"
+            style="display:block;width:100%;
+              margin-top:8px;padding:12px;
+              box-sizing:border-box"
+          >
+        </label>
+
+        <div style="display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:10px;margin-bottom:16px">
+
+          <div class="metric">
+            <span>已結帳業績</span>
+            <strong>${money(revenue)}</strong>
+          </div>
+
+          <div class="metric">
+            <span>本月應計抽成</span>
+            <strong>${money(commission)}</strong>
+          </div>
+
+          <div class="metric">
+            <span>已結帳筆數</span>
+            <strong>${paid.length} 筆</strong>
+          </div>
+
+          <div class="metric">
+            <span>待結帳金額</span>
+            <strong>${money(pendingAmount)}</strong>
+          </div>
+        </div>
+
+        <div class="softtitle">
+          每日逐筆業績
+        </div>
+
+        ${rr.length ? rr.map(r => {
+          const paidRecord = r.status === '已結帳';
+
+          return `
+            <div class="zone"
+              style="margin:12px 0;padding:14px">
+
+              <div style="display:flex;
+                justify-content:space-between;
+                gap:10px;align-items:center">
+
+                <strong>${esc(r.date || '')}</strong>
+
+                <span class="pill">
+                  ${esc(r.status || '')}
+                </span>
+              </div>
+
+              <div style="margin-top:10px">
+                <strong>
+                  ${esc(r.client || '未填客戶')}
+                </strong>
+              </div>
+
+              <div class="small"
+                style="margin-top:5px">
+                ${esc(r.service || '未填服務')}
+              </div>
+
+              <div class="billrow">
+                <span>成交金額</span>
+                <b>${money(r.amount)}</b>
+              </div>
+
+              <div class="billrow">
+                <span>抽成比例</span>
+                <b>${getRate(r)}%</b>
+              </div>
+
+              <div class="billrow">
+                <span>
+                  ${paidRecord
+                    ? '本筆應計抽成'
+                    : '預估抽成（未計入）'}
+                </span>
+                <b>${money(getCommission(r))}</b>
+              </div>
+
+              ${r.settlementLocked === true
+                ? '<div class="small">已月結鎖定</div>'
+                : ''}
+
+              ${r.design
+                ? `<details style="margin-top:10px">
+                    <summary>查看造型明細</summary>
+                    <p class="small">
+                      ${esc(r.design)}
+                    </p>
+                   </details>`
+                : ''}
+            </div>
+          `;
+        }).join('') : `
+          <p class="hint">
+            這個月份尚無業績紀錄。
+          </p>
+        `}
+      </div>
+    `;
+
+    showModal(
+      `${artistName(selectedUid)}｜業績明細`,
+      body
+    );
+  }
+
+  // 看板新增「我的業績」入口
+  const previousRenderDashboard = renderDashboard;
+
+  renderDashboard = function() {
+    previousRenderDashboard();
+
+    const owner = demo
+      ? mode === 'owner'
+      : profile?.role === 'owner';
+
+    const myUid = actor?.uid ||
+      (demo
+        ? (mode === 'owner'
+            ? 'demo_owner'
+            : 'demo_staff')
+        : '');
+
+    const target = $('metrics');
+
+    if (!target || !myUid) return;
+
+    const button = document.createElement('button');
+
+    button.type = 'button';
+    button.className = 'button outline wide';
+    button.dataset.personalUid = myUid;
+
+    button.textContent =
+      '查看我的個人業績明細 ↗';
+
+    const wrapper = document.createElement('div');
+    wrapper.style.gridColumn = '1 / -1';
+    wrapper.appendChild(button);
+
+    target.appendChild(wrapper);
+
+    // 店主可以點選任一員工查看明細
+    if (owner) {
+      const stats = $('artistStats');
+
+      if (stats) {
+        const box = document.createElement('div');
+        box.className = 'zone';
+        box.style.marginTop = '16px';
+
+        const unique = new Map();
+
+        for (const s of staff) {
+          if (s.uid) {
+            unique.set(s.uid, s.name || s.uid);
+          }
+        }
+
+        for (const r of records) {
+          if (
+            r.artistUid &&
+            !unique.has(r.artistUid)
+          ) {
+            unique.set(
+              r.artistUid,
+              r.artist || r.artistUid
+            );
+          }
+        }
+
+        box.innerHTML = `
+          <div class="zonetitle">
+            <strong>美甲師個人業績</strong>
+            <span class="pill">員工明細</span>
+          </div>
+
+          ${[...unique.entries()].map(
+            ([uid, name]) => `
+              <button
+                type="button"
+                class="button outline wide"
+                data-personal-uid="${esc(uid)}"
+                style="margin:5px 0"
+              >
+                ${esc(name)}｜查看業績 ↗
+              </button>
+            `
+          ).join('')}
+        `;
+
+        stats.appendChild(box);
+      }
+    }
+  };
+
+  document.addEventListener('click', event => {
+    const button = event.target.closest(
+      '[data-personal-uid]'
+    );
+
+    if (!button) return;
+
+    openPersonal(button.dataset.personalUid);
+  });
+
+  document.addEventListener('change', event => {
+    if (event.target?.id !== 'v103Month') {
+      return;
+    }
+
+    selectedMonth = event.target.value;
+    renderPersonal();
+  });
+
+  console.log(
+    'XIANG V10.3 抽成修復與個人業績表已載入'
+  );
+})();
+
+
 

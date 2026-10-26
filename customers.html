@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>香香村 V11.3｜客戶管理</title>
+<title>香香村 V11.3.1｜客戶管理</title>
 <style>
 :root{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;background:#faf8f5;color:#352e29}
 *{box-sizing:border-box}
@@ -35,7 +35,7 @@ a{color:#67513d}
 </head>
 <body>
 <header>
-<small>XIANG BEAUTY STUDIO · V11.3</small>
+<small>XIANG BEAUTY STUDIO · V11.3.1</small>
 <h1>香香村｜客戶管理</h1>
 <a href="./index.html">← 回美甲系統</a>
 </header>
@@ -259,9 +259,15 @@ async function archive(flag){
 ownerOnly();
 const id=$('cid').value;
 if(!id||!confirm(flag?'確定封存這位客戶？':'確定恢復這位客戶？'))return;
-await updateDoc(doc(db,'customers',id),{
+const c=customers.find(x=>x.id===id);
+if(!c)throw Error('找不到客戶，請重新整理');
+const patch={
 archived:flag,updatedAt:serverTimestamp(),updatedBy:uid()
-});
+};
+if(typeof c.categoryId!=='string')patch.categoryId='regular';
+if(!c.customFields||typeof c.customFields!=='object'||Array.isArray(c.customFields))patch.customFields={};
+for(const k of ['phone','line','birthday','notes'])if(typeof c[k]!=='string')patch[k]='';
+await updateDoc(doc(db,'customers',id),patch);
 $('editor').classList.add('hidden');
 await load();
 }

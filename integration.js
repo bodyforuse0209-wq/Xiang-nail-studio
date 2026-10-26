@@ -1,24 +1,50 @@
-/* XIANG V14 - native unified CRM / wallet preview. Replace integration.js only. */
-(()=>{'use strict';
-const css=`#xiang14{max-width:1100px;margin:0 auto;padding:16px;color:#342e2b;font-family:-apple-system,BlinkMacSystemFont,'Noto Sans TC',sans-serif}#xiang14 *{box-sizing:border-box}#xiang14 .xcard{background:#fff;border:1px solid #e7ded5;border-radius:18px;padding:17px;margin:12px 0}#xiang14 .xgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}#xiang14 button{border:0;border-radius:11px;padding:12px;background:#40352f;color:white;font-size:15px}#xiang14 button.secondary{background:#f0e9e1;color:#40352f}#xiang14 input,#xiang14 select,#xiang14 textarea{width:100%;padding:12px;margin:5px 0 12px;border:1px solid #d8cfc5;border-radius:10px;background:#fff;font-size:16px}#xiang14 label{font-size:13px;display:block}#xiang14 .muted{color:#81766e;font-size:13px}#xiang14 .big{font-size:23px;font-weight:700}#xiang14 .xrow{display:flex;gap:9px;align-items:center;flex-wrap:wrap}#xiang14 .xrow>*{flex:1}#xiang14 .xitem{display:block;width:100%;text-align:left;background:#f9f6f1;color:#40352f;margin:7px 0}#xiang14 .warn{background:#fff7e8;border:1px solid #e3cda9;padding:12px;border-radius:12px}#xiang14 [hidden]{display:none!important}`;
-const style=document.createElement('style');style.textContent=css;document.head.append(style);
-const $=id=>document.getElementById(id);let db,auth,fire,staff,customers=[],chosen=null,principal=0,bonus=0,loaded=false;
-const money=n=>'NT$ '+Number(n||0).toLocaleString('zh-TW');const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function status(s){$('xstatus').textContent=s}function show(name){for(const x of ['list','detail','new'])$('x'+x).hidden=x!==name;}
-async function setup(){if(loaded)return;loaded=true;try{
- const [a,f]=await Promise.all([import('https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js'),import('https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js')]);
- const au=await import('https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js');
- const app=a.getApps().length?a.getApp():a.initializeApp(window.XIANG_FIREBASE_CONFIG);db=f.getFirestore(app);auth=au.getAuth(app);fire=f;
- au.onAuthStateChanged(auth,async user=>{if(!user){status('è«åä½¿ç¨é¦é å³ä¸è§ç»å¥å¡å·¥å¸³è');$('xcontent').hidden=true;return}try{const s=await f.getDoc(f.doc(db,'staff',user.uid));if(!s.exists()||s.data().active!==true)throw Error('æ²æå¡å·¥æ¬é');staff={uid:user.uid,...s.data()};$('xcontent').hidden=false;await refresh()}catch(e){status('ç¡æ³é©è­æ¬éï¼'+e.message);$('xcontent').hidden=true}});
- }catch(e){status('ç³»çµ±è¼å¥å¤±æï¼'+e.message)}}
-async function refresh(){try{status('åæ­¥å®¢æ¶è³æä¸­â¦');const s=await fire.getDocs(fire.collection(db,'customers'));customers=s.docs.map(d=>({id:d.id,...d.data()})).filter(x=>x.archived!==true);renderList();status('å·²åæ­¥ '+customers.length+' ä½å®¢æ¶')}catch(e){status('è®åå¤±æï¼'+e.message)}}
-function renderList(){const term=$('xsearch').value.trim().toLowerCase();const rows=customers.filter(c=>[c.name,c.phone,c.line].some(x=>String(x||'').toLowerCase().includes(term)));$('xcount').textContent=`å®¢æ¶ ${customers.length} ä½`;const host=$('xrows');host.replaceChildren();for(const c of rows){const b=document.createElement('button');b.className='xitem';b.textContent=`${c.name}ã${c.phone||''}`;b.onclick=()=>openCustomer(c.id);host.append(b)}if(!rows.length)host.textContent='æ²æç¬¦åçå®¢æ¶'}
-async function openCustomer(id){chosen=customers.find(c=>c.id===id);if(!chosen)return;show('detail');$('xname').textContent=chosen.name;$('xinfo').textContent=[chosen.phone,chosen.line,chosen.birthday].filter(Boolean).join(' Â· ')||'æªå¡«è¯çµ¡è³æ';principal=0;bonus=0;$('xbalance').textContent='è®åä¸­';$('xhistory').textContent='è®åä¸­';$('xamount').value='';$('xcalc').textContent='è¼¸å¥æ¶è²»éé¡å³å¯è©¦ç®';try{const w=await fire.getDoc(fire.doc(db,'wallets',id));if(w.exists()){principal=w.data().principalBalance;bonus=w.data().bonusBalance;if(!Number.isSafeInteger(principal)||!Number.isSafeInteger(bonus)||principal<0||bonus<0)throw Error('é¢åéé¡ç°å¸¸');$('xbalance').textContent=`${money(principal+bonus)}ï½æ¬é ${money(principal)}ï¼è´é ${money(bonus)}`}else $('xbalance').textContent='å°ç¡é¢åç´éï¼æªå»ºç«ï¼';const t=await fire.getDocs(fire.query(fire.collection(db,'wallets',id,'transactions'),fire.orderBy('createdAt','desc'),fire.limit(20)));$('xhistory').textContent=t.empty?'å°ç¡äº¤æ':t.docs.map(d=>{const a=d.data();return `${a.type||'äº¤æ'} ${money(a.amount)} ${a.createdAt?.toDate?.().toLocaleString('zh-TW')||''}`}).join('\n')}catch(e){$('xbalance').textContent='ç¡æ³è®åé¢åï¼å°æªéæ¾æ¬éï¼';$('xhistory').textContent='äº¤æç´éå°æªéæ¾ï¼'+e.message}}
-function simulate(){const n=Number($('xamount').value);if(!Number.isSafeInteger(n)||n<=0){$('xcalc').textContent='è«è¼¸å¥æ­£æ´æ¸éé¡';return}if(n>principal+bonus){$('xcalc').textContent='é¤é¡ä¸è¶³ï¼æ­¤èåè©¦ç®ï¼';return}const b=Math.min(bonus,n),p=n-b;$('xcalc').textContent=`åæ£è´é ${money(b)}ï¼åæ£æ¬é ${money(p)}ï¼å©é¤ ${money(principal+bonus-n)}ï¼è©¦ç®ï¼æªæ£æ¬¾ï¼`}
-async function addCustomer(){const name=$('xnewname').value.trim(),phone=$('xnewphone').value.trim(),line=$('xnewline').value.trim(),birthday=$('xnewbirthday').value,notes=$('xnewnotes').value.trim();if(!name||name.length>80){status('è«è¼¸å¥ 1â80 å­å®¢æ¶å§å');return}if(phone.length>30||line.length>100||notes.length>3000){status('æ¬ä½é·åº¦è¶ééå¶');return}const btn=$('xsave');btn.disabled=true;try{const u=auth.currentUser;if(!u||!staff)throw Error('è«åç»å¥');await fire.addDoc(fire.collection(db,'customers'),{name,phone,line,birthday,notes,categoryId:'',customFields:{},archived:false,createdAt:fire.serverTimestamp(),createdBy:u.uid,updatedAt:fire.serverTimestamp(),updatedBy:u.uid});$('xnewname').value='';$('xnewphone').value='';$('xnewline').value='';$('xnewbirthday').value='';$('xnewnotes').value='';await refresh();show('list');status('æ°å¢å®¢æ¶æå')}catch(e){status('æ°å¢å¤±æï¼'+e.message)}finally{btn.disabled=false}}
-function init(){const nav=$('nav'),app=document.querySelector('.container.app'),bar=$('bottomBar');if(!nav||!app)return;const panel=document.createElement('div');panel.id='xiang14';panel.hidden=true;panel.innerHTML=`<div class="xrow"><h2 style="margin:8px 0">é¦é¦æï½å®¢æ¶èæå¡ç®¡ç</h2><button class="secondary" id="xback">â åæºæ§ä¼°å¹</button></div><p id="xstatus" class="muted">æºåè¼å¥â¦</p><div id="xcontent" hidden><section id="xlist" class="xcard"><div class="xrow"><strong id="xcount">å®¢æ¶</strong><button id="xadd">ï¼ æ°å¢å®¢æ¶</button></div><label>æå°å§åãé»è©±ãLINE</label><input id="xsearch" placeholder="æå°å®¢æ¶"><div id="xrows"></div></section><section id="xnew" class="xcard" hidden><h3>æ°å¢å®¢æ¶</h3><label>å§å *</label><input id="xnewname" maxlength="80"><label>é»è©±</label><input id="xnewphone" maxlength="30"><label>LINE</label><input id="xnewline" maxlength="100"><label>çæ¥</label><input id="xnewbirthday" type="date"><label>åè¨»</label><textarea id="xnewnotes" rows="3" maxlength="3000"></textarea><div class="xrow"><button class="secondary" id="xcancel">åæ¶</button><button id="xsave">å²å­å®¢æ¶</button></div></section><section id="xdetail" hidden><div class="xcard"><button class="secondary" id="xtolist">â è¿åå®¢æ¶åè¡¨</button><h3 id="xname"></h3><p id="xinfo" class="muted"></p><p class="muted">æå¡é¢åé¤é¡</p><div id="xbalance" class="big"></div></div><div class="xcard"><h3>å²å¼è¦å</h3><div class="warn">æ­£å¼å²å¼å°æªåç¨ãçºä¿éæå¡æ¬¾é å®å¨ï¼ä¸è½å¨æªé©è­æ¬éåå¯«å¥é¤é¡ã</div><label>é è¨å²å¼æ¬éï¼åè¨ç®ï¼</label><input id="xtopup" type="number" min="0" step="1" placeholder="ä¾å¦ 3000"><label>é è¨è´ééï¼åè¨ç®ï¼</label><input id="xgift" type="number" min="0" step="1" placeholder="ä¾å¦ 300"><div id="xtotal" class="big">è©¦ç®å¥å¸³ NT$ 0</div><button disabled>ç¢ºèªå²å¼ï¼å°æªåç¨ï¼</button></div><div class="xcard"><h3>æ¶è²»æ£æ¬¾ï½åæ£è´éé</h3><label>æ¬æ¬¡æ¶è²»éé¡</label><input id="xamount" type="number" min="1" step="1" placeholder="ä¾å¦ 800"><p id="xcalc" class="warn">è¼¸å¥æ¶è²»éé¡å³å¯è©¦ç®</p><button disabled>ç¢ºèªæ£æ¬¾ï¼å°æªåç¨ï¼</button></div><div class="xcard"><h3>äº¤æç´é</h3><pre id="xhistory" style="white-space:pre-wrap;overflow-wrap:anywhere">å°æªè®å</pre></div></section></div>`;app.after(panel);
- const btn=document.createElement('button');btn.className='navbtn';btn.type='button';btn.textContent='â å®¢æ¶ï¼æå¡ç®¡ç';nav.append(btn);
- const oldButtons=Array.from(nav.querySelectorAll('[data-page]'));function close(){panel.hidden=true;app.hidden=false;if(bar)bar.hidden=false;btn.classList.remove('active');window.scrollTo(0,0)}btn.onclick=()=>{app.hidden=true;panel.hidden=false;if(bar)bar.hidden=true;btn.classList.add('active');setup();window.scrollTo(0,0)};oldButtons.forEach(b=>b.addEventListener('click',close));$('xback').onclick=close;$('xsearch').oninput=renderList;$('xadd').onclick=()=>show('new');$('xcancel').onclick=()=>show('list');$('xtolist').onclick=()=>show('list');$('xsave').onclick=addCustomer;$('xamount').oninput=simulate;const topup=()=>{const p=Number($('xtopup').value),b=Number($('xgift').value);$('xtotal').textContent=Number.isSafeInteger(p)&&Number.isSafeInteger(b)&&p>=0&&b>=0?`è©¦ç®å¥å¸³ ${money(p+b)}`:'è«è¼¸å¥éè² æ´æ¸'};$('xtopup').oninput=topup;$('xgift').oninput=topup;
-}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+/* XIANG V14: repair UTF-8 text that was decoded as Latin-1 in the integration script. */
+(()=>{
+  'use strict';
+  const decoder = new TextDecoder('utf-8', {fatal:true});
+  function repair(value){
+    if(!value || !/[\u0080-\u00ff]/.test(value)) return value;
+    return value.replace(/[\u0080-\u00ff]{2,}/g, segment=>{
+      try{
+        const bytes=Uint8Array.from(segment,ch=>ch.charCodeAt(0));
+        return decoder.decode(bytes);
+      }catch{return segment;}
+    });
+  }
+  function scan(root){
+    if(!root || !(root instanceof Node))return;
+    if(root.nodeType===Node.TEXT_NODE){
+      const fixed=repair(root.nodeValue);
+      if(fixed!==root.nodeValue)root.nodeValue=fixed;
+      return;
+    }
+    if(root.nodeType!==Node.ELEMENT_NODE)return;
+    if(root.matches('script,style'))return;
+    for(const name of ['placeholder','title','aria-label']){
+      if(root.hasAttribute(name)){
+        const v=root.getAttribute(name),f=repair(v);
+        if(v!==f)root.setAttribute(name,f);
+      }
+    }
+    for(const child of Array.from(root.childNodes))scan(child);
+  }
+  function start(){
+    const root=document.body;
+    scan(root);
+    let working=false;
+    const observer=new MutationObserver(records=>{
+      if(working)return;
+      working=true;
+      observer.disconnect();
+      for(const r of records){
+        if(r.type==='characterData')scan(r.target);
+        else if(r.type==='attributes')scan(r.target);
+        else for(const node of r.addedNodes)scan(node);
+      }
+      observer.observe(root,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['placeholder','title','aria-label']});
+      working=false;
+    });
+    observer.observe(root,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['placeholder','title','aria-label']});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();

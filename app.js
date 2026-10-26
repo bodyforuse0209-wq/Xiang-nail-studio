@@ -2546,7 +2546,379 @@ start();
   console.log('XIANG：凝膠名稱統一完成');
 
 })();
-/* ===== 名稱統一結束 ===== */
 
-/* ===== XIANG V10.1 升級結束 ===== */
+/* =====================================================
+ XIANG BEAUTY STUDIO
+ V10.2｜員工業績抽成管理
+ 保留原有 V10 / V10.1 全部功能
+ ===================================================== */
+
+(function installCommissionV102() {
+  'use strict';
+
+  const DEFAULT_RATE = 40;
+
+  function rateOf(record) {
+    const value = Number(
+      record.commissionRate ?? DEFAULT_RATE
+    );
+
+    return Number.isFinite(value)
+      ? Math.min(100, Math.max(0, value))
+      : DEFAULT_RATE;
+  }
+
+  function commissionOf(record) {
+    const amount = n(record.amount);
+    const rate = rateOf(record);
+
+    return Math.round(amount * rate / 100);
+  }
+
+  function storeOf(record) {
+    return n(record.amount) - commissionOf(record);
+  }
+
+  function syncCommissionInputs() {
+    const amount = Number(
+      $('reportAmount')?.value || 0
+    );
+
+    const input = $('reportCommissionRate');
+    const result = $('reportCommissionAmount');
+
+    if (!input || !result) return;
+
+    const rate = Number(input.value);
+
+    if (
+      input.value.trim() === '' ||
+      !Number.isFinite(rate) ||
+      rate < 0 ||
+      rate > 100
+    ) {
+      result.value = '';
+      return;
+    }
+
+    result.value = String(
+      Math.round(amount * rate / 100)
+    );
+  }
+
+  // 1. 擴充原本的業績資料讀取
+  const originalFieldsReport = fieldsReport;
+
+  fieldsReport = function() {
+    const record = originalFieldsReport();
+
+    const input = $('reportCommissionRate');
+    const raw = input?.value ?? String(DEFAULT_RATE);
+    const rate = Number(raw);
+
+    if (
+      raw.trim() === '' ||
+      !Number.isFinite(rate) ||
+      rate < 0 ||
+      rate > 100
+    ) {
+      throw new Error(
+        '抽成比例必須介於 0% 至 100%'
+      );
+    }
+
+    record.commissionRate = rate;
+    record.commissionAmount = Math.round(
+      n(record.amount) * rate / 100
+    );
+
+    record.storeAmount =
+      n(record.amount) - record.commissionAmount;
+
+    return record;
+  };
+
+  // 2. 新增回報時，預設 40%
+  const originalClearReport = clearReport;
+
+  clearReport = function() {
+    originalClearReport();
+
+    if ($('reportCommissionRate')) {
+      $('reportCommissionRate').value =
+        String(DEFAULT_RATE);
+    }
+
+    syncCommissionInputs();
+  };
+
+  // 3. 編輯時恢復該筆原有抽成
+  const originalEditReport = editReport;
+
+  editReport = function(id) {
+    const record = records.find(
+      item => item.id === id
+    );
+
+    if (!record) {
+      return notify('找不到這筆業績', true);
+    }
+
+    if (record.settlementLocked === true) {
+      return notify(
+        '這筆業績已完成月結算，不能修改',
+        true
+      );
+    }
+
+    originalEditReport(id);
+
+    if (editingId !== id) return;
+
+    $('reportCommissionRate').value =
+      String(rateOf(record));
+
+    syncCommissionInputs();
+  };
+
+  // 4. 儲存前驗證抽成與結算狀態
+  const originalSaveReport = saveReport;
+
+  saveReport = async function(event) {
+    const input = $('reportCommissionRate');
+    const rate = Number(input?.value);
+
+    if (
+      !input ||
+      input.value.trim() === '' ||
+      !Number.isFinite(rate) ||
+      rate < 0 ||
+      rate > 100
+    ) {
+      event.preventDefault();
+
+      notify(
+        '請輸入 0% 至 100% 的抽成比例',
+        true
+      );
+
+      return;
+    }
+
+    if (editingId) {
+      const existing = records.find(
+        item => item.id === editingId
+      );
+
+      if (existing?.settlementLocked === true) {
+        event.preventDefault();
+
+        notify(
+          '此筆紀錄已結算，無法修改',
+          true
+        );
+
+        return;
+      }
+    }
+
+    return originalSaveReport(event);
+  };
+
+  // 5. 更新看板，顯示每位員工抽成
+  const originalRenderDashboard = renderDashboard;
+
+  renderDashboard = function() {
+    originalRenderDashboard();
+
+    const rows = filtered();
+    const paid = rows.filter(
+      item => item.status === '已結帳'
+    );
+
+    const totalCommission = paid.reduce(
+      (sum, item) => sum + commissionOf(item),
+      0
+    );
+
+    const totalStore = paid.reduce(
+      (sum, item) => sum + storeOf(item),
+      0
+    );
+
+    const metrics = $('metrics');
+
+    if (metrics) {
+      metrics.insertAdjacentHTML(
+        'beforeend',
+        `
+        <div class="metric">
+          <span>員工抽成總計</span>
+          <strong>${fmt(totalCommission)}</strong>
+        </div>
+
+        <div class="metric">
+          <span>店家分潤總計</span>
+          <strong>${fmt(totalStore)}</strong>
+        </div>
+        `
+      );
+    }
+
+    // 每位美甲師抽成統計
+    const summary = new Map();
+
+    for (const item of paid) {
+      const uid = item.artistUid || 'unknown';
+
+      const current = summary.get(uid) || {
+        name: item.artist || '未命名',
+        amount: 0,
+        commission: 0,
+        count: 0
+      };
+
+      current.amount += n(item.amount);
+      current.commission += commissionOf(item);
+      current.count++;
+
+      summary.set(uid, current);
+    }
+
+    const artistStats = $('artistStats');
+
+    if (artistStats) {
+      artistStats.innerHTML = [...summary.values()]
+        .sort((a, b) => b.amount - a.amount)
+        .map(item => `
+          <div class="stat">
+            <span>
+              ${esc(item.name)}
+              · ${item.count} 筆
+            </span>
+
+            <div>
+              <b>${fmt(item.amount)}</b>
+
+              <div class="small">
+                應計抽成：
+                ${fmt(item.commission)}
+              </div>
+            </div>
+          </div>
+        `)
+        .join('') ||
+        '<p class="hint">本期間無已收紀錄。</p>';
+    }
+
+    // 每筆業績顯示抽成
+    const tableRows = $('recordRows');
+
+    if (tableRows) {
+      const displayed = rows.slice(0, 500);
+
+      tableRows.querySelectorAll('tr').forEach(
+        (tr, index) => {
+          const record = displayed[index];
+
+          if (!record) return;
+
+          const amountCell = tr.children[3];
+
+          if (amountCell) {
+            amountCell.innerHTML = `
+              <strong>${fmt(record.amount)}</strong>
+
+              <div class="small">
+                抽成 ${rateOf(record)}%
+                · ${fmt(commissionOf(record))}
+              </div>
+
+              <div class="small">
+                店家 ${fmt(storeOf(record))}
+              </div>
+            `;
+          }
+
+          if (record.settlementLocked === true) {
+            const actions = tr.children[5];
+
+            if (actions) {
+              actions.innerHTML =
+                '<span class="pill">已結算鎖定</span>';
+            }
+          }
+        }
+      );
+    }
+  };
+
+  // 6. CSV 加入抽成明細
+  const originalExportCsv = exportCsv;
+
+  exportCsv = function() {
+    const rows = filtered();
+
+    const headers = [
+      '日期',
+      '美甲師',
+      '客戶',
+      '服務項目',
+      '實收金額',
+      '抽成比例%',
+      '抽成金額',
+      '店家分潤',
+      '收款狀態',
+      '月結算鎖定'
+    ];
+
+    const data = rows.map(item => [
+      item.date || '',
+      item.artist || '',
+      item.client || '',
+      item.service || '',
+      n(item.amount),
+      rateOf(item),
+      commissionOf(item),
+      storeOf(item),
+      item.status || '',
+      item.settlementLocked === true
+        ? '已鎖定'
+        : '未鎖定'
+    ]);
+
+    const csv = '\ufeff' +
+      [headers, ...data]
+        .map(row =>
+          row.map(safeCsvCell).join(',')
+        )
+        .join('\r\n');
+
+    download(
+      '香香村_員工抽成業績_' + DAY() + '.csv',
+      csv,
+      'text/csv;charset=utf-8'
+    );
+  };
+
+  // 7. 監聽金額及比例變化
+  document.addEventListener('input', event => {
+    if (
+      [
+        'reportAmount',
+        'reportOriginal',
+        'reportDiscount',
+        'reportCommissionRate'
+      ].includes(event.target?.id)
+    ) {
+      queueMicrotask(syncCommissionInputs);
+    }
+  });
+
+  console.log(
+    'XIANG V10.2 員工抽成管理已載入'
+  );
+
+})();
+
 

@@ -1,379 +1,62 @@
-
 <!doctype html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>香香村 V11.3.1｜客戶管理</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f9f7f2"><title>香香村｜客戶管理 V12</title>
 <style>
-:root{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;background:#faf8f5;color:#352e29}
-*{box-sizing:border-box}
-body{margin:0}
-header{background:#eee5d9;padding:20px}
-main{max-width:780px;margin:auto;padding:15px}
-h1{font-size:23px;margin:6px 0}
-h2{font-size:18px}
-.card{background:#fff;border:1px solid #e7ded3;border-radius:16px;padding:17px;margin-bottom:15px}
-label{display:block;margin:12px 0 5px;font-size:13px}
-input,select,textarea{width:100%;padding:11px;border:1px solid #d8cabc;border-radius:9px;background:#fff;font:inherit}
-input[type=checkbox]{width:auto}
-button{border:0;border-radius:10px;background:#453b34;color:#fff;padding:11px 13px;font:inherit;cursor:pointer}
-button:disabled{opacity:.5}
-.secondary{background:#eee5d9;color:#352f2a}
-.danger{background:#873d38}
-.hidden{display:none!important}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.row>*{flex:1}
-.item{display:block;width:100%;text-align:left;margin:7px 0;background:#f8f5f0;color:#352e29}
-.muted{color:#766f68;font-size:13px}
-.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}
-.actions>*{flex:1}
-#message{white-space:pre-wrap;color:#6e5338}
-hr{border:0;border-top:1px solid #eee5d9;margin:18px 0}
-a{color:#67513d}
+:root{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;color:#342e2b;background:#faf8f4;--cream:#f7f1e8;--line:#e9e1d8;--muted:#847a72;--gold:#9c8060;--ink:#342e2b}*{box-sizing:border-box}body{margin:0}button,input,select,textarea{font:inherit}button{cursor:pointer;border:0;border-radius:12px;padding:12px 15px;background:#3b322c;color:white}button:disabled{opacity:.55;cursor:wait}.ghost{background:#f2ede6;color:#4b3d34}.danger{background:#a14745}.tiny{padding:8px 10px;font-size:13px}.shell{max-width:1000px;margin:auto;padding:16px}.hero{background:linear-gradient(135deg,#fffdf9,#f1e8db);border-bottom:1px solid var(--line);padding:23px 0 17px}.brand{letter-spacing:.17em;font-size:10px;color:#9a7d5a}.hero h1{font-size:26px;margin:8px 0}.muted{color:var(--muted);font-size:13px}.nav{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.nav a{color:#695746;font-size:13px}.card{background:#fff;border:1px solid var(--line);border-radius:19px;padding:19px;margin:15px 0;box-shadow:0 5px 22px #4a33200a}.hidden{display:none!important}.flex{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.spread{justify-content:space-between}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{background:white;border:1px solid var(--line);border-radius:15px;padding:15px}.stat strong{display:block;font-size:24px;margin:4px 0}.stat span{font-size:12px;color:var(--muted)}label{display:block;font-size:13px;margin:13px 0 6px;color:#55483e}input:not([type=checkbox]),select,textarea{width:100%;padding:12px;border:1px solid #ded5ca;border-radius:11px;background:#fff;outline:none;color:var(--ink)}input:focus,select:focus,textarea:focus{border-color:#bba184;box-shadow:0 0 0 3px #e9ddca77}textarea{resize:vertical;min-height:86px}.two{display:grid;grid-template-columns:1fr 1fr;gap:0 13px}.toolbar{display:grid;grid-template-columns:1fr 180px;gap:9px;margin:14px 0}.record{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;background:#fff;color:var(--ink);border:1px solid var(--line);padding:14px;margin:8px 0}.record:active{background:#f6f1e9}.record strong{display:block}.record small{display:block;color:var(--muted);margin-top:5px}.pill{font-size:11px;border-radius:20px;background:#f2e9db;color:#71583b;padding:5px 9px;white-space:nowrap}.pill.archive{background:#eee;color:#666}.section-title{font-size:15px;margin:22px 0 10px;border-bottom:1px solid var(--line);padding-bottom:10px}.notice{padding:12px;border-radius:12px;background:#f8f2e9;font-size:13px;color:#715a40}.error{color:#a33e3b}.success{color:#4b795b}.fieldnote{font-size:11px;color:#847a72;margin-top:4px}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:20px}.actions button{flex:1}.settings-list>div{display:flex;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid #f0ebe5}.settings-list>div span{flex:1}.checkline{display:flex;gap:8px;align-items:center;font-size:13px}.checkline input{width:auto}.footer{text-align:center;font-size:11px;color:#9c9287;padding:18px 0 30px}.loading{opacity:.65;pointer-events:none}@media(max-width:600px){.two{grid-template-columns:1fr}.toolbar{grid-template-columns:1fr}.card{padding:15px}.hero h1{font-size:22px}.stats{gap:7px}.stat{padding:12px}.stat strong{font-size:21px}.actions button{flex-basis:40%}}
 </style>
 </head>
 <body>
-<header>
-<small>XIANG BEAUTY STUDIO · V11.3.1</small>
-<h1>香香村｜客戶管理</h1>
-<a href="./index.html">← 回美甲系統</a>
-</header>
-<main>
-<p id="message">正在確認登入…</p>
-<section id="authBox" class="card">
-<h2>員工登入</h2>
-<label>電子郵件</label><input id="email" type="email">
-<label>密碼</label><input id="password" type="password">
-<button id="loginBtn" style="margin-top:12px">登入</button>
-</section>
+<div class="hero"><div class="shell"><div class="brand">XIANG BEAUTY STUDIO · CUSTOMER CRM</div><div class="flex spread"><h1>香香村｜客戶管理</h1><span class="pill">V12.0</span></div><div class="nav"><a href="./index.html">← 回美甲系統</a><span class="muted">店主與授權員工專用</span></div></div></div>
+<main class="shell"><p id="message" role="status" aria-live="polite">正在確認登入…</p>
+<section id="authBox" class="card"><h2>員工登入</h2><label for="email">電子郵件</label><input id="email" type="email" autocomplete="username"><label for="password">密碼</label><input id="password" type="password" autocomplete="current-password"><button id="loginBtn" style="margin-top:15px">登入</button></section>
 <div id="workspace" class="hidden">
-<section class="card">
-<div class="row">
-<h2>客戶名單</h2>
-<button id="newBtn">＋ 新增客戶</button>
-</div>
-<input id="search" placeholder="搜尋姓名、電話、LINE、會員分類">
-<label id="archivedLabel">
-<input id="showArchived" type="checkbox"> 顯示已封存客戶（店主）
-</label>
-<div id="list"></div>
-</section>
-<section id="editor" class="card hidden">
-<h2 id="formTitle">新增客戶</h2>
-<form id="form">
-<input type="hidden" id="cid">
-<label>姓名／稱呼 *</label><input id="name" required maxlength="80">
-<label>電話</label><input id="phone" maxlength="30" type="tel">
-<label>LINE 暱稱</label><input id="line" maxlength="100">
-<label>生日</label><input id="birthday" type="date">
-<label>會員分類</label><select id="category"></select>
-<label>備註</label><textarea id="notes" rows="3" maxlength="3000"></textarea>
-<div id="customFields"></div>
-<button type="submit" id="saveBtn" style="width:100%;margin-top:12px">儲存客戶</button>
-<div class="actions">
-<button type="button" class="secondary" id="cancelBtn">取消</button>
-<button type="button" class="secondary hidden" id="archiveBtn">封存</button>
-<button type="button" class="secondary hidden" id="restoreBtn">解除封存</button>
-<button type="button" class="danger hidden" id="deleteBtn">永久刪除</button>
-</div>
-</form>
-<p class="muted">永久刪除僅限店主，且必須先封存。僅適用於確認沒有消費及帳務關聯的測試客戶。</p>
-</section>
-<section id="settings" class="card hidden">
-<h2>店主｜會員分類</h2>
-<div id="categoryList"></div>
-<label>新增分類</label>
-<div class="row">
-<input id="newCategory" maxlength="40" placeholder="例如：生日會員">
-<button id="addCategory">新增</button>
-</div>
-<hr>
-<h2>店主｜自訂欄位</h2>
-<div id="fieldList"></div>
-<label>新增欄位名稱</label>
-<input id="newField" maxlength="40" placeholder="例如：慣用甲型">
-<label>欄位類型</label>
-<select id="newFieldType">
-<option value="text">單行文字</option>
-<option value="textarea">多行備註</option>
-<option value="date">日期</option>
-</select>
-<button id="addField" style="margin-top:10px">新增欄位</button>
-</section>
-</div>
-</main>
+<div class="stats"><div class="stat"><span>客戶總數</span><strong id="totalCount">0</strong></div><div class="stat"><span>有效客戶</span><strong id="activeCount">0</strong></div><div class="stat"><span>本月生日</span><strong id="birthdayCount">0</strong></div></div>
+<section id="directory" class="card"><div class="flex spread"><h2>客戶名單</h2><button id="newBtn">＋ 新增客戶</button></div><div class="toolbar"><input id="search" aria-label="搜尋客戶" placeholder="搜尋姓名、電話、LINE、會員分類"><select id="filterCategory" aria-label="篩選會員分類"><option value="">所有會員分類</option></select></div><div class="flex spread"><span class="muted" id="visibleCount"></span><label id="archivedLabel" class="checkline"><input id="showArchived" type="checkbox">包含已封存</label></div><div id="list"></div></section>
+<section id="editor" class="card hidden"><div class="flex spread"><h2 id="formTitle">新增客戶</h2><button type="button" class="ghost tiny" id="closeEditor">關閉</button></div><div id="editorNotice" class="notice">基本資料可由授權員工編輯；封存、恢復與永久刪除限店主。</div>
+<form id="form"><input type="hidden" id="cid"><h3 class="section-title">基本資料</h3><div class="two"><div><label for="name">姓名／稱呼 *</label><input id="name" required maxlength="80" autocomplete="off"></div><div><label for="phone">電話</label><input id="phone" maxlength="30" type="tel" inputmode="tel"></div><div><label for="line">LINE 暱稱／ID</label><input id="line" maxlength="100"></div><div><label for="birthday">生日</label><input id="birthday" type="date"></div><div><label for="category">會員分類</label><select id="category"></select></div></div>
+<h3 class="section-title">客戶偏好與來源</h3><div class="two"><div><label for="source">客戶來源</label><select id="source"><option value="">未設定</option><option>Instagram</option><option>LINE</option><option>朋友介紹</option><option>Google 地圖</option><option>路過／招牌</option><option>小紅書</option><option>其他</option></select></div><div><label for="service">偏好服務</label><select id="service"><option value="">未設定</option><option>手部美甲</option><option>足部美甲</option><option>美睫</option><option>睫毛管理</option><option>男士美甲</option><option>其他</option></select></div><div><label for="firstVisit">初次到店日期</label><input id="firstVisit" type="date"></div><div><label for="contactPreference">聯絡偏好</label><select id="contactPreference"><option value="">未設定</option><option>LINE</option><option>電話</option><option>簡訊</option><option>不主動聯絡</option></select></div></div>
+<label for="notes">備註／服務注意事項</label><textarea id="notes" maxlength="3000" placeholder="例如：喜歡冷色系、對特定材料敏感、服務注意事項（請避免記錄非必要的敏感資料）"></textarea><div class="fieldnote">最多 3,000 字；個人偏好欄位儲存在既有 customFields，不需修改 Firebase Rules。</div>
+<div id="extraFieldsBox"><h3 class="section-title">店主自訂欄位</h3><div id="customFields"></div></div>
+<div class="actions"><button id="saveBtn" type="submit">儲存客戶</button><button id="cancelBtn" class="ghost" type="button">取消</button><button id="archiveBtn" class="ghost hidden" type="button">封存</button><button id="restoreBtn" class="ghost hidden" type="button">解除封存</button><button id="deleteBtn" class="danger hidden" type="button">永久刪除</button></div></form><p class="muted">永久刪除不可復原，且不會刪除獨立保存的歷史業績紀錄。只應用於確認無帳務關聯的測試資料。</p></section>
+<section id="settings" class="card hidden"><h2>店主設定</h2><h3 class="section-title">會員分類</h3><div id="categoryList" class="settings-list"></div><div class="two"><div><label for="newCategory">新增分類名稱</label><input id="newCategory" maxlength="40" placeholder="例如：生日會員"></div><div style="align-self:end"><button id="addCategory" type="button">新增分類</button></div></div><h3 class="section-title">自訂欄位</h3><div id="fieldList" class="settings-list"></div><div class="two"><div><label for="newField">新增欄位名稱</label><input id="newField" maxlength="40" placeholder="例如：慣用甲型"></div><div><label for="newFieldType">欄位類型</label><select id="newFieldType"><option value="text">單行文字</option><option value="textarea">多行文字</option><option value="date">日期</option></select></div></div><button id="addField" type="button" style="margin-top:12px">新增欄位</button></section>
+</div><div class="footer">香香村美妍製造所 · XIANG BEAUTY STUDIO</div></main>
 <script src="./firebase-config.js"></script>
 <script type="module">
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js';
 import {getAuth,onAuthStateChanged,signInWithEmailAndPassword} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js';
 import {getFirestore,collection,doc,getDoc,getDocs,query,orderBy,addDoc,updateDoc,deleteDoc,serverTimestamp,setDoc} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js';
-
-const $=id=>document.getElementById(id);
-const db=getFirestore(initializeApp(window.XIANG_FIREBASE_CONFIG));
-const auth=getAuth();
-const OWNER=window.XIANG_OWNER_UID;
-const DEFAULT_CATS=[
-{id:'regular',name:'常客',active:true},
-{id:'vip',name:'VIP',active:true},
-{id:'stored',name:'儲值會員（尚未啟用）',active:true}
-];
-let current=null,isOwner=false,customers=[];
-let config={categories:DEFAULT_CATS,fields:[]};
-
-const clean=v=>String(v??'').trim();
-const msg=s=>$('message').textContent=s;
+const $=id=>document.getElementById(id),clean=v=>String(v??'').trim(),mk=(tag,txt,cls)=>{const e=document.createElement(tag);if(txt!==undefined)e.textContent=txt;if(cls)e.className=cls;return e};
+const app=initializeApp(window.XIANG_FIREBASE_CONFIG),db=getFirestore(app),auth=getAuth(app),OWNER=window.XIANG_OWNER_UID;
+const DEFAULT_CATS=[{id:'regular',name:'常客',active:true},{id:'vip',name:'VIP',active:true},{id:'stored',name:'儲值會員（尚未啟用）',active:true}];
+const META={source:'crm_source',service:'crm_service',firstVisit:'crm_firstVisit',contactPreference:'crm_contactPreference'};
+let current=null,isOwner=false,customers=[],config={categories:DEFAULT_CATS,fields:[]},busy=false;
+const msg=(s,error=false)=>{const e=$('message');e.textContent=s;e.className=error?'error':'muted'};
 const uid=()=>current?.uid;
-const mk=(tag,txt,cls)=>{
-const e=document.createElement(tag);
-if(txt!==undefined)e.textContent=txt;
-if(cls)e.className=cls;
-return e;
-};
-function ownerOnly(){
-if(!isOwner)throw Error('僅店主可操作');
-}
-async function safe(fn){
-try{await fn()}catch(e){msg('操作失敗：'+e.message)}
-}
-function normalize(raw){
-return{
-categories:(Array.isArray(raw?.categories)?raw.categories:DEFAULT_CATS)
-.filter(x=>typeof x?.id==='string'&&typeof x?.name==='string'),
-fields:(Array.isArray(raw?.fields)?raw.fields:[])
-.filter(x=>typeof x?.id==='string'&&typeof x?.name==='string'&&['text','textarea','date'].includes(x.type))
-};
-}
-async function loadConfig(){
-const s=await getDoc(doc(db,'settings','customerConfig'));
-config=normalize(s.exists()?s.data():null);
-renderCategories();
-renderFields();
-renderSettings();
-}
-async function saveConfig(next){
-ownerOnly();
-await setDoc(doc(db,'settings','customerConfig'),{
-...next,updatedAt:serverTimestamp(),updatedBy:uid()
-});
-config=next;
-renderCategories();
-renderFields();
-renderSettings();
-msg('設定已儲存');
-}
-function renderCategories(){
-const e=$('category'),old=e.value;
-e.replaceChildren();
-for(const c of config.categories.filter(x=>x.active!==false)){
-const o=mk('option',c.name);
-o.value=c.id;
-e.append(o);
-}
-if([...e.options].some(o=>o.value===old))e.value=old;
-}
-function renderFields(values={}){
-const e=$('customFields');
-e.replaceChildren();
-for(const f of config.fields.filter(x=>x.active!==false)){
-const l=mk('label',f.name);
-const v=document.createElement(f.type==='textarea'?'textarea':'input');
-if(f.type!=='textarea')v.type=f.type==='date'?'date':'text';
-v.maxLength=500;
-v.dataset.fieldId=f.id;
-v.value=clean(values[f.id]);
-e.append(l,v);
-}
-}
-function renderSettings(){
-if(!isOwner)return;
-for(const [key,items,target] of [
-['categories',config.categories,'categoryList'],
-['fields',config.fields,'fieldList']
-]){
-const root=$(target);
-root.replaceChildren();
-for(const x of items){
-const row=mk('div',undefined,'row');
-const name=mk('span',x.name+(x.active===false?'（隱藏）':''));
-const rename=mk('button','改名','secondary');
-const toggle=mk('button',x.active===false?'恢復':'隱藏','secondary');
-rename.onclick=()=>safe(async()=>{
-const v=clean(prompt('新名稱',x.name));
-if(!v||v.length>40)return;
-await saveConfig({...config,[key]:items.map(z=>z.id===x.id?{...z,name:v}:z)});
-});
-toggle.onclick=()=>safe(()=>saveConfig({
-...config,[key]:items.map(z=>z.id===x.id?{...z,active:z.active===false}:z)
-}));
-row.append(name,rename,toggle);
-root.append(row);
-}
-}
-}
-function showForm(c){
-$('editor').classList.remove('hidden');
-$('formTitle').textContent=c?'編輯客戶':'新增客戶';
-$('cid').value=c?.id||'';
-for(const k of ['name','phone','line','birthday','notes']){
-$(k).value=c?.[k]||'';
-}
-renderCategories();
-if(c?.categoryId&&![...$('category').options].some(o=>o.value===c.categoryId)){
-const o=mk('option',c.categoryId+'（舊分類）');
-o.value=c.categoryId;
-$('category').append(o);
-}
-$('category').value=c?.categoryId||'regular';
-renderFields(c?.customFields||{});
-$('archiveBtn').classList.toggle('hidden',!isOwner||!c||c.archived===true);
-$('restoreBtn').classList.toggle('hidden',!isOwner||!c||c.archived!==true);
-$('deleteBtn').classList.toggle('hidden',!isOwner||!c||c.archived!==true);
-$('editor').scrollIntoView({behavior:'smooth'});
-}
-function render(){
-const term=clean($('search').value).toLowerCase();
-const show=isOwner&&$('showArchived').checked;
-const rows=customers.filter(c=>
-(show||c.archived!==true)&&
-[c.name,c.phone,c.line,config.categories.find(x=>x.id===c.categoryId)?.name]
-.some(x=>clean(x).toLowerCase().includes(term))
-);
-$('list').replaceChildren();
-if(!rows.length)$('list').append(mk('p','目前沒有符合的客戶','muted'));
-for(const c of rows){
-const b=mk('button',
-`${c.name}　${c.phone||''}｜${config.categories.find(x=>x.id===c.categoryId)?.name||'常客'}${c.archived?'（已封存）':''}`,
-'item');
-b.onclick=()=>showForm(c);
-$('list').append(b);
-}
-}
-async function load(){
-const s=await getDocs(query(collection(db,'customers'),orderBy('name')));
-customers=s.docs.map(d=>({id:d.id,...d.data()}));
-render();
-msg(`客戶資料已同步，共 ${customers.length} 位`);
-}
-async function archive(flag){
-ownerOnly();
-const id=$('cid').value;
-if(!id||!confirm(flag?'確定封存這位客戶？':'確定恢復這位客戶？'))return;
-const c=customers.find(x=>x.id===id);
-if(!c)throw Error('找不到客戶，請重新整理');
-const patch={
-archived:flag,updatedAt:serverTimestamp(),updatedBy:uid()
-};
-if(typeof c.categoryId!=='string')patch.categoryId='regular';
-if(!c.customFields||typeof c.customFields!=='object'||Array.isArray(c.customFields))patch.customFields={};
-for(const k of ['phone','line','birthday','notes'])if(typeof c[k]!=='string')patch[k]='';
-await updateDoc(doc(db,'customers',id),patch);
-$('editor').classList.add('hidden');
-await load();
-}
-async function permanentDelete(){
-ownerOnly();
-const id=$('cid').value;
-const c=customers.find(x=>x.id===id);
-if(!c||!c.archived)throw Error('請先封存客戶');
-const typed=prompt(
-`永久刪除「${c.name}」無法復原。\n如果客戶有任何舊業績、儲值或其他帳務紀錄，請勿刪除。\n請輸入「永久刪除」確認：`
-);
-if(typed!=='永久刪除')return;
-await deleteDoc(doc(db,'customers',id));
-$('editor').classList.add('hidden');
-await load();
-msg('客戶建檔已永久刪除；其他獨立業績紀錄不受影響。');
-}
-onAuthStateChanged(auth,async u=>{
-current=null;
-isOwner=false;
-$('workspace').classList.add('hidden');
-$('authBox').classList.remove('hidden');
-if(!u){msg('請登入香香村員工帳號');return}
-try{
-const s=await getDoc(doc(db,'staff',u.uid));
-if(!s.exists()||s.data().active!==true)throw Error('帳號未獲授權');
-current=u;
-isOwner=u.uid===OWNER&&s.data().role==='owner';
-$('authBox').classList.add('hidden');
-$('workspace').classList.remove('hidden');
-$('settings').classList.toggle('hidden',!isOwner);
-$('archivedLabel').classList.toggle('hidden',!isOwner);
-await loadConfig();
-await load();
-}catch(e){msg('登入失敗：'+e.message)}
-});
-$('loginBtn').onclick=()=>safe(()=>
-signInWithEmailAndPassword(auth,clean($('email').value),$('password').value)
-);
-$('newBtn').onclick=()=>showForm(null);
-$('cancelBtn').onclick=()=>$('editor').classList.add('hidden');
-$('search').oninput=render;
-$('showArchived').onchange=render;
-$('form').onsubmit=async e=>{
-e.preventDefault();
-if(!current)return;
-const data={};
-for(const k of ['name','phone','line','birthday','notes'])data[k]=clean($(k).value);
-data.categoryId=$('category').value||'regular';
-data.customFields={};
-for(const el of document.querySelectorAll('[data-field-id]')){
-data.customFields[el.dataset.fieldId]=clean(el.value);
-}
-if(!data.name)return msg('請填姓名');
-const id=$('cid').value;
-const duplicate=customers.find(c=>c.id!==id&&!c.archived&&(
-(data.phone&&c.phone===data.phone)||(data.line&&c.line===data.line)
-));
-if(duplicate&&!confirm(`發現可能重複客戶：「${duplicate.name}」。仍要儲存嗎？`))return;
-$('saveBtn').disabled=true;
-try{
-if(id){
-await updateDoc(doc(db,'customers',id),{
-...data,updatedAt:serverTimestamp(),updatedBy:uid()
-});
-}else{
-await addDoc(collection(db,'customers'),{
-...data,archived:false,
-createdAt:serverTimestamp(),createdBy:uid(),
-updatedAt:serverTimestamp(),updatedBy:uid()
-});
-}
-$('editor').classList.add('hidden');
-await load();
-msg('客戶資料已儲存');
-}catch(err){msg('儲存失敗：'+err.message)}
-finally{$('saveBtn').disabled=false}
-};
-$('archiveBtn').onclick=()=>safe(()=>archive(true));
-$('restoreBtn').onclick=()=>safe(()=>archive(false));
-$('deleteBtn').onclick=()=>safe(permanentDelete);
-$('addCategory').onclick=()=>safe(async()=>{
-ownerOnly();
-const name=clean($('newCategory').value);
-if(!name||name.length>40)return;
-if(config.categories.length>=100)throw Error('分類數量上限');
-await saveConfig({
-...config,categories:[...config.categories,{
-id:'cat_'+crypto.randomUUID(),name,active:true
-}]
-});
-$('newCategory').value='';
-});
-$('addField').onclick=()=>safe(async()=>{
-ownerOnly();
-const name=clean($('newField').value);
-if(!name||name.length>40)return;
-if(config.fields.length>=100)throw Error('欄位數量上限');
-await saveConfig({
-...config,fields:[...config.fields,{
-id:'field_'+crypto.randomUUID(),
-name,type:$('newFieldType').value,active:true
-}]
-});
-$('newField').value='';
-});
+const ownerOnly=()=>{if(!isOwner)throw Error('僅店主可操作')};
+async function safe(fn){try{await fn()}catch(e){msg('操作失敗：'+e.message,true)}}
+function setBusy(value){busy=value;for(const id of ['saveBtn','archiveBtn','restoreBtn','deleteBtn','addCategory','addField'])$(id).disabled=value}
+function normalize(raw){return{categories:(Array.isArray(raw?.categories)?raw.categories:DEFAULT_CATS).filter(x=>typeof x?.id==='string'&&typeof x?.name==='string'),fields:(Array.isArray(raw?.fields)?raw.fields:[]).filter(x=>typeof x?.id==='string'&&typeof x?.name==='string'&&['text','textarea','date'].includes(x.type))}}
+async function loadConfig(){const s=await getDoc(doc(db,'settings','customerConfig'));config=normalize(s.exists()?s.data():null);renderCategories();renderFields();renderSettings()}
+async function saveConfig(next){ownerOnly();await setDoc(doc(db,'settings','customerConfig'),{...next,updatedAt:serverTimestamp(),updatedBy:uid()});config=next;renderCategories();renderFields();renderSettings();render();msg('設定已儲存')}
+function renderCategories(){const select=$('category'),old=select.value;select.replaceChildren();for(const c of config.categories.filter(x=>x.active!==false)){const o=mk('option',c.name);o.value=c.id;select.append(o)}if([...select.options].some(o=>o.value===old))select.value=old;const filter=$('filterCategory'),oldFilter=filter.value;filter.replaceChildren();const any=mk('option','所有會員分類');any.value='';filter.append(any);for(const c of config.categories){const o=mk('option',c.name+(c.active===false?'（已隱藏）':''));o.value=c.id;filter.append(o)}filter.value=[...filter.options].some(o=>o.value===oldFilter)?oldFilter:''}
+function renderFields(values={}){const root=$('customFields');root.replaceChildren();for(const f of config.fields.filter(x=>x.active!==false)){const l=mk('label',f.name);const input=document.createElement(f.type==='textarea'?'textarea':'input');if(f.type!=='textarea')input.type=f.type==='date'?'date':'text';input.maxLength=500;input.dataset.fieldId=f.id;input.value=clean(values[f.id]);root.append(l,input)}$('extraFieldsBox').classList.toggle('hidden',!config.fields.some(x=>x.active!==false))}
+function renderSettings(){if(!isOwner)return;for(const [key,items,target] of [['categories',config.categories,'categoryList'],['fields',config.fields,'fieldList']]){const root=$(target);root.replaceChildren();for(const x of items){const row=mk('div'),name=mk('span',x.name+(x.active===false?'（隱藏）':'')),rename=mk('button','改名','ghost tiny'),toggle=mk('button',x.active===false?'恢復':'隱藏','ghost tiny');rename.type=toggle.type='button';rename.onclick=()=>safe(async()=>{const v=clean(prompt('新名稱',x.name));if(!v||v.length>40)return;await saveConfig({...config,[key]:items.map(z=>z.id===x.id?{...z,name:v}:z)})});toggle.onclick=()=>safe(()=>saveConfig({...config,[key]:items.map(z=>z.id===x.id?{...z,active:z.active===false}:z)}));row.append(name,rename,toggle);root.append(row)}}}
+function showForm(c){$('editor').classList.remove('hidden');$('formTitle').textContent=c?'編輯客戶':'新增客戶';$('cid').value=c?.id||'';for(const k of ['name','phone','line','birthday','notes'])$(k).value=c?.[k]||'';renderCategories();if(c?.categoryId&&![...$('category').options].some(o=>o.value===c.categoryId)){const o=mk('option',c.categoryId+'（舊分類）');o.value=c.categoryId;$('category').append(o)}$('category').value=c?.categoryId||'regular';const custom=c?.customFields&&typeof c.customFields==='object'&&!Array.isArray(c.customFields)?c.customFields:{};for(const [key,id] of Object.entries(META))$(key).value=clean(custom[id]);renderFields(custom);$('archiveBtn').classList.toggle('hidden',!isOwner||!c||c.archived===true);$('restoreBtn').classList.toggle('hidden',!isOwner||!c||c.archived!==true);$('deleteBtn').classList.toggle('hidden',!isOwner||!c||c.archived!==true);$('editor').scrollIntoView({behavior:'smooth',block:'start'})}
+function categoryName(id){return config.categories.find(x=>x.id===id)?.name||'常客'}
+function birthdayThisMonth(c){const s=clean(c.birthday);return /^\d{4}-\d{2}-\d{2}$/.test(s)&&Number(s.slice(5,7))===new Date().getMonth()+1}
+function render(){const term=clean($('search').value).toLocaleLowerCase(),show=isOwner&&$('showArchived').checked,cat=$('filterCategory').value;const active=customers.filter(c=>c.archived!==true);$('totalCount').textContent=customers.length;$('activeCount').textContent=active.length;$('birthdayCount').textContent=active.filter(birthdayThisMonth).length;const rows=customers.filter(c=>(show||c.archived!==true)&&(!cat||c.categoryId===cat)&&[c.name,c.phone,c.line,categoryName(c.categoryId)].some(v=>clean(v).toLocaleLowerCase().includes(term)));$('visibleCount').textContent=`顯示 ${rows.length} 位`;const list=$('list');list.replaceChildren();if(!rows.length)list.append(mk('p','沒有符合條件的客戶','muted'));for(const c of rows){const b=mk('button',undefined,'record'),left=mk('span'),title=mk('strong',c.name||'未命名客戶'),detail=mk('small',[c.phone,c.line].filter(Boolean).join(' · ')||'尚無聯絡方式'),tag=mk('span',c.archived===true?'已封存':categoryName(c.categoryId),'pill'+(c.archived===true?' archive':''));left.append(title,detail);b.append(left,tag);b.onclick=()=>showForm(c);list.append(b)}}
+async function load(){const s=await getDocs(query(collection(db,'customers'),orderBy('name')));customers=s.docs.map(d=>({id:d.id,...d.data()}));render();msg(`資料已同步，共 ${customers.length} 位客戶`)}
+function legacyPatch(c){const p={};if(typeof c.categoryId!=='string')p.categoryId='regular';if(!c.customFields||typeof c.customFields!=='object'||Array.isArray(c.customFields))p.customFields={};for(const k of ['phone','line','birthday','notes'])if(typeof c[k]!=='string')p[k]='';return p}
+async function archive(flag){ownerOnly();const id=$('cid').value;if(!id||!confirm(flag?'確定封存這位客戶？':'確定恢復這位客戶？'))return;const c=customers.find(x=>x.id===id);if(!c)throw Error('找不到客戶，請重新整理');setBusy(true);try{await updateDoc(doc(db,'customers',id),{...legacyPatch(c),archived:flag,updatedAt:serverTimestamp(),updatedBy:uid()});$('editor').classList.add('hidden');await load();msg(flag?'封存成功':'恢復成功')}finally{setBusy(false)}}
+async function permanentDelete(){ownerOnly();const id=$('cid').value,c=customers.find(x=>x.id===id);if(!c||c.archived!==true)throw Error('請先封存客戶');const typed=prompt(`永久刪除「${c.name}」無法復原。\n如有任何消費、儲值或帳務紀錄，請勿刪除。\n輸入「永久刪除」確認：`);if(typed!=='永久刪除')return;setBusy(true);try{await deleteDoc(doc(db,'customers',id));$('editor').classList.add('hidden');await load();msg('客戶建檔已永久刪除；獨立業績紀錄不受影響')}finally{setBusy(false)}}
+onAuthStateChanged(auth,async u=>{current=null;isOwner=false;$('workspace').classList.add('hidden');$('authBox').classList.remove('hidden');if(!u){msg('請登入香香村員工帳號');return}try{const s=await getDoc(doc(db,'staff',u.uid));if(!s.exists()||s.data().active!==true)throw Error('帳號未獲授權');current=u;isOwner=u.uid===OWNER&&s.data().role==='owner';$('authBox').classList.add('hidden');$('workspace').classList.remove('hidden');$('settings').classList.toggle('hidden',!isOwner);$('archivedLabel').classList.toggle('hidden',!isOwner);await loadConfig();await load()}catch(e){msg('登入失敗：'+e.message,true)}});
+$('loginBtn').onclick=()=>safe(()=>signInWithEmailAndPassword(auth,clean($('email').value),$('password').value));$('newBtn').onclick=()=>showForm(null);$('closeEditor').onclick=$('cancelBtn').onclick=()=>$('editor').classList.add('hidden');$('search').oninput=$('filterCategory').onchange=$('showArchived').onchange=render;
+$('form').onsubmit=async e=>{e.preventDefault();if(!current||busy)return;const data={};for(const k of ['name','phone','line','birthday','notes'])data[k]=clean($(k).value);data.categoryId=$('category').value||'regular';const id=$('cid').value,existing=customers.find(x=>x.id===id);data.customFields={...(existing?.customFields&&typeof existing.customFields==='object'&&!Array.isArray(existing.customFields)?existing.customFields:{})};for(const [key,fieldId] of Object.entries(META))data.customFields[fieldId]=clean($(key).value);for(const el of document.querySelectorAll('[data-field-id]'))data.customFields[el.dataset.fieldId]=clean(el.value);if(!data.name){msg('請填姓名',true);return}if(Object.keys(data.customFields).length>30){msg('自訂欄位總數超過 Firebase 規則上限（30），請先減少欄位',true);return}const duplicate=customers.find(c=>c.id!==id&&c.archived!==true&&((data.phone&&c.phone===data.phone)||(data.line&&c.line===data.line)));if(duplicate&&!confirm(`發現可能重複客戶：「${duplicate.name}」。仍要儲存嗎？`))return;setBusy(true);try{if(id){await updateDoc(doc(db,'customers',id),{...data,updatedAt:serverTimestamp(),updatedBy:uid()})}else{await addDoc(collection(db,'customers'),{...data,archived:false,createdAt:serverTimestamp(),createdBy:uid(),updatedAt:serverTimestamp(),updatedBy:uid()})}$('editor').classList.add('hidden');await load();msg('客戶資料已儲存')}catch(err){msg('儲存失敗：'+err.message,true)}finally{setBusy(false)}};
+$('archiveBtn').onclick=()=>safe(()=>archive(true));$('restoreBtn').onclick=()=>safe(()=>archive(false));$('deleteBtn').onclick=()=>safe(permanentDelete);
+$('addCategory').onclick=()=>safe(async()=>{ownerOnly();const name=clean($('newCategory').value);if(!name||name.length>40)return;if(config.categories.length>=100)throw Error('分類數量上限');await saveConfig({...config,categories:[...config.categories,{id:'cat_'+crypto.randomUUID(),name,active:true}]});$('newCategory').value=''});
+$('addField').onclick=()=>safe(async()=>{ownerOnly();const name=clean($('newField').value);if(!name||name.length>40)return;if(config.fields.length>=26)throw Error('為保留 4 個 CRM 欄位，自訂欄位最多 26 個');await saveConfig({...config,fields:[...config.fields,{id:'field_'+crypto.randomUUID(),name,type:$('newFieldType').value,active:true}]});$('newField').value=''});
 </script>
 </body>
 </html>

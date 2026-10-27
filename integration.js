@@ -1,4 +1,5 @@
-/* 香香村 V14.2｜原生整合客戶管理｜UTF-8｜錢包安全預覽 */
+
+/* 香香村 V15.1｜客戶管理與錢包連動準備｜UTF-8｜錢包安全預覽 */
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
 const DEFAULT_CATS=[{id:'regular',name:'常客',active:true},{id:'vip',name:'VIP',active:true},{id:'stored',name:'儲值會員（尚未啟用）',active:true}];
@@ -77,6 +78,13 @@ async function openCustomer(id){
  $('crmWho').textContent=c.name;$('crmInfo').textContent=`${catName(c.categoryId)}｜${c.phone||'無電話'}｜${c.line||'無 LINE'}`;
  $('crmBalance').textContent='尚未開放讀取錢包';$('crmHistory').textContent='正式交易功能尚未啟用';
  $('crmTopup').value='';$('crmGift').value='';$('crmAmount').value='';calculate();
+ // V15.1: link by Firestore customer document ID, never by name.
+ const wp=$('v15Panel'),ws=$('v15Customer');
+ if(wp&&ws){
+  $('crm_detail').append(wp);
+  if([...ws.options].some(o=>o.value===id)){ws.value=id;ws.dispatchEvent(new Event('change'));}
+  else ws.value='';
+ }
  try{
   const s=await fire.getDoc(fire.doc(db,'wallets',id));
   if(s.exists()){

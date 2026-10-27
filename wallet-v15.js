@@ -1,593 +1,149 @@
 
-/* XIANG V15 wallet extension — TEST ONLY
-   Requires integration.js V14.2 and Firebase 12.4.0.
-   Do not enable production wallet writes before security testing.
-*/
+/* XIANG BEAUTY V15.1 — wallet module, staged for testing.
+ * Requires index.html to load this file after integration.js.
+ * IMPORTANT: Current production Firestore rules deny all wallet reads/writes.
+ * Do not publish permissive wallet rules or use real balances until emulator tests pass.
+ */
 (() => {
   'use strict';
-
   const $ = id => document.getElementById(id);
-  const money = n => 'NT$ ' + Number(n || 0).toLocaleString('zh-TW');
-
-  let db, f, auth;
-  let customerId = null;
-  let owner = false;
-  let enabled = false;
-  let working = false;
-
-  const valid = n =>
-    Number.isSafeInteger(n) && n >= 0 && n <= 10000000;
-
-  const num = id => {
-    const s = $(id).value.trim();
-    if (!/^\d+$/.test(s)) {
-      throw Error('請輸入非負整數');
-    }
-    const n = Number(s);
-    if (!valid(n)) {
-      throw Error('單筆金額不可超過 1,000 萬元');
-    }
+  const money = n => 'NT$ ' + n.toLocaleString('zh-TW');
+  const MAX = 10000000;
+  const valid = n => Number.isSafeInteger(n) && n >= 0 && n <= MAX;
+  const parse = (id, allowZero = false) => {
+    const raw = $(id).value.trim();
+    if (!/^\d+$/.test(raw)) throw Error('金額請填整數');
+    const n = Number(raw);
+    if (!valid(n) || (!allowZero && n === 0)) throw Error('金額必須介於 ' + (allowZero ? 0 : 1) + ' 至 1,000 萬元');
     return n;
   };
-
-  const status = s => {
-    $('crmWalletStatus').textContent = s;
-  };
-
+  let fs, db, auth, owner = false, staff = false, selectedId = '', busy = false, pendingId = null;
+  let lastLoaded = 0;
+  const status = msg => { if ($('v15Status')) $('v15Status').textContent = msg; };
+  const controls = () => ['v15Topup','v15Debit','v15Refund','v15Adjust'].forEach(id => {if ($(id)) $(id).disabled = busy || !staff || (['v15Refund','v15Adjust'].includes(id) && !owner);});
+  const requireCustomer = () => {if (!selectedId) throw Error('請先從客戶編號清單選擇客戶'); return selectedId;};
   function install() {
-    const detail = $('crm_detail');
-    if (!detail) return;
-
-    const blocks = detail.querySelectorAll('.xc');
-    if (blocks.length < 4) return;
-
-    blocks[1].innerHTML = `
-      <h3>會員儲值</h3>
-      <p class="muted">
-        本金與贈送金分開記帳。
-        測試版請勿輸入真實收款。
-      </p>
-
-      <label>儲值本金</label>
-      <input id="v15Principal"
-        type="number" min="1" step="1"
-        placeholder="3000">
-
-      <label>贈送金</label>
-      <input id="v15Bonus"
-        type="number" min="0" step="1" value="0">
-
-      <label>付款方式</label>
-      <select id="v15Payment">
-        <option>現金</option>
-        <option>轉帳</option>
-        <option>信用卡</option>
-        <option>LINE Pay</option>
-        <option>其他</option>
-      </select>
-
-      <label>備註</label>
-      <input id="v15Note" maxlength="200"
-        placeholder="可留空">
-
-      <button id="v15Topup" type="button">
-        測試儲值入帳
-      </button>
-    `;
-
-    blocks[2].innerHTML = `
-      <h3>消費扣款</h3>
-      <p class="muted">
-        優先扣贈送金，餘額不足禁止扣款。
-      </p>
-
-      <label>本次消費</label>
-      <input id="v15Amount"
-        type="number" min="1" step="1"
-        placeholder="800">
-
-      <label>備註</label>
-      <input id="v15DebitNote"
-        maxlength="200"
-        placeholder="施作內容／收據編號">
-
-      <button id="v15Debit" type="button">
-        測試扣款
-      </button>
-
-      <div id="v15Owner" hidden>
-        <h3>店主專用｜退款與餘額調整</h3>
-
-        <label>退款／調整金額</label>
-        <input id="v15AdjustAmount"
-          type="number" min="1" step="1">
-
-        <label>處理方式</label>
-        <select id="v15AdjustType">
-          <option value="refund">
-            退回先前扣款
-          </option>
-          <option value="adjustPlus">
-            增加餘額（更正）
-          </option>
-          <option value="adjustMinus">
-            減少餘額（更正）
-          </option>
-        </select>
-
-        <label>原交易編號（退款必填）</label>
-        <input id="v15Original"
-          placeholder="請填入扣款交易編號">
-
-        <label>原因（必填）</label>
-        <input id="v15Reason" maxlength="200">
-
-        <button id="v15Adjust" type="button">
-          店主確認執行
-        </button>
-      </div>
-    `;
-
-    blocks[3].innerHTML = `
-      <h3>交易紀錄</h3>
-      <div id="v15History" class="muted">
-        讀取中
-      </div>
-    `;
-
-    const p = document.createElement('p');
-    p.id = 'crmWalletStatus';
-    p.className = 'warn';
-    p.textContent = '測試版錢包初始化中';
-    blocks[0].append(p);
-
-    $('v15Topup').onclick = () => act('topup');
-    $('v15Debit').onclick = () => act('debit');
-    $('v15Adjust').onclick = () =>
-      act($('v15AdjustType').value);
-
-    new MutationObserver(async () => {
-      if (detail.hidden || !$('crmWho').textContent) {
-        return;
-      }
-
-      const name = $('crmWho').textContent;
-
-      try {
-        const q = await f.getDocs(
-          f.query(
-            f.collection(db, 'customers'),
-            f.where('name', '==', name)
-          )
-        );
-
-        if (q.size !== 1) {
-          customerId = null;
-          status(
-            '同名客戶或查無客戶：為避免入錯帳，' +
-            '測試版不允許操作'
-          );
-          return;
-        }
-
-        await select(q.docs[0].id);
-
-      } catch (e) {
-        status('無法確認客戶：' + e.message);
-      }
-
-    }).observe($('crmWho'), {
-      childList: true,
-      characterData: true,
-      subtree: true
-    });
+    const panel = $('xiangCRM');
+    if (!panel || $('v15Panel')) return;
+    const wrap = document.createElement('section');
+    wrap.id = 'v15Panel'; wrap.className = 'xc';
+    wrap.innerHTML = `<h3>V15.1｜會員錢包（安全測試版）</h3>
+      <p class="warn">正式帳務尚未啟用。請先在 Firebase Emulator 驗證權限及交易規則；不可拿真實客戶金額測試。</p>
+      <label>客戶（使用 Firestore 文件 ID，避免同名入錯帳）</label><select id="v15Customer"><option value="">選擇客戶</option></select>
+      <p id="v15Status" class="muted">等待登入</p><div id="v15Balance" class="big">—</div>
+      <div class="xc"><h3>儲值</h3><label>本金</label><input id="v15Principal" type="number" min="1" step="1"><label>贈送金</label><input id="v15Bonus" type="number" min="0" step="1" value="0"><label>付款方式</label><select id="v15Payment"><option>現金</option><option>轉帳</option><option>信用卡</option><option>LINE Pay</option><option>其他</option></select><label>備註</label><input id="v15TopupNote" maxlength="200"><button id="v15Topup" disabled type="button">確認儲值</button></div>
+      <div class="xc"><h3>消費扣款｜先扣贈送金</h3><label>金額</label><input id="v15Amount" type="number" min="1" step="1"><label>備註</label><input id="v15DebitNote" maxlength="200"><button id="v15Debit" disabled type="button">確認扣款</button></div>
+      <div class="xc" id="v15Owner" hidden><h3>店主專用</h3><label>原扣款交易 ID（整筆退款）</label><input id="v15Original" maxlength="150"><button id="v15Refund" disabled type="button">退款原扣款</button><label>人工調整本金</label><input id="v15AdjustAmount" type="number" min="1" step="1"><label>調整方向</label><select id="v15AdjustDirection"><option value="plus">增加</option><option value="minus">減少</option></select><label>調整原因</label><input id="v15Reason" maxlength="200"><button id="v15Adjust" disabled type="button">確認調整</button></div>
+      <div class="xc"><h3>最近交易</h3><div id="v15History" class="muted">—</div></div>`;
+    panel.append(wrap);
+    $('v15Customer').onchange = async () => {selectedId = $('v15Customer').value; lastLoaded++; await reload();};
+    $('v15Topup').onclick = () => submit('topup');
+    $('v15Debit').onclick = () => submit('debit');
+    $('v15Refund').onclick = () => submit('refund');
+    $('v15Adjust').onclick = () => submit($('v15AdjustDirection').value === 'plus' ? 'adjustPlus' : 'adjustMinus');
   }
-
-  async function select(id) {
-    customerId = id;
-    await reload();
+  async function loadCustomers() {
+    const snap = await fs.getDocs(fs.collection(db, 'customers'));
+    const sel = $('v15Customer'); const previous = selectedId;
+    sel.replaceChildren(new Option('選擇客戶', ''));
+    snap.docs.filter(d => d.data().archived !== true).sort((a,b) => String(a.data().name).localeCompare(String(b.data().name),'zh-TW')).forEach(d => sel.add(new Option(`${d.data().name || '未命名'}｜${d.data().phone || '無電話'}｜${d.id.slice(0,8)}`, d.id)));
+    if ([...sel.options].some(o => o.value === previous)) sel.value = previous;
+    else selectedId = '';
   }
-
   async function reload() {
-    if (!customerId || !db) return;
-
-    const id = customerId;
-
+    const id = selectedId, seq = ++lastLoaded;
+    if (!id) { $('v15Balance').textContent = '請選擇客戶'; $('v15History').textContent = '—'; return; }
     try {
-      const w = await f.getDoc(
-        f.doc(db, 'wallets', id)
-      );
-
-      if (id !== customerId) return;
-
-      const d = w.exists()
-        ? w.data()
-        : {
-            principalBalance: 0,
-            bonusBalance: 0
-          };
-
-      $('crmBalance').textContent =
-        money(d.principalBalance || 0) +
-        ' 本金 + ' +
-        money(d.bonusBalance || 0) +
-        ' 贈送 = ' +
-        money(
-          (d.principalBalance || 0) +
-          (d.bonusBalance || 0)
-        );
-
-      const q = await f.getDocs(
-        f.query(
-          f.collection(db, 'walletTransactions'),
-          f.where('customerId', '==', id),
-          f.limit(100)
-        )
-      );
-
-      const records = q.docs
-        .map(x => ({
-          id: x.id,
-          ...x.data()
-        }))
-        .sort(
-          (x, y) =>
-            (y.createdAt?.seconds || 0) -
-            (x.createdAt?.seconds || 0)
-        );
-
-      $('v15History').replaceChildren();
-
-      for (const t of records) {
-        const row = document.createElement('p');
-
-        row.textContent =
-          (t.createdAt?.toDate?.()
-            .toLocaleString('zh-TW') || '處理中') +
-          '｜' + t.type +
-          '｜' + money(t.amount) +
-          '｜本金 ' + money(t.principalAfter) +
-          '／贈送 ' + money(t.bonusAfter) +
-          '｜' + t.id;
-
-        $('v15History').append(row);
-      }
-
-      if (!records.length) {
-        $('v15History').textContent = '尚無交易';
-      }
-
-      status('帳務資料已同步');
-
-    } catch (e) {
-      status('帳務讀取失敗：' + e.message);
-    }
-  }
-
-  async function act(type) {
-    if (working || !enabled || !customerId) {
-      return;
-    }
-
-    const user = auth.currentUser;
-    if (!user) {
-      return status('請先登入');
-    }
-
-    if (
-      ['refund', 'adjustPlus', 'adjustMinus']
-        .includes(type) &&
-      !owner
-    ) {
-      return status('此操作限店主');
-    }
-
-    let principal = 0;
-    let bonus = 0;
-    let amount = 0;
-    let note = '';
-    let payment = '';
-    let originalId = '';
-
-    try {
-      if (type === 'topup') {
-        principal = num('v15Principal');
-        bonus = num('v15Bonus');
-        amount = principal + bonus;
-        payment = $('v15Payment').value;
-        note = $('v15Note').value.trim();
-
-        if (principal < 1 || amount > 10000000) {
-          throw Error('儲值本金至少 1 元');
-        }
-
-      } else if (type === 'debit') {
-        amount = num('v15Amount');
-        note = $('v15DebitNote').value.trim();
-
-      } else {
-        amount = num('v15AdjustAmount');
-        note = $('v15Reason').value.trim();
-        originalId = $('v15Original').value.trim();
-
-        if (!note) {
-          throw Error('必須填寫原因');
-        }
-
-        if (type === 'refund' && !originalId) {
-          throw Error('退款必須填原扣款交易編號');
-        }
-      }
-
-      if (amount < 1) {
-        throw Error('金額至少 1 元');
-      }
-
-      if (!confirm(
-        '確定對「' +
-        $('crmWho').textContent +
-        '」執行 ' + type +
-        ' ' + money(amount) + '？'
-      )) {
-        return;
-      }
-
-      working = true;
-
-      for (const id of [
-        'v15Topup',
-        'v15Debit',
-        'v15Adjust'
-      ]) {
-        $(id).disabled = true;
-      }
-
-      status('正在送出交易，請勿重新操作');
-
-      const id = customerId;
-      const txId = type === 'refund'
-        ? 'refund_' + originalId
-        : crypto.randomUUID();
-
-      const wr = f.doc(db, 'wallets', id);
-      const tr = f.doc(
-        db,
-        'walletTransactions',
-        txId
-      );
-
-      await f.runTransaction(db, async tx => {
-        const [ws, cs, ss, orig] =
-          await Promise.all([
-            tx.get(wr),
-            tx.get(f.doc(db, 'customers', id)),
-            tx.get(f.doc(db, 'staff', user.uid)),
-            type === 'refund'
-              ? tx.get(
-                  f.doc(
-                    db,
-                    'walletTransactions',
-                    originalId
-                  )
-                )
-              : Promise.resolve(null)
-          ]);
-
-        if (
-          !cs.exists() ||
-          cs.data().archived === true
-        ) {
-          throw Error('客戶不存在或已封存');
-        }
-
-        if (
-          !ss.exists() ||
-          ss.data().active !== true
-        ) {
-          throw Error('員工權限失效');
-        }
-
-        const isOwner =
-          user.uid === window.XIANG_OWNER_UID &&
-          ss.data().role === 'owner';
-
-        if (
-          ['refund', 'adjustPlus', 'adjustMinus']
-            .includes(type) &&
-          !isOwner
-        ) {
-          throw Error('限店主操作');
-        }
-
-        const before = ws.exists()
-          ? ws.data()
-          : {
-              principalBalance: 0,
-              bonusBalance: 0,
-              version: 0
-            };
-
-        const p = before.principalBalance;
-        const b = before.bonusBalance;
-
-        if (!valid(p) || !valid(b)) {
-          throw Error('錢包餘額異常');
-        }
-
-        let dp = 0;
-        let dbonus = 0;
-
-        if (type === 'topup') {
-          dp = principal;
-          dbonus = bonus;
-
-        } else if (type === 'debit') {
-          if (amount > p + b) {
-            throw Error('餘額不足');
-          }
-
-          dbonus = -Math.min(amount, b);
-          dp = -(amount + dbonus);
-
-        } else if (type === 'refund') {
-          if (
-            !orig.exists() ||
-            orig.data().customerId !== id ||
-            orig.data().type !== 'debit' ||
-            orig.data().amount !== amount
-          ) {
-            throw Error('退款僅支援整筆原扣款金額');
-          }
-
-          const o = orig.data();
-
-          dp = -o.principalDelta;
-          dbonus = -o.bonusDelta;
-
-          const refunded = await tx.get(tr);
-
-          if (refunded.exists()) {
-            throw Error('此筆交易已退款');
-          }
-
-        } else if (type === 'adjustPlus') {
-          dp = amount;
-
-        } else if (type === 'adjustMinus') {
-          if (amount > p) {
-            throw Error(
-              '本金不足；人工減額僅允許扣本金'
-            );
-          }
-
-          dp = -amount;
-        }
-
-        if (
-          !valid(p + dp) ||
-          !valid(b + dbonus)
-        ) {
-          throw Error('交易後餘額不合法');
-        }
-
-        const next = {
-          principalBalance: p + dp,
-          bonusBalance: b + dbonus,
-          version: (before.version || 0) + 1,
-          lastTransactionId: txId,
-          updatedAt: f.serverTimestamp(),
-          updatedBy: user.uid
-        };
-
-        const record = {
-          customerId: id,
-          type,
-          amount,
-          principalDelta: dp,
-          bonusDelta: dbonus,
-          principalBefore: p,
-          bonusBefore: b,
-          principalAfter: p + dp,
-          bonusAfter: b + dbonus,
-          version: next.version,
-          actorUid: user.uid,
-          note,
-          payment,
-          originalId,
-          createdAt: f.serverTimestamp()
-        };
-
-        tx.set(wr, next);
-        tx.set(tr, record);
+      const [w, t] = await Promise.all([
+        fs.getDoc(fs.doc(db,'wallets',id)),
+        fs.getDocs(fs.query(fs.collection(db,'walletTransactions'),fs.where('customerId','==',id),fs.limit(100)))
+      ]);
+      if (id !== selectedId || seq !== lastLoaded) return;
+      const d = w.exists() ? w.data() : {principalBalance:0,bonusBalance:0};
+      if (!valid(d.principalBalance) || !valid(d.bonusBalance)) throw Error('錢包資料異常');
+      $('v15Balance').textContent = `本金 ${money(d.principalBalance)}｜贈送 ${money(d.bonusBalance)}｜合計 ${money(d.principalBalance+d.bonusBalance)}`;
+      const root = $('v15History'); root.replaceChildren();
+      t.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)).forEach(x=>{
+        const p=document.createElement('p');p.textContent=`${x.createdAt?.toDate?.().toLocaleString('zh-TW')||'待同步'}｜${x.type}｜${money(x.amount)}｜${x.id}`;root.append(p);
       });
-
-      status('交易成功，編號：' + txId);
-      await reload();
-
-    } catch (e) {
-      status('交易未完成：' + e.message);
-
-    } finally {
-      working = false;
-
-      for (const id of [
-        'v15Topup',
-        'v15Debit',
-        'v15Adjust'
-      ]) {
-        $(id).disabled = false;
-      }
-    }
+      if (!t.size) root.textContent = '尚無交易';
+      status('帳務讀取成功');
+    } catch(e) { if (id===selectedId) { $('v15Balance').textContent='不可用';status('讀取未完成：'+e.message); } }
   }
-
+  async function submit(type) {
+    if (busy || !staff) return;
+    try {
+      const customerId = requireCustomer();
+      if (['refund','adjustPlus','adjustMinus'].includes(type) && !owner) throw Error('此操作限店主');
+      let principal=0, bonus=0, amount=0, originalId='', note='', payment='';
+      if (type==='topup') {principal=parse('v15Principal');bonus=parse('v15Bonus',true);amount=principal+bonus;payment=$('v15Payment').value;note=$('v15TopupNote').value.trim();}
+      else if (type==='debit') {amount=parse('v15Amount');note=$('v15DebitNote').value.trim();}
+      else if (type==='refund') {originalId=$('v15Original').value.trim();if(!/^[\w-]{1,150}$/.test(originalId))throw Error('原交易編號不正確');note='原扣款整筆退款';}
+      else {amount=parse('v15AdjustAmount');note=$('v15Reason').value.trim();if(!note)throw Error('請填調整原因');}
+      if (amount>MAX) throw Error('單筆超過上限');
+      const txId=type==='refund' ? 'refund_'+originalId : (pendingId?.type===type && pendingId.customerId===customerId ? pendingId.id : crypto.randomUUID());
+      if (txId.length>220) throw Error('交易編號過長');
+      if (!confirm(`確認${type}？\n客戶 ID：${customerId}\n金額：${type==='refund'?'依原交易':money(amount)}\n此操作可能更動實際帳務。`)) return;
+      pendingId={type,customerId,id:txId};busy=true;controls();status('交易處理中，請勿重複送出');
+      const user=auth.currentUser;if(!user)throw Error('請先登入');
+      const wr=fs.doc(db,'wallets',customerId),tr=fs.doc(db,'walletTransactions',txId);
+      const cr=fs.doc(db,'customers',customerId),sr=fs.doc(db,'staff',user.uid);
+      await fs.runTransaction(db, async tx=>{
+        // All reads precede all writes, including refund idempotency check.
+        const refs=[wr,tr,cr,sr];
+        if(type==='refund') refs.push(fs.doc(db,'walletTransactions',originalId));
+        const snaps=await Promise.all(refs.map(ref=>tx.get(ref)));
+        const [ws,existing,cs,ss,orig]=snaps;
+        if(existing.exists()) throw Error('這筆交易已處理，請重新讀取紀錄');
+        if(!cs.exists()||cs.data().archived===true)throw Error('客戶不存在或已封存');
+        if(!ss.exists()||ss.data().active!==true)throw Error('員工未獲授權');
+        const isOwner=user.uid===window.XIANG_OWNER_UID&&ss.data().role==='owner';
+        if(['refund','adjustPlus','adjustMinus'].includes(type)&&!isOwner)throw Error('店主專用');
+        const w=ws.exists()?ws.data():{principalBalance:0,bonusBalance:0,version:0};
+        const p=w.principalBalance,b=w.bonusBalance,v=w.version||0;
+        if(!valid(p)||!valid(b)||!Number.isSafeInteger(v)||v<0)throw Error('原餘額資料異常');
+        let dp=0,dbonus=0;
+        if(type==='topup'){dp=principal;dbonus=bonus;}
+        if(type==='debit'){if(amount>p+b)throw Error('餘額不足');dbonus=-Math.min(b,amount);dp=-(amount+dbonus);}
+        if(type==='refund'){
+          if(!orig.exists()||orig.data().type!=='debit'||orig.data().customerId!==customerId)throw Error('原扣款交易不存在');
+          const o=orig.data();
+          if(!valid(o.amount)||!Number.isSafeInteger(o.principalDelta)||!Number.isSafeInteger(o.bonusDelta)||o.principalDelta>0||o.bonusDelta>0||o.principalDelta+o.bonusDelta!==-o.amount)throw Error('原扣款紀錄異常');
+          amount=o.amount;dp=-o.principalDelta;dbonus=-o.bonusDelta;
+        }
+        if(type==='adjustPlus')dp=amount;
+        if(type==='adjustMinus'){if(amount>p)throw Error('本金不足');dp=-amount;}
+        if(!valid(p+dp)||!valid(b+dbonus)||p+dp+b+dbonus>MAX)throw Error('交易後餘額超過限制');
+        const next={principalBalance:p+dp,bonusBalance:b+dbonus,version:v+1,lastTransactionId:txId,updatedAt:fs.serverTimestamp(),updatedBy:user.uid};
+        const record={customerId,type,amount,principalDelta:dp,bonusDelta:dbonus,principalBefore:p,bonusBefore:b,principalAfter:p+dp,bonusAfter:b+dbonus,version:v+1,actorUid:user.uid,note,payment,originalId,createdAt:fs.serverTimestamp()};
+        tx.set(wr,next);tx.set(tr,record);
+      });
+      pendingId=null;status('交易已提交：'+txId);await reload();
+    } catch(e) {status('未確認交易成功：'+e.message+'。如遇網路中斷，請先查交易紀錄，勿立即重新提交。');}
+    finally {busy=false;controls();}
+  }
   async function start() {
-    if (!$('crm_detail')) return;
-
-    const [a, fs, au] = await Promise.all([
-      import(
-        'https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js'
-      ),
-      import(
-        'https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js'
-      ),
-      import(
-        'https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js'
-      )
-    ]);
-
-    f = fs;
-
-    db = f.getFirestore(
-      a.getApps().length
-        ? a.getApp()
-        : a.initializeApp(
-            window.XIANG_FIREBASE_CONFIG
-          )
-    );
-
-    auth = au.getAuth();
-
+    if(!$('xiangCRM'))return;
     install();
-
-    au.onAuthStateChanged(auth, async u => {
-      enabled = false;
-
-      if (!u) return;
-
-      try {
-        const s = await f.getDoc(
-          f.doc(db, 'staff', u.uid)
-        );
-
-        enabled =
-          s.exists() &&
-          s.data().active === true;
-
-        owner =
-          enabled &&
-          u.uid === window.XIANG_OWNER_UID &&
-          s.data().role === 'owner';
-
-        $('v15Owner').hidden = !owner;
-
-        status(
-          enabled
-            ? '已登入，請選擇客戶'
-            : '未獲授權'
-        );
-
-      } catch (e) {
-        status(e.message);
-      }
-    });
+    try {
+      const [app,fsModule,au]=await Promise.all([
+        import('https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js'),
+        import('https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js'),
+        import('https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js')
+      ]);
+      fs=fsModule;const a=app.getApps().length?app.getApp():app.initializeApp(window.XIANG_FIREBASE_CONFIG);
+      db=fs.getFirestore(a);auth=au.getAuth(a);
+      au.onAuthStateChanged(auth,async user=>{
+        staff=false;owner=false;selectedId='';pendingId=null;controls();$('v15Customer').replaceChildren(new Option('選擇客戶',''));
+        if(!user){status('請先登入');return;}
+        try {
+          const s=await fs.getDoc(fs.doc(db,'staff',user.uid));
+          if(!s.exists()||s.data().active!==true)throw Error('無員工權限');
+          staff=true;owner=user.uid===window.XIANG_OWNER_UID&&s.data().role==='owner';
+          $('v15Owner').hidden=!owner;await loadCustomers();controls();status('已登入；正式帳務尚未開通');
+        } catch(e){status('初始化失敗：'+e.message);}
+      });
+    } catch(e){status('載入失敗：'+e.message);}
   }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener(
-      'DOMContentLoaded',
-      start
-    );
-  } else {
-    start();
-  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();

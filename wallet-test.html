@@ -1,0 +1,210 @@
+
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>香香村 V15.2｜會員錢包測試</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f6f2ed;color:#40352e;font-family:-apple-system,"Noto Sans TC",sans-serif}
+main{max-width:650px;margin:24px auto;padding:16px}
+section{background:white;border:1px solid #e6dcd2;border-radius:16px;padding:20px;margin:15px 0}
+h1{font-size:24px}h2{font-size:18px}
+p{line-height:1.6}
+input,button,select{width:100%;padding:13px;margin:7px 0;border-radius:9px;font-size:16px}
+input,select{border:1px solid #d7cbc0;background:white}
+button{border:0;background:#51443a;color:white}
+button:disabled{opacity:.5}
+small{color:#87786c}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f7f4f0;padding:12px;border-radius:8px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+<h1>香香村｜V15.2 錢包測試</h1>
+<p>獨立測試環境・唯讀模式</p>
+
+<section>
+<h2>Firebase 連線</h2>
+<p id="connection">準備連線…</p>
+<small>本頁不會寫入任何會員或錢包資料。</small>
+</section>
+
+<section>
+<h2>測試店主登入</h2>
+<input id="email" type="email" placeholder="測試帳號 Email" autocomplete="username">
+<input id="password" type="password" placeholder="密碼" autocomplete="current-password">
+<button id="login">登入</button>
+<button id="logout" hidden>登出</button>
+<p id="loginStatus">尚未登入</p>
+</section>
+
+<section id="customerSection" hidden>
+<h2>測試會員</h2>
+<button id="load">讀取測試會員</button>
+<select id="customer">
+<option value="">請先讀取會員</option>
+</select>
+<p id="balance">尚未選擇會員</p>
+<h2>交易紀錄</h2>
+<pre id="history">—</pre>
+</section>
+
+<section>
+<h2>安全狀態</h2>
+<p>目前僅測試登入、會員讀取及錢包查詢。</p>
+<p>儲值、扣款、退款及人工調整功能尚未啟用。</p>
+</section>
+</main>
+
+<script src="./wallet-test-config.js"></script>
+<script type="module">
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import {
+  getAuth,signInWithEmailAndPassword,
+  signOut,onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+import {
+  getFirestore,collection,doc,getDocs,getDoc,
+  query,where,limit
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+const $=id=>document.getElementById(id);
+const expectedProject="xiang-beauty-wallet-test";
+let auth,db,enabled=false,seq=0;
+
+function message(id,text){$(id).textContent=text}
+function money(n){
+  return "NT$ "+n.toLocaleString("zh-TW");
+}
+function validBalance(n){
+  return Number.isSafeInteger(n)&&n>=0&&n<=10000000;
+}
+
+async function start(){
+  try{
+    const config=window.XIANG_WALLET_TEST_CONFIG;
+    if(!config||config.projectId!==expectedProject){
+      throw Error("測試 Firebase 設定缺失或專案不正確");
+    }
+    const app=initializeApp(config,"xiang-wallet-isolated-test");
+    auth=getAuth(app);
+    db=getFirestore(app);
+    enabled=true;
+    message("connection","已設定測試專案："+app.options.projectId);
+
+    onAuthStateChanged(auth,user=>{
+      seq++;
+      $("customerSection").hidden=true;
+      $("customer").replaceChildren(new Option("請先讀取會員",""));
+      message("balance","尚未選擇會員");
+      message("history","—");
+      $("logout").hidden=!user;
+      $("login").hidden=!!user;
+      message("loginStatus",user
+        ?"已登入："+user.uid
+        :"尚未登入");
+      if(user)$("customerSection").hidden=false;
+    });
+  }catch(e){
+    enabled=false;
+    message("connection","設定錯誤："+e.message);
+  }
+}
+
+$("login").onclick=async()=>{
+  if(!enabled)return;
+  $("login").disabled=true;
+  try{
+    await signInWithEmailAndPassword(
+      auth,$("email").value.trim(),$("password").value
+    );
+    $("password").value="";
+  }catch(e){
+    message("loginStatus","登入失敗："+e.message);
+  }finally{
+    $("login").disabled=false;
+  }
+};
+
+$("logout").onclick=async()=>{
+  if(auth)await signOut(auth);
+};
+
+$("load").onclick=async()=>{
+  const token=++seq;
+  $("load").disabled=true;
+  try{
+    if(!auth.currentUser)throw Error("請先登入");
+    const snap=await getDocs(collection(db,"customers"));
+    if(token!==seq)return;
+    const select=$("customer");
+    select.replaceChildren(new Option("請選擇會員",""));
+    snap.docs.filter(d=>d.data().archived!==true).forEach(d=>{
+      const c=d.data();
+      select.add(new Option(
+        (c.name||"未命名")+"｜"+d.id.slice(0,12),d.id
+      ));
+    });
+    message("loginStatus","成功讀取 "+snap.size+" 筆會員文件");
+  }catch(e){
+    message("loginStatus","讀取失敗："+e.message);
+  }finally{
+    $("load").disabled=false;
+  }
+};
+
+$("customer").onchange=async()=>{
+  const id=$("customer").value;
+  const token=++seq;
+  if(!id)return;
+  message("balance","讀取中…");
+  message("history","讀取中…");
+  try{
+    const [wallet,transactions]=await Promise.all([
+      getDoc(doc(db,"wallets",id)),
+      getDocs(query(
+        collection(db,"walletTransactions"),
+        where("customerId","==",id),
+        limit(100)
+      ))
+    ]);
+    if(token!==seq)return;
+    const w=wallet.exists()?wallet.data():{
+      principalBalance:0,bonusBalance:0
+    };
+    const p=w.principalBalance,b=w.bonusBalance;
+    if(!validBalance(p)||!validBalance(b)||p+b>10000000){
+      throw Error("錢包餘額資料異常");
+    }
+    message("balance",wallet.exists()
+      ?"本金 "+money(p)+"｜贈送 "+money(b)+"｜合計 "+money(p+b)
+      :"尚未建立錢包（不是已儲值 0 元）");
+
+    const records=transactions.docs.map(d=>({
+      id:d.id,...d.data()
+    }));
+    records.sort((a,b)=>
+      (b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)
+    );
+    message("history",records.length
+      ?records.map(r=>
+        (r.createdAt?.toDate?.().toLocaleString("zh-TW")||"待同步")+
+        "｜"+r.type+"｜"+r.amount+"｜"+r.id
+      ).join("\n")
+      :"目前沒有交易紀錄");
+  }catch(e){
+    if(token!==seq)return;
+    message("balance","讀取失敗");
+    message("history",e.message);
+  }
+};
+
+start();
+</script>
+</body>
+</html>

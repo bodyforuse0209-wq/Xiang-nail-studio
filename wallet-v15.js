@@ -56,7 +56,7 @@
     try {
       const [w, t] = await Promise.all([
         fs.getDoc(fs.doc(db,'wallets',id)),
-        fs.getDocs(fs.query(fs.collection(db,'walletTransactions'),fs.where('customerId','==',id),fs.limit(100)))
+        fs.getDocs(fs.query(fs.collection(db,'walletTransactions'),fs.where('customerId','==',id),fs.orderBy('createdAt','desc'),fs.limit(100)))
       ]);
       if (id !== selectedId || seq !== lastLoaded) return;
       const d = w.exists() ? w.data() : {principalBalance:0,bonusBalance:0};
@@ -72,6 +72,7 @@
   }
   async function submit(type) {
     if (busy || !staff) return;
+    let sent=false;
     try {
       const customerId = requireCustomer();
       if (['refund','adjustPlus','adjustMinus'].includes(type) && !owner) throw Error('此操作限店主');
@@ -83,11 +84,13 @@
       if (amount>MAX) throw Error('單筆超過上限');
       const txId=type==='refund' ? 'refund_'+originalId : (pendingId?.type===type && pendingId.customerId===customerId ? pendingId.id : crypto.randomUUID());
       if (txId.length>220) throw Error('交易編號過長');
-      if (!confirm(`確認${type}？\n客戶 ID：${customerId}\n金額：${type==='refund'?'依原交易':money(amount)}\n此操作可能更動實際帳務。`)) return;
+      const typeLabel={topup:'儲值',debit:'消費扣款',refund:'退款',adjustPlus:'人工調整（增加本金）',adjustMinus:'人工調整（減少本金）'}[type];
+      if (!confirm(`確認${typeLabel}？\n客戶 ID：${customerId}\n金額：${type==='refund'?'依原交易':money(amount)}\n此操作可能更動實際帳務。`)) return;
       pendingId={type,customerId,id:txId};busy=true;controls();status('交易處理中，請勿重複送出');
       const user=auth.currentUser;if(!user)throw Error('請先登入');
       const wr=fs.doc(db,'wallets',customerId),tr=fs.doc(db,'walletTransactions',txId);
       const cr=fs.doc(db,'customers',customerId),sr=fs.doc(db,'staff',user.uid);
+      sent=true;
       await fs.runTransaction(db, async tx=>{
         // All reads precede all writes, including refund idempotency check.
         const refs=[wr,tr,cr,sr];
@@ -119,7 +122,7 @@
         tx.set(wr,next);tx.set(tr,record);
       });
       pendingId=null;status('交易已提交：'+txId);await reload();
-    } catch(e) {status('未確認交易成功：'+e.message+'。如遇網路中斷，請先查交易紀錄，勿立即重新提交。');}
+    } catch(e) {status(sent?'未確認交易成功：'+e.message+'。如遇網路中斷，請先查交易紀錄，勿立即重新提交。':'無法送出：'+e.message);}
     finally {busy=false;controls();}
   }
   async function start() {
@@ -134,7 +137,7 @@
       fs=fsModule;const a=app.getApps().length?app.getApp():app.initializeApp(window.XIANG_FIREBASE_CONFIG);
       db=fs.getFirestore(a);auth=au.getAuth(a);
       au.onAuthStateChanged(auth,async user=>{
-        staff=false;owner=false;selectedId='';pendingId=null;controls();$('v15Customer').replaceChildren(new Option('選擇客戶',''));
+        staff=false;owner=false;selectedId='';pendingId=null;$('v15Owner').hidden=true;$('v15Balance').textContent='—';$('v15History').textContent='—';controls();$('v15Customer').replaceChildren(new Option('選擇客戶',''));
         if(!user){status('請先登入');return;}
         try {
           const s=await fs.getDoc(fs.doc(db,'staff',user.uid));

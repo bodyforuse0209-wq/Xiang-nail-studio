@@ -82,8 +82,9 @@ async function openCustomer(id){
  const wp=$('v15Panel'),ws=$('v15Customer');
  if(wp&&ws){
   $('crm_detail').append(wp);
-  if([...ws.options].some(o=>o.value===id)){ws.value=id;ws.dispatchEvent(new Event('change'));}
+  if([...ws.options].some(o=>o.value===id))ws.value=id;
   else ws.value='';
+  ws.dispatchEvent(new Event('change'));
  }
  try{
   const s=await fire.getDoc(fire.doc(db,'wallets',id));

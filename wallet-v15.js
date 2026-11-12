@@ -1,6 +1,8 @@
 
 /* XIANG BEAUTY V15.1 — wallet module, staged for testing.
- * Requires index.html to load this file after integration.js.
+ * index.html does not load this file. That page already initializes the
+ * production Firebase app, so adding this script there would target real balances.
+ * Use wallet-test-v154.html for simulation against the test project.
  * IMPORTANT: Current production Firestore rules deny all wallet reads/writes.
  * Do not publish permissive wallet rules or use real balances until emulator tests pass.
  */
@@ -20,7 +22,10 @@
   let fs, db, auth, owner = false, staff = false, selectedId = '', busy = false, pendingId = null;
   let lastLoaded = 0;
   const status = msg => { if ($('v15Status')) $('v15Status').textContent = msg; };
-  const controls = () => ['v15Topup','v15Debit','v15Refund','v15Adjust'].forEach(id => {if ($(id)) $(id).disabled = busy || !staff || (['v15Refund','v15Adjust'].includes(id) && !owner);});
+  const controls = () => {
+    ['v15Topup','v15Debit','v15Refund','v15Adjust'].forEach(id => {if ($(id)) $(id).disabled = busy || !staff || (['v15Refund','v15Adjust'].includes(id) && !owner);});
+    if ($('v15ReloadCustomers')) $('v15ReloadCustomers').disabled = !staff;
+  };
   const requireCustomer = () => {if (!selectedId) throw Error('請先從客戶編號清單選擇客戶'); return selectedId;};
   function install() {
     const panel = $('xiangCRM');
@@ -28,8 +33,8 @@
     const wrap = document.createElement('section');
     wrap.id = 'v15Panel'; wrap.className = 'xc';
     wrap.innerHTML = `<h3>V15.1｜會員錢包（安全測試版）</h3>
-      <p class="warn">正式帳務尚未啟用。請先在 Firebase Emulator 驗證權限及交易規則；不可拿真實客戶金額測試。</p>
-      <label>客戶（使用 Firestore 文件 ID，避免同名入錯帳）</label><select id="v15Customer"><option value="">選擇客戶</option></select>
+      <p class="warn">測試階段：按下按鈕會對目前頁面的 Firebase 送出交易，不是本機模擬。正式網站不應載入此檔；不可使用真實客戶金額。純模擬請開 wallet-test-v154.html。</p>
+      <label>客戶（使用 Firestore 文件 ID，避免同名入錯帳）</label><button id="v15ReloadCustomers" disabled type="button">重新讀取客戶</button><select id="v15Customer"><option value="">選擇客戶</option></select>
       <p id="v15Status" class="muted">等待登入</p><div id="v15Balance" class="big">—</div>
       <div class="xc"><h3>儲值</h3><label>本金</label><input id="v15Principal" type="number" min="1" step="1"><label>贈送金</label><input id="v15Bonus" type="number" min="0" step="1" value="0"><label>付款方式</label><select id="v15Payment"><option>現金</option><option>轉帳</option><option>信用卡</option><option>LINE Pay</option><option>其他</option></select><label>備註</label><input id="v15TopupNote" maxlength="200"><button id="v15Topup" disabled type="button">確認儲值</button></div>
       <div class="xc"><h3>消費扣款｜先扣贈送金</h3><label>金額</label><input id="v15Amount" type="number" min="1" step="1"><label>備註</label><input id="v15DebitNote" maxlength="200"><button id="v15Debit" disabled type="button">確認扣款</button></div>
@@ -37,6 +42,11 @@
       <div class="xc"><h3>最近交易</h3><div id="v15History" class="muted">—</div></div>`;
     panel.append(wrap);
     $('v15Customer').onchange = async () => {selectedId = $('v15Customer').value; lastLoaded++; await reload();};
+    $('v15ReloadCustomers').onclick = async () => {
+      if (!staff) return;
+      try { await loadCustomers(); status(selectedId ? '客戶清單已更新' : '客戶清單已更新，請選擇客戶'); }
+      catch (e) { status('客戶清單讀取失敗：' + e.message); }
+    };
     $('v15Topup').onclick = () => submit('topup');
     $('v15Debit').onclick = () => submit('debit');
     $('v15Refund').onclick = () => submit('refund');
@@ -53,22 +63,30 @@
   async function reload() {
     const id = selectedId, seq = ++lastLoaded;
     if (!id) { $('v15Balance').textContent = '請選擇客戶'; $('v15History').textContent = '—'; return; }
+    $('v15Balance').textContent = '讀取中…';
+    $('v15History').textContent = '讀取中…';
     try {
-      const [w, t] = await Promise.all([
-        fs.getDoc(fs.doc(db,'wallets',id)),
-        fs.getDocs(fs.query(fs.collection(db,'walletTransactions'),fs.where('customerId','==',id),fs.orderBy('createdAt','desc'),fs.limit(100)))
-      ]);
+      const w = await fs.getDoc(fs.doc(db,'wallets',id));
       if (id !== selectedId || seq !== lastLoaded) return;
       const d = w.exists() ? w.data() : {principalBalance:0,bonusBalance:0};
       if (!valid(d.principalBalance) || !valid(d.bonusBalance)) throw Error('錢包資料異常');
       $('v15Balance').textContent = `本金 ${money(d.principalBalance)}｜贈送 ${money(d.bonusBalance)}｜合計 ${money(d.principalBalance+d.bonusBalance)}`;
-      const root = $('v15History'); root.replaceChildren();
-      t.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)).forEach(x=>{
-        const p=document.createElement('p');p.textContent=`${x.createdAt?.toDate?.().toLocaleString('zh-TW')||'待同步'}｜${x.type}｜${money(x.amount)}｜${x.id}`;root.append(p);
-      });
-      if (!t.size) root.textContent = '尚無交易';
-      status('帳務讀取成功');
-    } catch(e) { if (id===selectedId) { $('v15Balance').textContent='不可用';status('讀取未完成：'+e.message); } }
+      const root = $('v15History');
+      try {
+        const t = await fs.getDocs(fs.query(fs.collection(db,'walletTransactions'),fs.where('customerId','==',id),fs.orderBy('createdAt','desc'),fs.limit(100)));
+        if (id !== selectedId || seq !== lastLoaded) return;
+        root.replaceChildren();
+        t.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)).forEach(x=>{
+          const p=document.createElement('p');p.textContent=`${x.createdAt?.toDate?.().toLocaleString('zh-TW')||'待同步'}｜${x.type}｜${money(x.amount)}｜${x.id}`;root.append(p);
+        });
+        if (!t.size) root.textContent = '尚無交易';
+        status('帳務讀取成功');
+      } catch (histErr) {
+        if (id !== selectedId || seq !== lastLoaded) return;
+        root.textContent = '交易紀錄讀取失敗：' + histErr.message;
+        status('餘額已讀取，但交易紀錄失敗：' + histErr.message);
+      }
+    } catch(e) { if (id===selectedId) { $('v15Balance').textContent='不可用'; $('v15History').textContent='—'; status('讀取未完成：'+e.message); } }
   }
   async function submit(type) {
     if (busy || !staff) return;
@@ -143,8 +161,11 @@
           const s=await fs.getDoc(fs.doc(db,'staff',user.uid));
           if(!s.exists()||s.data().active!==true)throw Error('無員工權限');
           staff=true;owner=user.uid===window.XIANG_OWNER_UID&&s.data().role==='owner';
-          $('v15Owner').hidden=!owner;await loadCustomers();controls();status('已登入；正式帳務尚未開通');
+          $('v15Owner').hidden=!owner;
+          try{await loadCustomers();status('已登入。可測試交易；若規則拒絕寫入，錯誤會顯示在這裡。');}
+          catch(e){status('客戶清單讀取失敗：'+e.message);}
         } catch(e){status('初始化失敗：'+e.message);}
+        finally{controls();}
       });
     } catch(e){status('載入失敗：'+e.message);}
   }

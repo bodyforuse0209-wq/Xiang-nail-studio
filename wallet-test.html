@@ -55,7 +55,7 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f7f4f0;padding:12px;
 <section>
 <h2>安全狀態</h2>
 <p>目前僅測試登入、會員讀取及錢包查詢。</p>
-<p>儲值、扣款、退款及人工調整功能尚未啟用。</p>
+<p>儲值、扣款、退款及人工調整的模擬請開 <a href="./wallet-test-v154.html">V15.4 模擬測試頁</a>（不會寫入 Firebase）。</p>
 </section>
 </main>
 
@@ -70,7 +70,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 import {
   getFirestore,collection,doc,getDocs,getDoc,
-  query,where,limit
+  query,where,orderBy,limit
 } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
 const $=id=>document.getElementById(id);
@@ -88,7 +88,7 @@ function validBalance(n){
 async function start(){
   try{
     const config=window.XIANG_WALLET_TEST_CONFIG;
-    if(!config||config.projectId!==expectedProject){
+    if(!config||!config.apiKey||config.projectId!==expectedProject){
       throw Error("測試 Firebase 設定缺失或專案不正確");
     }
     const app=initializeApp(config,"xiang-wallet-isolated-test");
@@ -105,6 +105,8 @@ async function start(){
       message("history","—");
       $("logout").hidden=!user;
       $("login").hidden=!!user;
+      $("email").hidden=!!user;
+      $("password").hidden=!!user;
       message("loginStatus",user
         ?"已登入："+user.uid
         :"尚未登入");
@@ -113,11 +115,19 @@ async function start(){
   }catch(e){
     enabled=false;
     message("connection","設定錯誤："+e.message);
+    message("loginStatus","無法登入："+e.message);
   }
 }
 
+$("password").addEventListener("keydown",e=>{
+  if(e.key==="Enter")$("login").click();
+});
+
 $("login").onclick=async()=>{
-  if(!enabled)return;
+  if(!enabled||!auth){
+    message("loginStatus","無法登入：測試專案尚未連線，請看上方 Firebase 連線狀態");
+    return;
+  }
   $("login").disabled=true;
   try{
     await signInWithEmailAndPassword(
@@ -143,14 +153,23 @@ $("load").onclick=async()=>{
     const snap=await getDocs(collection(db,"customers"));
     if(token!==seq)return;
     const select=$("customer");
+    const previous=select.value;
+    const visible=snap.docs.filter(d=>d.data().archived!==true);
     select.replaceChildren(new Option("請選擇會員",""));
-    snap.docs.filter(d=>d.data().archived!==true).forEach(d=>{
+    visible.forEach(d=>{
       const c=d.data();
       select.add(new Option(
         (c.name||"未命名")+"｜"+d.id.slice(0,12),d.id
       ));
     });
-    message("loginStatus","成功讀取 "+snap.size+" 筆會員文件");
+    message("loginStatus","成功讀取 "+visible.length+" 位有效會員");
+    if(previous&&[...select.options].some(o=>o.value===previous)){
+      select.value=previous;
+      select.dispatchEvent(new Event("change"));
+    }else{
+      message("balance","尚未選擇會員");
+      message("history","—");
+    }
   }catch(e){
     message("loginStatus","讀取失敗："+e.message);
   }finally{
@@ -161,18 +180,15 @@ $("load").onclick=async()=>{
 $("customer").onchange=async()=>{
   const id=$("customer").value;
   const token=++seq;
-  if(!id)return;
+  if(!id){
+    message("balance","尚未選擇會員");
+    message("history","—");
+    return;
+  }
   message("balance","讀取中…");
   message("history","讀取中…");
   try{
-    const [wallet,transactions]=await Promise.all([
-      getDoc(doc(db,"wallets",id)),
-      getDocs(query(
-        collection(db,"walletTransactions"),
-        where("customerId","==",id),
-        limit(100)
-      ))
-    ]);
+    const wallet=await getDoc(doc(db,"wallets",id));
     if(token!==seq)return;
     const w=wallet.exists()?wallet.data():{
       principalBalance:0,bonusBalance:0
@@ -184,19 +200,30 @@ $("customer").onchange=async()=>{
     message("balance",wallet.exists()
       ?"本金 "+money(p)+"｜贈送 "+money(b)+"｜合計 "+money(p+b)
       :"尚未建立錢包（不是已儲值 0 元）");
-
-    const records=transactions.docs.map(d=>({
-      id:d.id,...d.data()
-    }));
-    records.sort((a,b)=>
-      (b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)
-    );
-    message("history",records.length
-      ?records.map(r=>
-        (r.createdAt?.toDate?.().toLocaleString("zh-TW")||"待同步")+
-        "｜"+r.type+"｜"+r.amount+"｜"+r.id
-      ).join("\n")
-      :"目前沒有交易紀錄");
+    try{
+      const transactions=await getDocs(query(
+        collection(db,"walletTransactions"),
+        where("customerId","==",id),
+        orderBy("createdAt","desc"),
+        limit(100)
+      ));
+      if(token!==seq)return;
+      const records=transactions.docs.map(d=>({
+        id:d.id,...d.data()
+      }));
+      records.sort((a,b)=>
+        (b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)
+      );
+      message("history",records.length
+        ?records.map(r=>
+          (r.createdAt?.toDate?.().toLocaleString("zh-TW")||"待同步")+
+          "｜"+r.type+"｜"+(Number.isSafeInteger(r.amount)?money(r.amount):"金額異常")+"｜"+r.id
+        ).join("\n")
+        :"目前沒有交易紀錄");
+    }catch(e){
+      if(token!==seq)return;
+      message("history","交易紀錄讀取失敗："+e.message);
+    }
   }catch(e){
     if(token!==seq)return;
     message("balance","讀取失敗");
